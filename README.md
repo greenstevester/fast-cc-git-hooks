@@ -11,42 +11,70 @@ A high-performance Git hook system for enforcing [Conventional Commits](https://
 - **Easy Installation**: Simple CLI commands for hook management
 - **Go 1.21+**: Leverages modern Go features for better performance
 
+## Prerequisites
+
+- Go 1.21 or later (for building from source)
+- Git (for hook installation)
+
 ## Installation
 
-### From Source
+### Option 1: Pre-built Binaries (Recommended)
+
+Download the latest release for your platform:
+
+```bash
+# Linux/macOS - replace with your platform
+curl -L -o fast-cc-hooks https://github.com/stevengreensill/fast-cc-git-hooks/releases/latest/download/fast-cc-hooks-linux-amd64
+chmod +x fast-cc-hooks
+sudo mv fast-cc-hooks /usr/local/bin/
+```
+
+### Option 2: Using Go Install
+
+```bash
+go install github.com/stevengreensill/fast-cc-git-hooks/cmd/fast-cc-hooks@latest
+```
+
+**Note**: This installs to `$GOPATH/bin` or `$HOME/go/bin` - ensure this is in your PATH.
+
+### Option 3: Build from Source
 
 ```bash
 # Clone the repository
 git clone https://github.com/stevengreensill/fast-cc-git-hooks.git
 cd fast-cc-git-hooks
 
-# Build and install
+# Build and install to GOPATH/bin
 make build
-make install  # Installs to /usr/local/bin
-```
-
-### Using Go
-
-```bash
-go install github.com/stevengreensill/fast-cc-git-hooks/cmd/fast-cc-hooks@latest
+make install
 ```
 
 ## Quick Start
 
-1. **Initialize configuration** (optional):
+1. **Verify installation**:
+```bash
+fast-cc-hooks version
+```
+
+2. **Initialize configuration** (optional):
 ```bash
 fast-cc-hooks init
 ```
 
-2. **Install hooks in your repository**:
+3. **Install hooks in your repository**:
 ```bash
 fast-cc-hooks install
 ```
 
-3. **Make commits** using conventional format:
+4. **Test the installation**:
+```bash
+fast-cc-hooks validate "feat: add new feature"
+```
+
+5. **Make commits** using conventional format:
 ```bash
 git commit -m "feat: add new feature"
-git commit -m "fix(api): resolve authentication issue"
+git commit -m "fix(api): resolve authentication issue"  
 git commit -m "docs: update README"
 ```
 
@@ -257,6 +285,98 @@ go test -bench=. ./...
 # Generate coverage
 go test -coverprofile=coverage.out ./...
 go tool cover -html=coverage.out
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**Binary not found after installation**
+```bash
+# Check if GOPATH/bin is in your PATH
+echo $PATH | grep -q $GOPATH/bin && echo "GOPATH/bin is in PATH" || echo "Add GOPATH/bin to PATH"
+
+# Add to your shell profile (.bashrc, .zshrc, etc.)
+export PATH=$PATH:$(go env GOPATH)/bin
+```
+
+**Hook installation fails**
+```bash
+# Make sure you're in a git repository
+git status
+
+# Check if hooks directory is writable
+ls -la .git/hooks/
+
+# Use force flag to overwrite existing hooks
+fast-cc-hooks install --force
+```
+
+**Validation fails unexpectedly**
+```bash
+# Test validation manually
+fast-cc-hooks validate "your commit message"
+
+# Check your configuration
+fast-cc-hooks init  # Creates default config if none exists
+cat .fast-cc-hooks.yaml
+```
+
+**Performance issues with large repositories**
+- The tool is optimized for speed, but very large commit messages may take longer
+- Consider using `ignore_patterns` for merge commits and automated commits
+
+## Integration
+
+### GitHub Actions
+
+```yaml
+name: Validate Commit Messages
+on: [push, pull_request]
+
+jobs:
+  validate-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Install fast-cc-hooks
+        run: |
+          curl -L -o fast-cc-hooks https://github.com/stevengreensill/fast-cc-git-hooks/releases/latest/download/fast-cc-hooks-linux-amd64
+          chmod +x fast-cc-hooks
+          sudo mv fast-cc-hooks /usr/local/bin/
+      
+      - name: Validate commit messages
+        run: |
+          # Validate commits in PR
+          git log --format="%s" origin/main..HEAD | while read msg; do
+            fast-cc-hooks validate "$msg"
+          done
+```
+
+### Pre-commit Framework
+
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: local
+    hooks:
+      - id: fast-cc-hooks
+        name: Validate conventional commits
+        entry: fast-cc-hooks validate
+        language: system
+        stages: [commit-msg]
+```
+
+### Docker
+
+```dockerfile
+FROM alpine:latest
+RUN apk add --no-cache git
+COPY fast-cc-hooks /usr/local/bin/
+ENTRYPOINT ["fast-cc-hooks"]
 ```
 
 ## Performance
