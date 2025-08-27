@@ -75,6 +75,15 @@ func New(cfg *config.Config) (*Validator, error) {
 		v.compiledRules[rule.Name] = re
 	}
 
+	// Compile JIRA ticket pattern if specified
+	if cfg.JIRATicketPattern != "" {
+		re, err := regexp.Compile(cfg.JIRATicketPattern)
+		if err != nil {
+			return nil, fmt.Errorf("compiling JIRA ticket pattern: %w", err)
+		}
+		v.compiledRules["jira-pattern"] = re
+	}
+
 	return v, nil
 }
 
@@ -172,6 +181,9 @@ func (v *Validator) Validate(ctx context.Context, message string) *ValidationRes
 		}
 	}
 
+	// Validate ticket requirements
+	v.validateTicketRequirements(commit, result)
+
 	return result
 }
 
@@ -214,6 +226,45 @@ func (v *Validator) shouldIgnore(message string) bool {
 		}
 	}
 	return false
+}
+
+// validateTicketRequirements validates ticket reference requirements
+func (v *Validator) validateTicketRequirements(commit *conventionalcommit.Commit, result *ValidationResult) {
+	// Check if JIRA ticket is required
+	if v.config.RequireJIRATicket && !commit.HasJIRATicket() {
+		result.Valid = false
+		result.Errors = append(result.Errors, &ValidationError{
+			Field:   "ticket",
+			Message: "JIRA ticket reference is required",
+		})
+	}
+
+	// Check if any ticket reference is required
+	if v.config.RequireTicketRef && !commit.HasTicketRefs() {
+		result.Valid = false
+		result.Errors = append(result.Errors, &ValidationError{
+			Field:   "ticket",
+			Message: "ticket reference is required",
+		})
+	}
+
+	// Validate JIRA ticket format if present
+	if v.config.JIRATicketPattern != "" && commit.HasJIRATicket() {
+		re, exists := v.compiledRules["jira-pattern"]
+		if exists {
+			jiraTickets := commit.GetJIRATickets()
+			for _, ticket := range jiraTickets {
+				if !re.MatchString(ticket.ID) {
+					result.Valid = false
+					result.Errors = append(result.Errors, &ValidationError{
+						Field:   "ticket",
+						Message: fmt.Sprintf("JIRA ticket '%s' does not match required pattern", ticket.ID),
+						Value:   ticket.ID,
+					})
+				}
+			}
+		}
+	}
 }
 
 // readFile reads the contents of a file

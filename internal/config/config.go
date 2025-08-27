@@ -34,6 +34,16 @@ type Config struct {
 	CustomRules []CustomRule `yaml:"custom_rules,omitempty"`
 	// IgnorePatterns defines patterns to skip validation
 	IgnorePatterns []string `yaml:"ignore_patterns,omitempty"`
+	
+	// Ticket reference validation
+	// RequireJIRATicket requires JIRA ticket references in commits
+	RequireJIRATicket bool `yaml:"require_jira_ticket"`
+	// RequireTicketRef requires any type of ticket reference in commits
+	RequireTicketRef bool `yaml:"require_ticket_ref"`
+	// JIRATicketPattern defines a regex pattern for valid JIRA tickets
+	JIRATicketPattern string `yaml:"jira_ticket_pattern,omitempty"`
+	// JIRAProjects defines allowed JIRA project prefixes
+	JIRAProjects []string `yaml:"jira_projects,omitempty"`
 }
 
 // CustomRule defines a custom validation rule

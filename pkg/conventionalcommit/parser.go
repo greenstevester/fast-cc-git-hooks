@@ -24,6 +24,14 @@ type Commit struct {
 	Body        string
 	Footer      string
 	Raw         string
+	TicketRefs  []TicketRef
+}
+
+// TicketRef represents a ticket reference (e.g., JIRA ticket)
+type TicketRef struct {
+	Type   string // e.g., "JIRA", "GITHUB", "LINEAR"
+	ID     string // e.g., "PROJ-123", "#456", "ABC-789"
+	Raw    string // Original reference as found in commit
 }
 
 // Parser provides conventional commit parsing with configurable options
@@ -45,6 +53,21 @@ func DefaultParser() *Parser {
 // conventionalCommitRegex matches: type(scope)!: description
 // Groups: 1=type, 2=scope with parens, 3=scope, 4=breaking indicator, 5=description
 var conventionalCommitRegex = regexp.MustCompile(`^(\w+)(\(([^)]*)\))?(!)?:\s*(.+)`)
+
+// Ticket reference patterns
+var (
+	// jiraTicketRegex matches JIRA tickets: PROJ-123, ABC-456 (3-4 letter prefixes)
+	jiraTicketRegex = regexp.MustCompile(`\b([A-Z]{3,4}-\d+)\b`)
+	
+	// githubTicketRegex matches GitHub issues: #123, GH-456
+	githubTicketRegex = regexp.MustCompile(`(?:#(\d+)|GH-(\d+))\b`)
+	
+	// linearTicketRegex matches Linear tickets: ABC-123 (exactly 3 letter prefixes)
+	linearTicketRegex = regexp.MustCompile(`\b([A-Z]{3}-\d+)\b`)
+	
+	// genericTicketRegex matches generic format: [TICKET-123]
+	genericTicketRegex = regexp.MustCompile(`\[([A-Z]{2,10}-\d+)\]`)
+)
 
 // Parse parses a commit message into a Commit struct
 func (p *Parser) Parse(message string) (*Commit, error) {
@@ -118,6 +141,9 @@ func (p *Parser) Parse(message string) (*Commit, error) {
 		}
 	}
 
+	// Parse ticket references from entire commit message
+	commit.TicketRefs = parseTicketRefs(message)
+
 	return commit, nil
 }
 
@@ -145,6 +171,115 @@ func isFooterLine(line string) bool {
 	}
 	
 	return false
+}
+
+// parseTicketRefs extracts ticket references from a commit message
+func parseTicketRefs(message string) []TicketRef {
+	var refs []TicketRef
+	seen := make(map[string]bool)
+	
+	// Parse GitHub issues first (most specific pattern)
+	matches := githubTicketRegex.FindAllStringSubmatch(message, -1)
+	for _, match := range matches {
+		if len(match) >= 3 {
+			var id string
+			if match[1] != "" { // #123 format
+				id = match[1]
+			} else if match[2] != "" { // GH-456 format
+				id = match[2]
+			}
+			if id != "" {
+				ref := TicketRef{
+					Type: "GITHUB",
+					ID:   id,
+					Raw:  match[0],
+				}
+				key := ref.Type + ":" + ref.ID
+				if !seen[key] {
+					refs = append(refs, ref)
+					seen[key] = true
+				}
+			}
+		}
+	}
+	
+	// Parse generic bracketed tickets [PROJ-123] (high priority)
+	matches = genericTicketRegex.FindAllStringSubmatch(message, -1)
+	for _, match := range matches {
+		if len(match) > 1 {
+			ref := TicketRef{
+				Type: "GENERIC",
+				ID:   match[1],
+				Raw:  match[0],
+			}
+			key := ref.Type + ":" + ref.ID
+			if !seen[key] {
+				refs = append(refs, ref)
+				seen[key] = true
+			}
+		}
+	}
+	
+	// Parse JIRA tickets (2-10 letter prefixes, including 3-letter ones)
+	matches = jiraTicketRegex.FindAllStringSubmatch(message, -1)
+	for _, match := range matches {
+		if len(match) > 1 {
+			// Check if this was already classified as generic or github
+			genericKey := "GENERIC:" + match[1]
+			githubKey := "GITHUB:" + match[1]
+			if seen[genericKey] || seen[githubKey] {
+				continue
+			}
+			
+			// Skip GitHub-style references (GH-123 format)
+			if strings.HasPrefix(match[1], "GH-") {
+				continue
+			}
+			
+			ref := TicketRef{
+				Type: "JIRA",
+				ID:   match[1],
+				Raw:  match[0],
+			}
+			key := ref.Type + ":" + ref.ID
+			if !seen[key] {
+				refs = append(refs, ref)
+				seen[key] = true
+			}
+		}
+	}
+	
+	// Parse Linear tickets (exactly 3-letter prefix, only for known Linear projects)
+	// Note: Linear is less common, so we treat 3-letter prefixes as JIRA by default
+	// This can be customized per-project by specifying linear project prefixes
+	
+	return refs
+}
+
+// HasTicketRefs returns true if the commit has any ticket references
+func (c *Commit) HasTicketRefs() bool {
+	return len(c.TicketRefs) > 0
+}
+
+// HasJIRATicket returns true if the commit has JIRA ticket references
+func (c *Commit) HasJIRATicket() bool {
+	for _, ref := range c.TicketRefs {
+		if ref.Type == "JIRA" {
+			return true
+		}
+	}
+	return false
+}
+
+// GetJIRATickets returns all JIRA ticket references
+func (c *Commit) GetJIRATickets() []TicketRef {
+	var jiraRefs []TicketRef
+	for _, ref := range c.TicketRefs {
+		if ref.Type == "JIRA" {
+			jiraRefs = append(jiraRefs, ref)
+		}
+	}
+	return jiraRefs
 }
 
 // Format formats a Commit back to conventional commit format

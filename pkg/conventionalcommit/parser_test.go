@@ -257,3 +257,288 @@ func BenchmarkCommit_Format(b *testing.B) {
 		_ = commit.Format()
 	}
 }
+
+func TestParseTicketRefs(t *testing.T) {
+	tests := []struct {
+		name     string
+		message  string
+		expected []TicketRef
+	}{
+		{
+			name:    "JIRA ticket in header",
+			message: "feat: add user auth PROJ-123",
+			expected: []TicketRef{
+				{Type: "JIRA", ID: "PROJ-123", Raw: "PROJ-123"},
+			},
+		},
+		{
+			name:    "multiple JIRA tickets",
+			message: "feat: implement auth PROJ-123 DEFG-456",
+			expected: []TicketRef{
+				{Type: "JIRA", ID: "PROJ-123", Raw: "PROJ-123"},
+				{Type: "JIRA", ID: "DEFG-456", Raw: "DEFG-456"},
+			},
+		},
+		{
+			name:    "GitHub issue",
+			message: "fix: resolve bug #123",
+			expected: []TicketRef{
+				{Type: "GITHUB", ID: "123", Raw: "#123"},
+			},
+		},
+		{
+			name:    "GitHub issue with GH prefix",
+			message: "fix: resolve bug GH-456",
+			expected: []TicketRef{
+				{Type: "GITHUB", ID: "456", Raw: "GH-456"},
+			},
+		},
+		{
+			name:    "Linear ticket (treated as JIRA by default)",
+			message: "feat: add feature ABC-123",
+			expected: []TicketRef{
+				{Type: "JIRA", ID: "ABC-123", Raw: "ABC-123"},
+			},
+		},
+		{
+			name:    "Generic bracketed ticket",
+			message: "feat: implement [PROJ-789]",
+			expected: []TicketRef{
+				{Type: "GENERIC", ID: "PROJ-789", Raw: "[PROJ-789]"},
+			},
+		},
+		{
+			name:    "mixed ticket types",
+			message: "feat: implement auth PROJ-123 #456 [ABC-789]",
+			expected: []TicketRef{
+				{Type: "GITHUB", ID: "456", Raw: "#456"},
+				{Type: "GENERIC", ID: "ABC-789", Raw: "[ABC-789]"},
+				{Type: "JIRA", ID: "PROJ-123", Raw: "PROJ-123"},
+			},
+		},
+		{
+			name: "tickets in footer",
+			message: `feat: add authentication
+
+Implements OAuth2 login flow with JWT tokens.
+
+Fixes PROJ-123
+Closes #456`,
+			expected: []TicketRef{
+				{Type: "GITHUB", ID: "456", Raw: "#456"},
+				{Type: "JIRA", ID: "PROJ-123", Raw: "PROJ-123"},
+			},
+		},
+		{
+			name:     "no tickets",
+			message:  "feat: add new feature without references",
+			expected: []TicketRef{},
+		},
+		{
+			name:     "duplicate tickets",
+			message:  "feat: implement PROJ-123 and fix PROJ-123",
+			expected: []TicketRef{
+				{Type: "JIRA", ID: "PROJ-123", Raw: "PROJ-123"},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			refs := parseTicketRefs(tt.message)
+			
+			if len(refs) != len(tt.expected) {
+				t.Fatalf("parseTicketRefs() returned %d refs, expected %d", len(refs), len(tt.expected))
+			}
+
+			for i, ref := range refs {
+				expected := tt.expected[i]
+				if ref.Type != expected.Type || ref.ID != expected.ID || ref.Raw != expected.Raw {
+					t.Errorf("parseTicketRefs()[%d] = %+v, expected %+v", i, ref, expected)
+				}
+			}
+		})
+	}
+}
+
+func TestCommit_HasTicketRefs(t *testing.T) {
+	tests := []struct {
+		name     string
+		commit   *Commit
+		expected bool
+	}{
+		{
+			name: "has tickets",
+			commit: &Commit{
+				TicketRefs: []TicketRef{
+					{Type: "JIRA", ID: "PROJ-123", Raw: "PROJ-123"},
+				},
+			},
+			expected: true,
+		},
+		{
+			name:     "no tickets",
+			commit:   &Commit{TicketRefs: []TicketRef{}},
+			expected: false,
+		},
+		{
+			name:     "nil tickets",
+			commit:   &Commit{},
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.commit.HasTicketRefs(); got != tt.expected {
+				t.Errorf("Commit.HasTicketRefs() = %v, expected %v", got, tt.expected)
+			}
+		})
+	}
+}
+
+func TestCommit_HasJIRATicket(t *testing.T) {
+	tests := []struct {
+		name     string
+		commit   *Commit
+		expected bool
+	}{
+		{
+			name: "has JIRA ticket",
+			commit: &Commit{
+				TicketRefs: []TicketRef{
+					{Type: "JIRA", ID: "PROJ-123", Raw: "PROJ-123"},
+					{Type: "GITHUB", ID: "456", Raw: "#456"},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "no JIRA tickets",
+			commit: &Commit{
+				TicketRefs: []TicketRef{
+					{Type: "GITHUB", ID: "456", Raw: "#456"},
+				},
+			},
+			expected: false,
+		},
+		{
+			name:     "no tickets at all",
+			commit:   &Commit{TicketRefs: []TicketRef{}},
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.commit.HasJIRATicket(); got != tt.expected {
+				t.Errorf("Commit.HasJIRATicket() = %v, expected %v", got, tt.expected)
+			}
+		})
+	}
+}
+
+func TestCommit_GetJIRATickets(t *testing.T) {
+	tests := []struct {
+		name     string
+		commit   *Commit
+		expected []TicketRef
+	}{
+		{
+			name: "multiple JIRA tickets",
+			commit: &Commit{
+				TicketRefs: []TicketRef{
+					{Type: "JIRA", ID: "PROJ-123", Raw: "PROJ-123"},
+					{Type: "GITHUB", ID: "456", Raw: "#456"},
+					{Type: "JIRA", ID: "ABC-789", Raw: "ABC-789"},
+				},
+			},
+			expected: []TicketRef{
+				{Type: "JIRA", ID: "PROJ-123", Raw: "PROJ-123"},
+				{Type: "JIRA", ID: "ABC-789", Raw: "ABC-789"},
+			},
+		},
+		{
+			name: "no JIRA tickets",
+			commit: &Commit{
+				TicketRefs: []TicketRef{
+					{Type: "GITHUB", ID: "456", Raw: "#456"},
+				},
+			},
+			expected: []TicketRef{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.commit.GetJIRATickets()
+			if !reflect.DeepEqual(got, tt.expected) {
+				t.Errorf("Commit.GetJIRATickets() = %+v, expected %+v", got, tt.expected)
+			}
+		})
+	}
+}
+
+func TestParser_ParseWithTickets(t *testing.T) {
+	parser := DefaultParser()
+	
+	tests := []struct {
+		name    string
+		message string
+		wantErr bool
+		check   func(*testing.T, *Commit)
+	}{
+		{
+			name:    "conventional commit with JIRA ticket",
+			message: "feat(auth): implement OAuth2 PROJ-123",
+			wantErr: false,
+			check: func(t *testing.T, c *Commit) {
+				if c.Type != "feat" {
+					t.Errorf("Expected type 'feat', got %s", c.Type)
+				}
+				if c.Scope != "auth" {
+					t.Errorf("Expected scope 'auth', got %s", c.Scope)
+				}
+				if !c.HasJIRATicket() {
+					t.Error("Expected JIRA ticket, but none found")
+				}
+				jiraTickets := c.GetJIRATickets()
+				if len(jiraTickets) != 1 || jiraTickets[0].ID != "PROJ-123" {
+					t.Errorf("Expected JIRA ticket PROJ-123, got %+v", jiraTickets)
+				}
+			},
+		},
+		{
+			name: "commit with multiple ticket types",
+			message: `fix: resolve authentication bug PROJ-456
+
+This fixes the OAuth2 token validation issue.
+Also addresses GitHub issue #789.
+
+Closes: PROJ-456
+Fixes: #789`,
+			wantErr: false,
+			check: func(t *testing.T, c *Commit) {
+				if len(c.TicketRefs) != 3 { // PROJ-456 appears twice, #789 appears twice
+					t.Errorf("Expected 3 unique ticket references, got %d: %+v", len(c.TicketRefs), c.TicketRefs)
+				}
+				if !c.HasJIRATicket() {
+					t.Error("Expected JIRA ticket, but none found")
+				}
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			commit, err := parser.Parse(tt.message)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Parser.Parse() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if commit != nil && tt.check != nil {
+				tt.check(t, commit)
+			}
+		})
+	}
+}
