@@ -1,407 +1,222 @@
-# fast-cc-git-hooks
+# 🚀 fast-cc-hooks
 
-A high-performance Git hook system for enforcing [Conventional Commits](https://www.conventionalcommits.org/) with extensive configuration options and blazing-fast validation.
+**The easiest way to write better commit messages!** 
 
-## Features
+This tool automatically checks your Git commit messages to make sure they're clear and helpful. It's so easy, anyone can use it! 
 
-- **Fast Validation**: Optimized for performance with minimal dependencies
-- **Flexible Configuration**: YAML-based configuration with sensible defaults
-- **Custom Rules**: Define project-specific validation rules using regex patterns
-- **Cross-Platform**: Works on Linux, macOS, and Windows
-- **Easy Installation**: Simple CLI commands for hook management
-- **Go 1.21+**: Leverages modern Go features for better performance
+## ⚡️ Super Quick Setup (3 steps!)
 
-## Prerequisites
+### Step 1: Install the tool
 
-- Go 1.21 or later (for building from source)
-- Git (for hook installation)
+**Option A: Download Binary** (easiest! 🎯)
 
-## Installation
-
-### Option 1: Pre-built Binaries (Recommended)
-
-Download the latest release for your platform:
-
+**🐧 Linux:**
 ```bash
-# Linux/macOS - replace with your platform
-curl -L -o fast-cc-hooks https://github.com/stevengreensill/fast-cc-git-hooks/releases/latest/download/fast-cc-hooks-linux-amd64
+# Most common (AMD64)
+curl -L -o fast-cc-hooks.tar.gz https://github.com/stevengreensill/fast-cc-git-hooks/releases/latest/download/fast-cc-hooks_linux_amd64.tar.gz
+tar -xzf fast-cc-hooks.tar.gz
+chmod +x fast-cc-hooks
+sudo mv fast-cc-hooks /usr/local/bin/
+
+# ARM64 (Raspberry Pi, etc.)
+curl -L -o fast-cc-hooks.tar.gz https://github.com/stevengreensill/fast-cc-git-hooks/releases/latest/download/fast-cc-hooks_linux_arm64.tar.gz
+tar -xzf fast-cc-hooks.tar.gz
 chmod +x fast-cc-hooks
 sudo mv fast-cc-hooks /usr/local/bin/
 ```
 
-### Option 2: Using Go Install
+**🍎 macOS:**
+```bash
+# Intel Macs
+curl -L -o fast-cc-hooks.tar.gz https://github.com/stevengreensill/fast-cc-git-hooks/releases/latest/download/fast-cc-hooks_darwin_amd64.tar.gz
+tar -xzf fast-cc-hooks.tar.gz
+chmod +x fast-cc-hooks
+sudo mv fast-cc-hooks /usr/local/bin/
 
+# Apple Silicon (M1/M2/M3) - most common now
+curl -L -o fast-cc-hooks.tar.gz https://github.com/stevengreensill/fast-cc-git-hooks/releases/latest/download/fast-cc-hooks_darwin_arm64.tar.gz
+tar -xzf fast-cc-hooks.tar.gz
+chmod +x fast-cc-hooks
+sudo mv fast-cc-hooks /usr/local/bin/
+```
+
+**🪟 Windows:**
+1. Go to [Releases Page](https://github.com/stevengreensill/fast-cc-git-hooks/releases/latest)
+2. Download `fast-cc-hooks_windows_amd64.zip`
+3. Extract and add `fast-cc-hooks.exe` to your PATH
+
+**Option B: Using Go**
 ```bash
 go install github.com/stevengreensill/fast-cc-git-hooks/cmd/fast-cc-hooks@latest
 ```
 
-**Note**: This installs to `$GOPATH/bin` or `$HOME/go/bin` - ensure this is in your PATH.
-
-### Option 3: Build from Source
-
+**Option C: Using Homebrew** (macOS/Linux)
 ```bash
-# Clone the repository
-git clone https://github.com/stevengreensill/fast-cc-git-hooks.git
-cd fast-cc-git-hooks
-
-# Build and install to GOPATH/bin
-make build
-make install
+brew install stevengreensill/tap/fast-cc-hooks
 ```
 
-## Quick Start
+### Step 2: Verify it works
 
-1. **Verify installation**:
 ```bash
-fast-cc-hooks version
+fast-cc-hooks --version
 ```
 
-2. **Initialize configuration** (optional):
+If you see version info, you're good to go! If not, make sure `/usr/local/bin` is in your PATH.
+
+### Step 3: Set it up (takes 5 seconds!)
+
+```bash
+fast-cc-hooks setup
+```
+
+**That's it!** 🎉 Now every time you make a commit, it will automatically check that your message is good!
+
+## ✨ How to write good commit messages
+
+Instead of writing messy commits like:
+```bash
+git commit -m "fixed stuff"
+git commit -m "update"
+git commit -m "asdfasdf"
+```
+
+Write clear commits like:
+```bash
+git commit -m "feat: add login button"
+git commit -m "fix: resolve login bug"  
+git commit -m "docs: update README"
+```
+
+The format is simple: `type: what you did`
+
+**Common types:**
+- `feat` - when you add something new
+- `fix` - when you fix a bug
+- `docs` - when you update documentation
+- `test` - when you add tests
+- `chore` - when you do maintenance stuff
+
+## 🛠️ Simple Commands
+
+**The only commands you need:**
+
+```bash
+fast-cc-hooks setup     # Set up everything (start here!)
+fast-cc-hooks remove    # Remove everything if you want to stop using it
+```
+
+**Test things:**
+```bash
+fast-cc-hooks validate "feat: my commit message"  # Test if a message is good
+```
+
+**That's it!** Most people only ever need `setup` and `remove`.
+
+## 🤔 Common Questions
+
+**Q: What if I want to turn it off temporarily?**
+A: Just run `fast-cc-hooks remove` and it's gone! Run `fast-cc-hooks setup` to turn it back on.
+
+**Q: Will this mess up my code?**
+A: Nope! It only checks your commit messages. Your code stays exactly the same.
+
+**Q: What if I make a mistake in my commit message?**
+A: The tool will tell you what's wrong and you can try again. It's very friendly!
+
+**Q: Can I use this on all my projects?**
+A: Yes! When you run `setup`, it works for ALL your Git projects automatically.
+
+## 🎯 Examples of Good vs Bad Commits
+
+❌ **Bad commits** (these will be rejected):
+```bash
+git commit -m "fix"
+git commit -m "updated stuff"  
+git commit -m "asdf"
+git commit -m "WIP"
+```
+
+✅ **Good commits** (these will work):
+```bash
+git commit -m "feat: add user login page"
+git commit -m "fix: resolve password validation bug"
+git commit -m "docs: add installation instructions"
+git commit -m "test: add login form tests"
+```
+
+## ⚙️ Want to Customize? (Optional)
+
+**Most people don't need to do this!** The tool works great out of the box.
+
+But if you want to customize the rules, run:
 ```bash
 fast-cc-hooks init
 ```
 
-3. **Install hooks in your repository**:
+This creates a file called `.fast-cc-hooks.yaml` that you can edit. It has comments explaining everything!
+
+## 🚨 Troubleshooting
+
+**Problem: The tool says my commit message is bad, but I think it's fine!**
+
+Run this to test your message:
 ```bash
-fast-cc-hooks install
+fast-cc-hooks validate "your message here"
 ```
 
-4. **Test the installation**:
+It will tell you exactly what's wrong and how to fix it.
+
+**Problem: I want to turn it off for just one commit**
+
+You can't bypass it easily (that's the point!), but you can run:
 ```bash
-fast-cc-hooks validate "feat: add new feature"
+fast-cc-hooks remove
+git commit -m "your message"  
+fast-cc-hooks setup
 ```
 
-5. **Make commits** using conventional format:
+**Problem: It's not working at all**
+
+Try setting it up again:
 ```bash
-git commit -m "feat: add new feature"
-git commit -m "fix(api): resolve authentication issue"  
-git commit -m "docs: update README"
+fast-cc-hooks remove
+fast-cc-hooks setup
 ```
 
-## Usage
+## 🏗️ Advanced Examples
 
-### Commands
-
+**Want to include ticket numbers?** (like JIRA tickets)
 ```bash
-fast-cc-hooks [flags] <command> [args]
-
-Commands:
-  install    Install git hooks in current repository
-  uninstall  Remove git hooks from current repository
-  validate   Validate a commit message
-  init       Create default configuration file
-  version    Show version information
-
-Global flags:
-  -v         Verbose output
-  -config    Path to config file (default: .fast-cc-hooks.yaml)
+git commit -m "feat: CGC-1234 add user login"
+git commit -m "fix: PROJ-456 resolve password bug"
 ```
 
-### Examples
-
-#### Validate a message manually:
+**Want to use scopes?** (optional grouping)
 ```bash
-fast-cc-hooks validate "feat: add new feature"
-fast-cc-hooks validate --file COMMIT_MSG
+git commit -m "feat(auth): add login form"
+git commit -m "fix(api): resolve timeout issue"
+git commit -m "docs(readme): update setup instructions"  
 ```
 
-#### Install with force (overwrite existing hooks):
-```bash
-fast-cc-hooks install --force
-```
+The part in `()` is called a "scope" - it's like a category for your change.
 
-#### Use custom configuration:
-```bash
-fast-cc-hooks --config=custom-config.yaml validate "fix: bug"
-```
+## 👨‍💻 For Developers
 
-## Configuration
-
-Configuration is done via `.fast-cc-hooks.yaml` file. If no configuration file exists, default settings are used.
-
-### Example Configuration
-
-```yaml
-# Allowed commit types
-types:
-  - feat     # New feature
-  - fix      # Bug fix
-  - docs     # Documentation changes
-  - style    # Code style changes
-  - refactor # Code refactoring
-  - test     # Testing
-  - chore    # Maintenance
-  - perf     # Performance improvements
-  - ci       # CI/CD changes
-  - build    # Build system
-  - revert   # Revert commits
-
-# Allowed scopes (empty = any scope allowed)
-scopes:
-  - api
-  - web
-  - cli
-
-# Whether scope is required
-scope_required: false
-
-# Maximum subject line length
-max_subject_length: 72
-
-# Allow breaking changes
-allow_breaking_changes: true
-
-# Custom validation rules
-custom_rules:
-  - name: jira-ticket
-    pattern: '\[JIRA-\d+\]'
-    message: 'Must reference a JIRA ticket'
-
-# Ignore patterns
-ignore_patterns:
-  - '^Merge'
-  - '^WIP:'
-```
-
-### Configuration Options
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `types` | []string | Standard types | Allowed commit types |
-| `scopes` | []string | [] (any) | Allowed scopes |
-| `scope_required` | bool | false | Whether scope is mandatory |
-| `max_subject_length` | int | 72 | Maximum subject line length |
-| `allow_breaking_changes` | bool | true | Allow breaking change indicators |
-| `require_jira_ticket` | bool | false | Require JIRA ticket in all commits |
-| `require_ticket_ref` | bool | false | Require any ticket reference |
-| `jira_ticket_pattern` | string | `^[A-Z]{3,4}-\d+$` | Custom JIRA ticket pattern |
-| `jira_projects` | []string | [] (any) | Allowed JIRA project prefixes |
-| `custom_rules` | []Rule | [] | Custom validation rules |
-| `ignore_patterns` | []string | [] | Patterns to skip validation |
-
-### Ticket Validation Configuration
-
-```yaml
-# Require JIRA tickets in all commits
-require_jira_ticket: true
-
-# Require any type of ticket reference  
-require_ticket_ref: false
-
-# Custom JIRA pattern (optional)
-jira_ticket_pattern: "^[A-Z]{3}-\\d+$"  # Only 3-letter prefixes
-
-# Allowed JIRA project codes (optional)
-jira_projects:
-  - CGC
-  - PROJ
-  - WORK
-
-# Alternative: Use custom rules for ticket validation
-custom_rules:
-  - name: "require-jira"
-    pattern: "\\b[A-Z]{3,4}-\\d+\\b"
-    message: "Commit must include a JIRA ticket (e.g., CGC-1234)"
-```
-
-## Conventional Commits Format
-
-```
-<type>[optional scope]: [TICKET-ID] <description>
-
-[optional body]
-
-[optional footer(s)]
-```
-
-### Ticket Reference Support
-
-The tool automatically detects and validates ticket references:
-
-- **JIRA tickets**: `ABC-123`, `PROJ-456`, `WORK-789` (3-4 letter project prefixes)
-- **GitHub issues**: `#123`, `GH-456` 
-- **Linear tickets**: Can be configured for specific project prefixes
-- **Generic format**: `[TICKET-123]`
-
-Multiple ticket types can be referenced in the same commit.
-
-### Examples:
+**Want to help make this tool better?**
 
 ```bash
-# Standard conventional commits
-feat: add user authentication
-feat(auth): implement OAuth2 integration
-fix!: correct critical security vulnerability
-docs(api): update endpoint documentation
-refactor(core): reorganize module structure
-
-# With JIRA ticket references
-feat: CGC-1234 add user authentication
-feat(auth): PROJ-789 implement OAuth2 integration
-fix: ABC-456 correct critical security vulnerability
-
-# With GitHub issue references  
-docs(api): update endpoint documentation #123
-fix: resolve authentication bug GH-456
-
-# Multi-line with tickets
-feat: CGC-1234 add shopping cart functionality
-
-This implements a shopping cart with:
-- Add/remove items
-- Calculate totals  
-- Apply discounts
-
-Closes: CGC-1234
-Fixes: #456
+git clone https://github.com/stevengreensill/fast-cc-git-hooks.git
+cd fast-cc-git-hooks
+make build
+make test
 ```
 
-## Development
+All commits to this project must follow conventional format too! 😄
 
-### Building
+## 📝 License
 
-```bash
-make build        # Build for current platform
-make build-all    # Build for all platforms
-make test         # Run tests
-make bench        # Run benchmarks
-make coverage     # Generate coverage report
-```
+MIT License - do whatever you want with this code!
 
-### Testing
+---
 
-The project includes comprehensive tests and benchmarks:
-
-```bash
-# Run all tests
-go test ./...
-
-# Run with race detection
-go test -race ./...
-
-# Run benchmarks
-go test -bench=. ./...
-
-# Generate coverage
-go test -coverprofile=coverage.out ./...
-go tool cover -html=coverage.out
-```
-
-## Troubleshooting
-
-### Common Issues
-
-**Binary not found after installation**
-```bash
-# Check if GOPATH/bin is in your PATH
-echo $PATH | grep -q $GOPATH/bin && echo "GOPATH/bin is in PATH" || echo "Add GOPATH/bin to PATH"
-
-# Add to your shell profile (.bashrc, .zshrc, etc.)
-export PATH=$PATH:$(go env GOPATH)/bin
-```
-
-**Hook installation fails**
-```bash
-# Make sure you're in a git repository
-git status
-
-# Check if hooks directory is writable
-ls -la .git/hooks/
-
-# Use force flag to overwrite existing hooks
-fast-cc-hooks install --force
-```
-
-**Validation fails unexpectedly**
-```bash
-# Test validation manually
-fast-cc-hooks validate "your commit message"
-
-# Check your configuration
-fast-cc-hooks init  # Creates default config if none exists
-cat .fast-cc-hooks.yaml
-```
-
-**Performance issues with large repositories**
-- The tool is optimized for speed, but very large commit messages may take longer
-- Consider using `ignore_patterns` for merge commits and automated commits
-
-## Integration
-
-### GitHub Actions
-
-```yaml
-name: Validate Commit Messages
-on: [push, pull_request]
-
-jobs:
-  validate-commits:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      
-      - name: Install fast-cc-hooks
-        run: |
-          curl -L -o fast-cc-hooks https://github.com/stevengreensill/fast-cc-git-hooks/releases/latest/download/fast-cc-hooks-linux-amd64
-          chmod +x fast-cc-hooks
-          sudo mv fast-cc-hooks /usr/local/bin/
-      
-      - name: Validate commit messages
-        run: |
-          # Validate commits in PR
-          git log --format="%s" origin/main..HEAD | while read msg; do
-            fast-cc-hooks validate "$msg"
-          done
-```
-
-### Pre-commit Framework
-
-```yaml
-# .pre-commit-config.yaml
-repos:
-  - repo: local
-    hooks:
-      - id: fast-cc-hooks
-        name: Validate conventional commits
-        entry: fast-cc-hooks validate
-        language: system
-        stages: [commit-msg]
-```
-
-### Docker
-
-```dockerfile
-FROM alpine:latest
-RUN apk add --no-cache git
-COPY fast-cc-hooks /usr/local/bin/
-ENTRYPOINT ["fast-cc-hooks"]
-```
-
-## Performance
-
-The validator is optimized for speed with:
-- Compiled regex patterns cached at startup
-- Minimal allocations in hot paths
-- Efficient string operations
-- Zero dependencies for core functionality
-
-Benchmark results (M1 Mac):
-```
-BenchmarkParser_Parse-8              500000      2341 ns/op
-BenchmarkParser_ParseSimple-8       2000000       872 ns/op
-BenchmarkValidator_Validate-8       1000000      1053 ns/op
-```
-
-## License
-
-MIT License - see LICENSE file for details
-
-## Contributing
-
-Contributions are welcome! Please ensure:
-1. Code follows Go best practices
-2. All tests pass
-3. New features include tests
-4. Commits follow conventional format
+**That's everything!** Remember: just run `fast-cc-hooks setup` and start writing better commits! 🚀

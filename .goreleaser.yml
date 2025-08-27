@@ -1,4 +1,4 @@
-version: 2
+version: 1
 
 project_name: fast-cc-hooks
 
@@ -76,23 +76,75 @@ release:
   prerelease: auto
   mode: replace
   header: |
-    ## Fast Conventional Commits Git Hooks {{.Tag}}
+    # 🚀 fast-cc-hooks {{.Tag}}
 
-    This release includes pre-commit hooks for enforcing conventional commits with high performance.
+    **The easiest way to write better commit messages!**
 
-    ### Installation
+    ## ⚡️ Super Quick Setup (2 steps!)
 
-    Download the appropriate binary for your platform and run:
+    ### Step 1: Download for your platform
+
+    **🐧 Linux:**
     ```bash
-    ./fast-cc-hooks install
+    # Most common (AMD64)
+    curl -L -o fast-cc-hooks https://github.com/stevengreensill/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_linux_amd64.tar.gz
+    tar -xzf fast-cc-hooks_{{.Tag}}_linux_amd64.tar.gz
+    chmod +x fast-cc-hooks
+    sudo mv fast-cc-hooks /usr/local/bin/
+
+    # ARM64 (Raspberry Pi, etc.)
+    curl -L -o fast-cc-hooks https://github.com/stevengreensill/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_linux_arm64.tar.gz
+    tar -xzf fast-cc-hooks_{{.Tag}}_linux_arm64.tar.gz
+    chmod +x fast-cc-hooks
+    sudo mv fast-cc-hooks /usr/local/bin/
     ```
 
+    **🍎 macOS:**
+    ```bash
+    # Intel Macs
+    curl -L -o fast-cc-hooks.tar.gz https://github.com/stevengreensill/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_darwin_amd64.tar.gz
+    tar -xzf fast-cc-hooks.tar.gz
+    chmod +x fast-cc-hooks
+    sudo mv fast-cc-hooks /usr/local/bin/
+
+    # Apple Silicon (M1/M2/M3)
+    curl -L -o fast-cc-hooks.tar.gz https://github.com/stevengreensill/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_darwin_arm64.tar.gz
+    tar -xzf fast-cc-hooks.tar.gz
+    chmod +x fast-cc-hooks
+    sudo mv fast-cc-hooks /usr/local/bin/
+    ```
+
+    **🪟 Windows:**
+    ```powershell
+    # Download and extract fast-cc-hooks_{{.Tag}}_windows_amd64.zip
+    # Add fast-cc-hooks.exe to your PATH
+    ```
+
+    ### Step 2: Set it up (takes 5 seconds!)
+    ```bash
+    fast-cc-hooks setup
+    ```
+
+    **That's it!** 🎉 Now every time you make a commit, it will automatically check that your message is good!
+
   footer: |
-    ## Docker Images
-    Docker images are available on GitHub Container Registry:
+    ## 🐳 Docker (Advanced Users)
     ```bash
     docker pull ghcr.io/stevengreensill/fast-cc-hooks:{{.Tag}}
     ```
+
+    ## 🍺 Homebrew (macOS/Linux)
+    ```bash
+    brew install stevengreensill/tap/fast-cc-hooks
+    ```
+
+    ## 📦 Package Managers
+    - **Ubuntu/Debian:** Download `.deb` file and run `sudo dpkg -i fast-cc-hooks_{{.Tag}}_linux_amd64.deb`
+    - **RHEL/CentOS:** Download `.rpm` file and run `sudo rpm -i fast-cc-hooks_{{.Tag}}_linux_amd64.rpm`
+    - **Windows Scoop:** `scoop bucket add stevengreensill https://github.com/stevengreensill/scoop-bucket.git && scoop install fast-cc-hooks`
+
+    ---
+    💡 **Need help?** Run `fast-cc-hooks -h` for super friendly help!
 
 # Homebrew formula
 brews:

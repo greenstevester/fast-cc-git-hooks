@@ -34,7 +34,7 @@ var (
 	// Command-specific flags
 	validateFile    string
 	forceInstall    bool
-	globalInstall   bool
+	localInstall    bool
 	
 	logger *slog.Logger
 )
@@ -44,26 +44,39 @@ func main() {
 	setupLogger(false)
 	
 	commands := map[string]*Command{
-		"install":  installCommand(),
+		"install":   installCommand(),
+		"setup":     setupCommand(),
 		"uninstall": uninstallCommand(),
-		"validate": validateCommand(),
-		"init":     initCommand(),
-		"version":  versionCommand(),
+		"remove":    removeCommand(),
+		"validate":  validateCommand(),
+		"init":      initCommand(),
+		"version":   versionCommand(),
 	}
 
 	// Parse global flags
 	flag.BoolVar(&verbose, "v", false, "verbose output")
 	flag.StringVar(&configFile, "config", "", "path to config file")
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "fast-cc-hooks - Fast conventional commits git hook system\n\n")
-		fmt.Fprintf(os.Stderr, "Usage: %s [flags] <command> [args]\n\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "Commands:\n")
-		for name, cmd := range commands {
-			fmt.Fprintf(os.Stderr, "  %-10s %s\n", name, cmd.Description)
-		}
-		fmt.Fprintf(os.Stderr, "\nGlobal flags:\n")
+		fmt.Fprintf(os.Stderr, "🚀 fast-cc-hooks - Make your commit messages awesome!\n\n")
+		fmt.Fprintf(os.Stderr, "📋 Super Easy Setup (just 2 steps!):\n")
+		fmt.Fprintf(os.Stderr, "   1️⃣  %s setup     ← Start here! This sets everything up\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "   2️⃣  git commit -m \"feat: your message\"  ← Write better commits!\n\n")
+		
+		fmt.Fprintf(os.Stderr, "✨ All Commands:\n")
+		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "setup", "🚀 Easy setup - install git hooks everywhere!")
+		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "remove", "🗑️  Easy removal - uninstall git hooks")
+		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "validate", "🔍 Test a commit message")
+		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "init", "📝 Create a config file")
+		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "version", "ℹ️  Show version info")
+		fmt.Fprintf(os.Stderr, "\n🤓 Advanced Commands:\n")
+		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "install", "Install git hooks globally for all repositories")
+		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "uninstall", "Remove git hooks from current repository")
+		
+		fmt.Fprintf(os.Stderr, "\n🏁 Quick Start:\n")
+		fmt.Fprintf(os.Stderr, "   %s setup\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "\n🔧 Options:\n")
 		flag.PrintDefaults()
-		fmt.Fprintf(os.Stderr, "\nUse '%s <command> -h' for command-specific help\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "\n💡 Need help? Use '%s <command> -h' for more details\n", os.Args[0])
 	}
 	
 	// Need at least command name
@@ -126,28 +139,28 @@ func setupLogger(verbose bool) {
 func installCommand() *Command {
 	fs := flag.NewFlagSet("install", flag.ExitOnError)
 	fs.BoolVar(&forceInstall, "force", false, "force installation, overwriting existing hooks")
-	fs.BoolVar(&globalInstall, "global", false, "install globally for all repositories")
+	fs.BoolVar(&localInstall, "local", false, "install only for current repository (default: install globally)")
 	
 	return &Command{
 		Name:        "install",
-		Description: "Install git hooks in current repository",
+		Description: "Install git hooks globally for all repositories",
 		Flags:       fs,
 		Run: func(ctx context.Context, args []string) error {
-			if globalInstall {
-				return hooks.GlobalInstall(ctx, logger)
+			if localInstall {
+				opts := hooks.Options{
+					Logger:       logger,
+					ForceInstall: forceInstall,
+				}
+				
+				installer, err := hooks.New(opts)
+				if err != nil {
+					return fmt.Errorf("creating installer: %w", err)
+				}
+				
+				return installer.Install(ctx)
 			}
 			
-			opts := hooks.Options{
-				Logger:       logger,
-				ForceInstall: forceInstall,
-			}
-			
-			installer, err := hooks.New(opts)
-			if err != nil {
-				return fmt.Errorf("creating installer: %w", err)
-			}
-			
-			return installer.Install(ctx)
+			return hooks.GlobalInstall(ctx, logger)
 		},
 	}
 }
@@ -180,7 +193,7 @@ func validateCommand() *Command {
 	
 	return &Command{
 		Name:        "validate",
-		Description: "Validate a commit message",
+		Description: "🔍 Test a commit message",
 		Flags:       fs,
 		Run: func(ctx context.Context, args []string) error {
 			// Load configuration
@@ -253,7 +266,7 @@ func initCommand() *Command {
 	
 	return &Command{
 		Name:        "init",
-		Description: "Create default configuration file",
+		Description: "📝 Create a config file",
 		Flags:       fs,
 		Run: func(ctx context.Context, args []string) error {
 			path := configFile
@@ -293,12 +306,93 @@ func versionCommand() *Command {
 	
 	return &Command{
 		Name:        "version",
-		Description: "Show version information",
+		Description: "ℹ️  Show version info",
 		Flags:       fs,
 		Run: func(ctx context.Context, args []string) error {
 			fmt.Printf("fast-cc-hooks version %s\n", version)
 			fmt.Printf("Go version: %s\n", runtime.Version())
 			fmt.Printf("OS/Arch: %s/%s\n", runtime.GOOS, runtime.GOARCH)
+			return nil
+		},
+	}
+}
+
+func setupCommand() *Command {
+	fs := flag.NewFlagSet("setup", flag.ExitOnError)
+	fs.BoolVar(&forceInstall, "force", false, "force installation, overwriting existing hooks")
+	fs.BoolVar(&localInstall, "local", false, "install only for current repository (default: install globally)")
+	
+	return &Command{
+		Name:        "setup",
+		Description: "🚀 Easy setup - install git hooks everywhere!",
+		Flags:       fs,
+		Run: func(ctx context.Context, args []string) error {
+			fmt.Println("🚀 Setting up fast-cc-hooks...")
+			fmt.Println("   This will help you write better commit messages!")
+			fmt.Println("")
+			
+			var err error
+			if localInstall {
+				fmt.Println("📁 Installing hooks for this repository only...")
+				opts := hooks.Options{
+					Logger:       logger,
+					ForceInstall: forceInstall,
+				}
+				
+				installer, instErr := hooks.New(opts)
+				if instErr != nil {
+					return fmt.Errorf("creating installer: %w", instErr)
+				}
+				
+				err = installer.Install(ctx)
+			} else {
+				fmt.Println("🌍 Installing hooks globally (for all your repositories)...")
+				err = hooks.GlobalInstall(ctx, logger)
+			}
+			
+			if err != nil {
+				fmt.Println("❌ Setup failed:", err)
+				return err
+			}
+			
+			fmt.Println("")
+			fmt.Println("✅ All done! Your commit messages will now be checked automatically!")
+			fmt.Println("💡 Try making a commit like: git commit -m \"feat: add awesome feature\"")
+			return nil
+		},
+	}
+}
+
+func removeCommand() *Command {
+	fs := flag.NewFlagSet("remove", flag.ExitOnError)
+	
+	return &Command{
+		Name:        "remove",
+		Description: "🗑️  Easy removal - uninstall git hooks",
+		Flags:       fs,
+		Run: func(ctx context.Context, args []string) error {
+			fmt.Println("🗑️  Removing fast-cc-hooks...")
+			fmt.Println("   (Don't worry, your code stays safe!)")
+			fmt.Println("")
+			
+			opts := hooks.Options{
+				Logger: logger,
+			}
+			
+			installer, err := hooks.New(opts)
+			if err != nil {
+				return fmt.Errorf("creating installer: %w", err)
+			}
+			
+			err = installer.Uninstall(ctx)
+			if err != nil {
+				fmt.Println("❌ Removal failed:", err)
+				return err
+			}
+			
+			fmt.Println("")
+			fmt.Println("✅ All removed! fast-cc-hooks is no longer checking your commits")
+			fmt.Println("💭 Thanks for using fast-cc-hooks!")
 			return nil
 		},
 	}
