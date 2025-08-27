@@ -71,6 +71,7 @@ func TestParser_Parse(t *testing.T) {
 				Body:        "Some body text",
 				Footer:      "Fixes: #123",
 				Raw:         "fix: bug fix\n\nSome body text\n\nFixes: #123",
+				TicketRefs:  []TicketRef{{Type: "GITHUB", ID: "123", Raw: "#123"}},
 			},
 		},
 		{
@@ -465,7 +466,7 @@ func TestCommit_GetJIRATickets(t *testing.T) {
 					{Type: "GITHUB", ID: "456", Raw: "#456"},
 				},
 			},
-			expected: []TicketRef{},
+			expected: nil,
 		},
 	}
 
@@ -519,8 +520,8 @@ Closes: PROJ-456
 Fixes: #789`,
 			wantErr: false,
 			check: func(t *testing.T, c *Commit) {
-				if len(c.TicketRefs) != 3 { // PROJ-456 appears twice, #789 appears twice
-					t.Errorf("Expected 3 unique ticket references, got %d: %+v", len(c.TicketRefs), c.TicketRefs)
+				if len(c.TicketRefs) != 2 { // PROJ-456 and #789 (duplicates removed)
+					t.Errorf("Expected 2 unique ticket references, got %d: %+v", len(c.TicketRefs), c.TicketRefs)
 				}
 				if !c.HasJIRATicket() {
 					t.Error("Expected JIRA ticket, but none found")

@@ -52,6 +52,8 @@ type Validator struct {
 	parser *conventionalcommit.Parser
 	// Compiled custom rules for performance
 	compiledRules map[string]*regexp.Regexp
+	// Compiled ignore patterns for performance
+	compiledIgnorePatterns []*regexp.Regexp
 }
 
 // New creates a new validator with the given configuration
@@ -82,6 +84,16 @@ func New(cfg *config.Config) (*Validator, error) {
 			return nil, fmt.Errorf("compiling JIRA ticket pattern: %w", err)
 		}
 		v.compiledRules["jira-pattern"] = re
+	}
+
+	// Compile ignore patterns
+	v.compiledIgnorePatterns = make([]*regexp.Regexp, 0, len(cfg.IgnorePatterns))
+	for _, pattern := range cfg.IgnorePatterns {
+		re, err := regexp.Compile(pattern)
+		if err != nil {
+			return nil, fmt.Errorf("compiling ignore pattern %q: %w", pattern, err)
+		}
+		v.compiledIgnorePatterns = append(v.compiledIgnorePatterns, re)
 	}
 
 	return v, nil
@@ -220,8 +232,8 @@ func (v *Validator) ValidateFile(ctx context.Context, path string) (*ValidationR
 
 // shouldIgnore checks if a message matches any ignore pattern
 func (v *Validator) shouldIgnore(message string) bool {
-	for _, pattern := range v.config.IgnorePatterns {
-		if matched, _ := regexp.MatchString(pattern, message); matched {
+	for _, re := range v.compiledIgnorePatterns {
+		if re.MatchString(message) {
 			return true
 		}
 	}
@@ -262,6 +274,36 @@ func (v *Validator) validateTicketRequirements(commit *conventionalcommit.Commit
 						Value:   ticket.ID,
 					})
 				}
+			}
+		}
+	}
+
+	// Validate JIRA project prefixes if specified
+	if len(v.config.JIRAProjects) > 0 && commit.HasJIRATicket() {
+		jiraTickets := commit.GetJIRATickets()
+		for _, ticket := range jiraTickets {
+			// Extract project prefix (part before the dash)
+			parts := strings.Split(ticket.ID, "-")
+			if len(parts) < 2 {
+				continue // Skip malformed tickets
+			}
+			
+			projectPrefix := parts[0]
+			allowed := false
+			for _, allowedProject := range v.config.JIRAProjects {
+				if projectPrefix == allowedProject {
+					allowed = true
+					break
+				}
+			}
+			
+			if !allowed {
+				result.Valid = false
+				result.Errors = append(result.Errors, &ValidationError{
+					Field:   "ticket",
+					Message: fmt.Sprintf("JIRA project '%s' is not allowed (allowed: %s)", projectPrefix, strings.Join(v.config.JIRAProjects, ", ")),
+					Value:   ticket.ID,
+				})
 			}
 		}
 	}

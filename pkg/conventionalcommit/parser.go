@@ -62,11 +62,9 @@ var (
 	// githubTicketRegex matches GitHub issues: #123, GH-456
 	githubTicketRegex = regexp.MustCompile(`(?:#(\d+)|GH-(\d+))\b`)
 	
-	// linearTicketRegex matches Linear tickets: ABC-123 (exactly 3 letter prefixes)
-	linearTicketRegex = regexp.MustCompile(`\b([A-Z]{3}-\d+)\b`)
 	
-	// genericTicketRegex matches generic format: [TICKET-123]
-	genericTicketRegex = regexp.MustCompile(`\[([A-Z]{2,10}-\d+)\]`)
+	// genericTicketRegex matches generic format: [TICKET-123] (3-4 letter prefixes)
+	genericTicketRegex = regexp.MustCompile(`\[([A-Z]{3,4}-\d+)\]`)
 )
 
 // Parse parses a commit message into a Commit struct
@@ -166,7 +164,12 @@ func isFooterLine(line string) bool {
 	}
 	
 	// Generic token format: Word-Word: or Word:
-	if matched, _ := regexp.MatchString(`^[A-Z][a-z]+(-[A-Z][a-z]+)*:\s+`, line); matched {
+	matched, err := regexp.MatchString(`^[A-Z][a-z]+(-[A-Z][a-z]+)*:\s+`, line)
+	if err != nil {
+		// If regex compilation fails, return false to be safe
+		return false
+	}
+	if matched {
 		return true
 	}
 	
@@ -220,7 +223,7 @@ func parseTicketRefs(message string) []TicketRef {
 		}
 	}
 	
-	// Parse JIRA tickets (2-10 letter prefixes, including 3-letter ones)
+	// Parse JIRA tickets (3-4 letter prefixes)
 	matches = jiraTicketRegex.FindAllStringSubmatch(message, -1)
 	for _, match := range matches {
 		if len(match) > 1 {
@@ -248,10 +251,6 @@ func parseTicketRefs(message string) []TicketRef {
 			}
 		}
 	}
-	
-	// Parse Linear tickets (exactly 3-letter prefix, only for known Linear projects)
-	// Note: Linear is less common, so we treat 3-letter prefixes as JIRA by default
-	// This can be customized per-project by specifying linear project prefixes
 	
 	return refs
 }
