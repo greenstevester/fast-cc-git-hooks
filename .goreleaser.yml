@@ -28,6 +28,26 @@ builds:
     flags:
       - -trimpath
 
+  - id: gc
+    main: ./cmd/gc
+    binary: gc
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.buildTime={{.Date}}
+    flags:
+      - -trimpath
+
 archives:
   - id: default
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
@@ -35,10 +55,14 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
+    builds:
+      - fast-cc-hooks
+      - gc
     files:
       - README.md
       - LICENSE
       - CHANGELOG.md
+      - examples/
 
 checksum:
   name_template: "checksums.txt"
@@ -80,6 +104,12 @@ release:
 
     **The easiest way to write better commit messages!**
 
+    ## 🆕 What's New in This Release
+    
+    This release includes **two powerful tools**:
+    - **`fast-cc-hooks`** - Git hook for enforcing conventional commits
+    - **`gc`** - Helper utility for generating commit messages automatically
+
     ## ⚡️ Super Quick Setup (2 steps!)
 
     ### Step 1: Download for your platform
@@ -87,16 +117,16 @@ release:
     **🐧 Linux:**
     ```bash
     # Most common (AMD64)
-    curl -L -o fast-cc-hooks https://github.com/stevengreensill/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_linux_amd64.tar.gz
-    tar -xzf fast-cc-hooks_{{.Tag}}_linux_amd64.tar.gz
-    chmod +x fast-cc-hooks
-    sudo mv fast-cc-hooks /usr/local/bin/
+    curl -L -o fast-cc-hooks.tar.gz https://github.com/stevengreensill/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_linux_amd64.tar.gz
+    tar -xzf fast-cc-hooks.tar.gz
+    chmod +x fast-cc-hooks gc
+    sudo mv fast-cc-hooks gc /usr/local/bin/
 
     # ARM64 (Raspberry Pi, etc.)
-    curl -L -o fast-cc-hooks https://github.com/stevengreensill/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_linux_arm64.tar.gz
-    tar -xzf fast-cc-hooks_{{.Tag}}_linux_arm64.tar.gz
-    chmod +x fast-cc-hooks
-    sudo mv fast-cc-hooks /usr/local/bin/
+    curl -L -o fast-cc-hooks.tar.gz https://github.com/stevengreensill/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_linux_arm64.tar.gz
+    tar -xzf fast-cc-hooks.tar.gz
+    chmod +x fast-cc-hooks gc
+    sudo mv fast-cc-hooks gc /usr/local/bin/
     ```
 
     **🍎 macOS:**
@@ -104,20 +134,20 @@ release:
     # Intel Macs
     curl -L -o fast-cc-hooks.tar.gz https://github.com/stevengreensill/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_darwin_amd64.tar.gz
     tar -xzf fast-cc-hooks.tar.gz
-    chmod +x fast-cc-hooks
-    sudo mv fast-cc-hooks /usr/local/bin/
+    chmod +x fast-cc-hooks gc
+    sudo mv fast-cc-hooks gc /usr/local/bin/
 
     # Apple Silicon (M1/M2/M3)
     curl -L -o fast-cc-hooks.tar.gz https://github.com/stevengreensill/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_darwin_arm64.tar.gz
     tar -xzf fast-cc-hooks.tar.gz
-    chmod +x fast-cc-hooks
-    sudo mv fast-cc-hooks /usr/local/bin/
+    chmod +x fast-cc-hooks gc
+    sudo mv fast-cc-hooks gc /usr/local/bin/
     ```
 
     **🪟 Windows:**
     ```powershell
     # Download and extract fast-cc-hooks_{{.Tag}}_windows_amd64.zip
-    # Add fast-cc-hooks.exe to your PATH
+    # Add both fast-cc-hooks.exe and gc.exe to your PATH
     ```
 
     ### Step 2: Set it up (takes 5 seconds!)
@@ -126,6 +156,15 @@ release:
     ```
 
     **That's it!** 🎉 Now every time you make a commit, it will automatically check that your message is good!
+
+    ## 🤖 NEW: Automatic Commit Message Generation
+    
+    Use the included `gc` helper to automatically generate conventional commit messages:
+    ```bash
+    gc                    # Preview generated commit message
+    gc --execute          # Generate and commit automatically
+    gc --verbose          # Show detailed analysis
+    ```
 
   footer: |
     ## 🐳 Docker (Advanced Users)
