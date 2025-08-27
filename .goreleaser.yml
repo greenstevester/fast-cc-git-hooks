@@ -133,30 +133,28 @@ release:
     docker pull ghcr.io/stevengreensill/fast-cc-hooks:{{.Tag}}
     ```
 
-    ## 🍺 Homebrew (macOS/Linux)
-    ```bash
-    brew install stevengreensill/tap/fast-cc-hooks
-    ```
-
     ## 📦 Package Managers
     - **Ubuntu/Debian:** Download `.deb` file and run `sudo dpkg -i fast-cc-hooks_{{.Tag}}_linux_amd64.deb`
     - **RHEL/CentOS:** Download `.rpm` file and run `sudo rpm -i fast-cc-hooks_{{.Tag}}_linux_amd64.rpm`
-    - **Windows Scoop:** `scoop bucket add stevengreensill https://github.com/stevengreensill/scoop-bucket.git && scoop install fast-cc-hooks`
+    
+    ## 🍺 Coming Soon
+    - **Homebrew:** `brew install greenstevester/tap/fast-cc-hooks`
+    - **Windows Scoop:** `scoop install fast-cc-hooks`
 
     ---
     💡 **Need help?** Run `fast-cc-hooks -h` for super friendly help!
 
-# Homebrew formula
-brews:
-  - repository:
-      owner: stevengreensill
-      name: homebrew-tap
-    folder: Formula
-    homepage: https://github.com/stevengreensill/fast-cc-git-hooks
-    description: "Fast conventional commits git hooks"
-    license: MIT
-    test: |
-      system "#{bin}/fast-cc-hooks --version"
+# Homebrew formula - disabled until repository is created
+# brews:
+#   - repository:
+#       owner: greenstevester
+#       name: homebrew-tap
+#     folder: Formula
+#     homepage: https://github.com/stevengreensill/fast-cc-git-hooks
+#     description: "Fast conventional commits git hooks"
+#     license: MIT
+#     test: |
+#       system "#{bin}/fast-cc-hooks --version"
 
 # Docker images
 dockers:
@@ -189,14 +187,14 @@ snapcrafts:
     publish: true
     license: MIT
 
-# Windows Scoop bucket
-scoops:
-  - repository:
-      owner: stevengreensill
-      name: scoop-bucket
-    homepage: https://github.com/stevengreensill/fast-cc-git-hooks
-    description: "Fast conventional commits git hooks"
-    license: MIT
+# Windows Scoop bucket - disabled until repository is created
+# scoops:
+#   - repository:
+#       owner: greenstevester
+#       name: scoop-bucket
+#     homepage: https://github.com/stevengreensill/fast-cc-git-hooks
+#     description: "Fast conventional commits git hooks"
+#     license: MIT
 
 # Linux packages via nFPM
 nfpms:

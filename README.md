@@ -50,9 +50,10 @@ sudo mv fast-cc-hooks /usr/local/bin/
 go install github.com/stevengreensill/fast-cc-git-hooks/cmd/fast-cc-hooks@latest
 ```
 
-**Option C: Using Homebrew** (macOS/Linux)
+**Option C: Using Homebrew** (macOS/Linux - coming soon!)
 ```bash
-brew install stevengreensill/tap/fast-cc-hooks
+# Will be available after first release
+brew install greenstevester/tap/fast-cc-hooks
 ```
 
 ### Step 2: Verify it works
