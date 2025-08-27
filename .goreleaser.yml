@@ -1,0 +1,163 @@
+version: 2
+
+project_name: fast-cc-hooks
+
+before:
+  hooks:
+    - go mod tidy
+    - go generate ./...
+
+builds:
+  - id: fast-cc-hooks
+    main: ./cmd/fast-cc-hooks
+    binary: fast-cc-hooks
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.buildTime={{.Date}}
+    flags:
+      - -trimpath
+
+archives:
+  - id: default
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - LICENSE
+      - CHANGELOG.md
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "merge conflict"
+      - Merge pull request
+      - Merge remote-tracking branch
+      - Merge branch
+  groups:
+    - title: "New Features"
+      regexp: "^.*feat[(\\w)]*:+.*$"
+      order: 0
+    - title: "Bug Fixes"
+      regexp: "^.*fix[(\\w)]*:+.*$"
+      order: 1
+    - title: "Performance Improvements"
+      regexp: "^.*perf[(\\w)]*:+.*$"
+      order: 2
+    - title: "Other Changes"
+      order: 999
+
+release:
+  github:
+    owner: stevengreensill
+    name: fast-cc-git-hooks
+  draft: false
+  prerelease: auto
+  mode: replace
+  header: |
+    ## Fast Conventional Commits Git Hooks {{.Tag}}
+
+    This release includes pre-commit hooks for enforcing conventional commits with high performance.
+
+    ### Installation
+
+    Download the appropriate binary for your platform and run:
+    ```bash
+    ./fast-cc-hooks install
+    ```
+
+  footer: |
+    ## Docker Images
+    Docker images are available on GitHub Container Registry:
+    ```bash
+    docker pull ghcr.io/stevengreensill/fast-cc-hooks:{{.Tag}}
+    ```
+
+# Homebrew formula
+brews:
+  - repository:
+      owner: stevengreensill
+      name: homebrew-tap
+    folder: Formula
+    homepage: https://github.com/stevengreensill/fast-cc-git-hooks
+    description: "Fast conventional commits git hooks"
+    license: MIT
+    test: |
+      system "#{bin}/fast-cc-hooks --version"
+
+# Docker images
+dockers:
+  - image_templates:
+      - "ghcr.io/stevengreensill/fast-cc-hooks:{{ .Tag }}"
+      - "ghcr.io/stevengreensill/fast-cc-hooks:v{{ .Major }}"
+      - "ghcr.io/stevengreensill/fast-cc-hooks:v{{ .Major }}.{{ .Minor }}"
+      - "ghcr.io/stevengreensill/fast-cc-hooks:latest"
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - --platform=linux/amd64
+      - --label=org.opencontainers.image.title={{ .ProjectName }}
+      - --label=org.opencontainers.image.description=Fast conventional commits git hooks
+      - --label=org.opencontainers.image.url=https://github.com/stevengreensill/fast-cc-git-hooks
+      - --label=org.opencontainers.image.source=https://github.com/stevengreensill/fast-cc-git-hooks
+      - --label=org.opencontainers.image.version={{ .Version }}
+      - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
+      - --label=org.opencontainers.image.revision={{ .FullCommit }}
+      - --label=org.opencontainers.image.licenses=MIT
+
+# Snapcraft packages
+snapcrafts:
+  - name: fast-cc-hooks
+    summary: Fast conventional commits git hooks
+    description: |
+      A high-performance pre-commit git hook system for enforcing conventional commits.
+      Supports custom validation rules, flexible configuration, and fast execution.
+    grade: stable
+    confinement: strict
+    publish: true
+    license: MIT
+
+# Windows Scoop bucket
+scoops:
+  - repository:
+      owner: stevengreensill
+      name: scoop-bucket
+    homepage: https://github.com/stevengreensill/fast-cc-git-hooks
+    description: "Fast conventional commits git hooks"
+    license: MIT
+
+# Linux packages via nFPM
+nfpms:
+  - id: packages
+    package_name: fast-cc-hooks
+    file_name_template: "{{ .ConventionalFileName }}"
+    vendor: Steven Greensill
+    homepage: https://github.com/stevengreensill/fast-cc-git-hooks
+    maintainer: Steven Greensill <stevengreensill@example.com>
+    description: Fast conventional commits git hooks
+    license: MIT
+    formats:
+      - deb
+      - rpm
+      - apk
+    bindir: /usr/bin

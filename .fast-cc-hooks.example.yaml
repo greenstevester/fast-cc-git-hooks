@@ -1,0 +1,55 @@
+# fast-cc-hooks configuration example
+# Copy this file to .fast-cc-hooks.yaml and customize as needed
+
+# Allowed commit types
+types:
+  - feat     # New feature
+  - fix      # Bug fix
+  - docs     # Documentation changes
+  - style    # Code style changes (formatting, semicolons, etc)
+  - refactor # Code refactoring
+  - test     # Adding or modifying tests
+  - chore    # Maintenance tasks
+  - perf     # Performance improvements
+  - ci       # CI/CD changes
+  - build    # Build system changes
+  - revert   # Reverts a previous commit
+
+# Allowed scopes (leave empty to allow any scope)
+# Uncomment and customize for your project
+# scopes:
+#   - api
+#   - web
+#   - cli
+#   - db
+#   - auth
+#   - core
+
+# Whether scope is required
+scope_required: false
+
+# Maximum length of the subject line (header)
+max_subject_length: 72
+
+# Allow breaking changes (indicated by ! or BREAKING CHANGE in footer)
+allow_breaking_changes: true
+
+# Custom validation rules using regex patterns
+# Each rule must have a name and pattern, message is optional
+custom_rules: []
+  # Example: Require JIRA ticket reference
+  # - name: jira-ticket
+  #   pattern: '\[JIRA-\d+\]'
+  #   message: 'Commit must reference a JIRA ticket (e.g., [JIRA-123])'
+  
+  # Example: Prohibit certain words
+  # - name: no-todo
+  #   pattern: '^(?!.*\bTODO\b).*$'
+  #   message: 'Commit messages should not contain TODO'
+
+# Patterns to ignore (skip validation for matching commits)
+ignore_patterns: []
+  # Examples:
+  # - '^Merge'              # Ignore merge commits
+  # - '^WIP:'               # Ignore work-in-progress commits
+  # - '^Initial commit$'    # Ignore initial commit
