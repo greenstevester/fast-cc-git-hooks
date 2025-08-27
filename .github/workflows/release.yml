@@ -2,8 +2,13 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'examples/**'
+      - '.gitignore'
+      - 'LICENSE'
 
 permissions:
   contents: write
@@ -14,9 +19,40 @@ env:
   GO_VERSION: '1.21'
 
 jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Run tests
+        run: make test
+
+      - name: Run linters
+        run: make lint
+
+      - name: Generate coverage
+        run: make coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.out
+
   release:
     name: Release
+    needs: test
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
     - name: Checkout code
@@ -43,6 +79,34 @@ jobs:
     - name: Install cosign
       uses: sigstore/cosign-installer@v3
 
+    - name: Generate tag
+      id: tag
+      run: |
+        # Get the latest tag
+        LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+        echo "Latest tag: $LATEST_TAG"
+        
+        # Extract version numbers
+        VERSION=$(echo $LATEST_TAG | sed 's/^v//')
+        IFS='.' read -ra VERSION_PARTS <<< "$VERSION"
+        MAJOR=${VERSION_PARTS[0]:-0}
+        MINOR=${VERSION_PARTS[1]:-0}
+        PATCH=${VERSION_PARTS[2]:-0}
+        
+        # Increment patch version
+        NEW_PATCH=$((PATCH + 1))
+        NEW_TAG="v${MAJOR}.${MINOR}.${NEW_PATCH}"
+        
+        echo "New tag: $NEW_TAG"
+        echo "tag=$NEW_TAG" >> $GITHUB_OUTPUT
+
+    - name: Create and push tag
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git tag ${{ steps.tag.outputs.tag }}
+        git push origin ${{ steps.tag.outputs.tag }}
+
     - name: Run GoReleaser
       uses: goreleaser/goreleaser-action@v5
       with:
@@ -54,7 +118,7 @@ jobs:
 
     - name: Sign container images
       run: |
-        cosign sign --yes ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+        cosign sign --yes ghcr.io/${{ github.repository }}:${{ steps.tag.outputs.tag }}
         cosign sign --yes ghcr.io/${{ github.repository }}:latest
       env:
         COSIGN_EXPERIMENTAL: 1
@@ -84,11 +148,11 @@ jobs:
     - name: Notify on success
       if: needs.release.result == 'success'
       run: |
-        echo "Release ${{ github.ref_name }} completed successfully!"
+        echo "Release completed successfully!"
         # Add notification logic here (Slack, Discord, etc.)
         
     - name: Notify on failure
       if: needs.release.result == 'failure'
       run: |
-        echo "Release ${{ github.ref_name }} failed!"
+        echo "Release failed!"
         # Add failure notification logic here
