@@ -9,11 +9,11 @@ GC_CMD_DIR := cmd/gc
 VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 BUILD_TIME := $(shell date -u '+%Y-%m-%d_%H:%M:%S')
 COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
-GOFLAGS := -v
+GOFLAGS :=
 LDFLAGS := -ldflags "-X main.version=$(VERSION) -X main.buildTime=$(BUILD_TIME) -X main.commit=$(COMMIT) -w -s"
 
 # Go tools versions
-GOLANGCI_LINT_VERSION := v1.55.2
+GOLANGCI_LINT_VERSION := v1.61.0
 GORELEASER_VERSION := latest
 
 # Default target
@@ -91,11 +91,12 @@ fmt:
 ## lint: Run linters
 lint:
 	@echo "Running linters..."
-	@if ! command -v golangci-lint &> /dev/null; then \
+	@GOBIN=$$(go env GOPATH)/bin; \
+	if ! command -v $$GOBIN/golangci-lint &> /dev/null; then \
 		echo "Installing golangci-lint..."; \
-		go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION); \
-	fi
-	@golangci-lint run --timeout 5m
+		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $$GOBIN $(GOLANGCI_LINT_VERSION); \
+	fi; \
+	$$GOBIN/golangci-lint run --timeout 5m
 
 ## vet: Run go vet
 vet:
@@ -134,8 +135,8 @@ install-all: install install-gc
 ## uninstall: Remove the binary from GOPATH/bin
 uninstall:
 	@echo "Uninstalling $(BINARY_NAME)..."
-	@rm -f $(GOPATH)/bin/$(BINARY_NAME)
-	@rm -f $(GOPATH)/bin/$(GC_BINARY_NAME)
+	@rm -f $$(go env GOPATH)/bin/$(BINARY_NAME)
+	@rm -f $$(go env GOPATH)/bin/$(GC_BINARY_NAME)
 	@echo "Uninstall complete"
 
 ## run: Build and run the binary
@@ -153,19 +154,13 @@ dev:
 
 ## release: Create release with goreleaser (requires goreleaser)
 release:
-	@if ! command -v goreleaser &> /dev/null; then \
-		echo "Installing goreleaser..."; \
-		go install github.com/goreleaser/goreleaser@$(GORELEASER_VERSION); \
-	fi
-	@goreleaser release --clean
+	@echo "Running goreleaser..."
+	@curl -sSfL https://goreleaser.com/static/run | bash -s -- release --clean
 
 ## release-snapshot: Create snapshot release
 release-snapshot:
-	@if ! command -v goreleaser &> /dev/null; then \
-		echo "Installing goreleaser..."; \
-		go install github.com/goreleaser/goreleaser@$(GORELEASER_VERSION); \
-	fi
-	@goreleaser release --snapshot --clean
+	@echo "Running goreleaser snapshot..."
+	@curl -sSfL https://goreleaser.com/static/run | bash -s -- release --snapshot --clean
 
 ## docker-build: Build Docker image
 docker-build:

@@ -9,6 +9,7 @@ on:
       - 'examples/**'
       - '.gitignore'
       - 'LICENSE'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -40,19 +41,11 @@ jobs:
       - name: Run linters
         run: make lint
 
-      - name: Generate coverage
-        run: make coverage
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          file: ./coverage.out
-
   release:
     name: Release
     needs: test
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     
     steps:
     - name: Checkout code

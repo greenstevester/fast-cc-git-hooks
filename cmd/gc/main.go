@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	maxSubjectLength = 50
+	maxSubjectLength  = 50
 	maxBodyLineLength = 72
 )
 
@@ -81,7 +81,7 @@ func main() {
 	if *verbose {
 		fmt.Println("Detected changes:")
 		for _, change := range changes {
-			fmt.Printf("- %s(%s): %s (files: %v)\n", 
+			fmt.Printf("- %s(%s): %s (files: %v)\n",
 				change.Type, change.Scope, change.Description, change.Files)
 		}
 		fmt.Println()
@@ -247,7 +247,7 @@ func determineTypeAndScope(filename, diff string) (string, string) {
 
 	// Determine type from diff content and filename
 	changeType := "chore"
-	
+
 	if strings.Contains(diff, "new file mode") {
 		changeType = "feat"
 	} else if strings.Contains(diff, "deleted file mode") {
@@ -276,11 +276,11 @@ func determineTypeAndScope(filename, diff string) (string, string) {
 func generateDescription(filename, diff, changeType string) string {
 	base := strings.TrimSuffix(filename, ".go")
 	base = strings.TrimSuffix(base, ".md")
-	
+
 	// Extract meaningful part of filename
 	parts := strings.Split(base, "/")
 	name := parts[len(parts)-1]
-	
+
 	switch changeType {
 	case "feat":
 		if strings.Contains(diff, "new file mode") {
@@ -339,7 +339,7 @@ func getTypePriority(changeType string) int {
 		"build":    8,
 		"chore":    9,
 	}
-	
+
 	if priority, ok := priorities[changeType]; ok {
 		return priority
 	}
@@ -353,7 +353,7 @@ func generateCommitMessage(changes []ChangeType) string {
 
 	// Use the highest priority change as primary
 	primary := changes[0]
-	
+
 	// Create subject line
 	subject := fmt.Sprintf("%s", primary.Type)
 	if primary.Scope != "" {
@@ -371,7 +371,7 @@ func generateCommitMessage(changes []ChangeType) string {
 
 	// Generate body for multiple changes or complex single change
 	var body []string
-	
+
 	if len(changes) > 1 {
 		body = append(body, "")
 		body = append(body, "Changes include:")
@@ -396,7 +396,7 @@ func generateCommitMessage(changes []ChangeType) string {
 	if len(body) > 0 {
 		return subject + strings.Join(body, "\n")
 	}
-	
+
 	return subject
 }
 
@@ -413,15 +413,15 @@ func wrapLine(line string, maxLength int) string {
 	if utf8.RuneCountInString(line) <= maxLength {
 		return line
 	}
-	
+
 	words := strings.Fields(line)
 	if len(words) == 0 {
 		return line
 	}
-	
+
 	var wrapped []string
 	currentLine := words[0]
-	
+
 	for _, word := range words[1:] {
 		testLine := currentLine + " " + word
 		if utf8.RuneCountInString(testLine) <= maxLength {
@@ -431,11 +431,11 @@ func wrapLine(line string, maxLength int) string {
 			currentLine = word
 		}
 	}
-	
+
 	if currentLine != "" {
 		wrapped = append(wrapped, currentLine)
 	}
-	
+
 	return strings.Join(wrapped, "\n")
 }
 
@@ -444,10 +444,10 @@ func executeCommit(message string) error {
 	if *noVerify {
 		args = append(args, "--no-verify")
 	}
-	
+
 	cmd := exec.Command("git", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	
+
 	return cmd.Run()
 }

@@ -38,7 +38,7 @@ func (r *ValidationResult) Error() string {
 	if r.Valid {
 		return ""
 	}
-	
+
 	var messages []string
 	for _, err := range r.Errors {
 		messages = append(messages, err.Error())
@@ -63,8 +63,8 @@ func New(cfg *config.Config) (*Validator, error) {
 	}
 
 	v := &Validator{
-		config: cfg,
-		parser: conventionalcommit.DefaultParser(),
+		config:        cfg,
+		parser:        conventionalcommit.DefaultParser(),
 		compiledRules: make(map[string]*regexp.Regexp),
 	}
 
@@ -215,7 +215,7 @@ func (v *Validator) ValidateFile(ctx context.Context, path string) (*ValidationR
 			messageLines = append(messageLines, line)
 		}
 	}
-	
+
 	message := strings.TrimSpace(strings.Join(messageLines, "\n"))
 	if message == "" {
 		return &ValidationResult{
@@ -287,7 +287,7 @@ func (v *Validator) validateTicketRequirements(commit *conventionalcommit.Commit
 			if len(parts) < 2 {
 				continue // Skip malformed tickets
 			}
-			
+
 			projectPrefix := parts[0]
 			allowed := false
 			for _, allowedProject := range v.config.JIRAProjects {
@@ -296,7 +296,7 @@ func (v *Validator) validateTicketRequirements(commit *conventionalcommit.Commit
 					break
 				}
 			}
-			
+
 			if !allowed {
 				result.Valid = false
 				result.Errors = append(result.Errors, &ValidationError{
@@ -325,7 +325,7 @@ func Quick(message string) error {
 	if err != nil {
 		return err
 	}
-	
+
 	result := v.Validate(context.Background(), message)
 	if !result.Valid {
 		return result

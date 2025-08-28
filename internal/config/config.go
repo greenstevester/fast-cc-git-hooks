@@ -34,7 +34,7 @@ type Config struct {
 	CustomRules []CustomRule `yaml:"custom_rules,omitempty"`
 	// IgnorePatterns defines patterns to skip validation
 	IgnorePatterns []string `yaml:"ignore_patterns,omitempty"`
-	
+
 	// Ticket reference validation
 	// RequireJIRATicket requires JIRA ticket references in commits
 	RequireJIRATicket bool `yaml:"require_jira_ticket"`
@@ -107,7 +107,7 @@ func Load(path string) (*Config, error) {
 // Parse parses configuration from an io.Reader
 func Parse(r io.Reader) (*Config, error) {
 	cfg := Default()
-	
+
 	decoder := yaml.NewDecoder(r)
 	if err := decoder.Decode(cfg); err != nil {
 		if !errors.Is(err, io.EOF) {
