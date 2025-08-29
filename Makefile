@@ -113,7 +113,7 @@ mod:
 ## clean: Remove build artifacts
 clean:
 	@echo "Cleaning build artifacts..."
-	@rm -rf $(BUILD_DIR)
+	@rm -rf $(BUILD_DIR) dist/
 	@rm -f coverage.out coverage.html
 	@echo "Clean complete"
 

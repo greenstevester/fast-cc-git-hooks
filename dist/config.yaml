@@ -130,49 +130,11 @@ nfpms:
       header: /usr/include
       carchive: /usr/lib
       cshared: /usr/lib
-snapcrafts:
-  - name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
-    publish: true
-    name: fast-cc-hooks
-    summary: Fast conventional commits git hooks
-    description: |
-      A high-performance pre-commit git hook system for enforcing conventional commits.
-      Supports custom validation rules, flexible configuration, and fast execution.
-    license: MIT
-    grade: stable
-    channel_templates:
-      - edge
-      - beta
-      - candidate
-      - stable
-    confinement: strict
 snapshot:
   version_template: '{{ .Version }}-SNAPSHOT-{{ .ShortCommit }}'
 checksum:
   name_template: checksums.txt
   algorithm: sha256
-dockers:
-  - goos: linux
-    goarch: amd64
-    goarm: "6"
-    goamd64: v1
-    dockerfile: Dockerfile
-    image_templates:
-      - ghcr.io/stevengreensill/fast-cc-hooks:{{ .Tag }}
-      - ghcr.io/stevengreensill/fast-cc-hooks:v{{ .Major }}
-      - ghcr.io/stevengreensill/fast-cc-hooks:v{{ .Major }}.{{ .Minor }}
-      - ghcr.io/stevengreensill/fast-cc-hooks:latest
-    build_flag_templates:
-      - --platform=linux/amd64
-      - --label=org.opencontainers.image.title={{ .ProjectName }}
-      - --label=org.opencontainers.image.description=Fast conventional commits git hooks
-      - --label=org.opencontainers.image.url=https://github.com/stevengreensill/fast-cc-git-hooks
-      - --label=org.opencontainers.image.source=https://github.com/stevengreensill/fast-cc-git-hooks
-      - --label=org.opencontainers.image.version={{ .Version }}
-      - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
-      - --label=org.opencontainers.image.revision={{ .FullCommit }}
-      - --label=org.opencontainers.image.licenses=MIT
-    use: docker
 changelog:
   filters:
     exclude:
