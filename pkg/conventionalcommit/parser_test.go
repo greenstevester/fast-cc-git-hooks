@@ -336,8 +336,8 @@ Closes #456`,
 			expected: []TicketRef{},
 		},
 		{
-			name:     "duplicate tickets",
-			message:  "feat: implement PROJ-123 and fix PROJ-123",
+			name:    "duplicate tickets",
+			message: "feat: implement PROJ-123 and fix PROJ-123",
 			expected: []TicketRef{
 				{Type: "JIRA", ID: "PROJ-123", Raw: "PROJ-123"},
 			},
@@ -347,7 +347,7 @@ Closes #456`,
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			refs := parseTicketRefs(tt.message)
-			
+
 			if len(refs) != len(tt.expected) {
 				t.Fatalf("parseTicketRefs() returned %d refs, expected %d", len(refs), len(tt.expected))
 			}
@@ -482,7 +482,7 @@ func TestCommit_GetJIRATickets(t *testing.T) {
 
 func TestParser_ParseWithTickets(t *testing.T) {
 	parser := DefaultParser()
-	
+
 	tests := []struct {
 		name    string
 		message string

@@ -1,0 +1,228 @@
+version: 2
+project_name: fast-cc-hooks
+release:
+  github:
+    owner: stevengreensill
+    name: fast-cc-git-hooks
+  prerelease: auto
+  name_template: '{{.Tag}}'
+  header: "# \U0001F680 fast-cc-hooks {{.Tag}}\n\n**The easiest way to write better commit messages!**\n\n## \U0001F195 What's New in This Release\n\nThis release includes **two powerful tools**:\n- **`fast-cc-hooks`** - Git hook for enforcing conventional commits\n- **`gc`** - Helper utility for generating commit messages automatically\n\n## ⚡️ Super Quick Setup (2 steps!)\n\n### Step 1: Download for your platform\n\n**\U0001F427 Linux:**\n```bash\n# Most common (AMD64)\ncurl -L -o fast-cc-hooks.tar.gz https://github.com/stevengreensill/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_linux_amd64.tar.gz\ntar -xzf fast-cc-hooks.tar.gz\nchmod +x fast-cc-hooks gc\nsudo mv fast-cc-hooks gc /usr/local/bin/\n\n# ARM64 (Raspberry Pi, etc.)\ncurl -L -o fast-cc-hooks.tar.gz https://github.com/stevengreensill/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_linux_arm64.tar.gz\ntar -xzf fast-cc-hooks.tar.gz\nchmod +x fast-cc-hooks gc\nsudo mv fast-cc-hooks gc /usr/local/bin/\n```\n\n**\U0001F34E macOS:**\n```bash\n# Intel Macs\ncurl -L -o fast-cc-hooks.tar.gz https://github.com/stevengreensill/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_darwin_amd64.tar.gz\ntar -xzf fast-cc-hooks.tar.gz\nchmod +x fast-cc-hooks gc\nsudo mv fast-cc-hooks gc /usr/local/bin/\n\n# Apple Silicon (M1/M2/M3)\ncurl -L -o fast-cc-hooks.tar.gz https://github.com/stevengreensill/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_darwin_arm64.tar.gz\ntar -xzf fast-cc-hooks.tar.gz\nchmod +x fast-cc-hooks gc\nsudo mv fast-cc-hooks gc /usr/local/bin/\n```\n\n**\U0001FA9F Windows:**\n```powershell\n# Download and extract fast-cc-hooks_{{.Tag}}_windows_amd64.zip\n# Add both fast-cc-hooks.exe and gc.exe to your PATH\n```\n\n### Step 2: Set it up (takes 5 seconds!)\n```bash\nfast-cc-hooks setup\n```\n\n**That's it!** \U0001F389 Now every time you make a commit, it will automatically check that your message is good!\n\n## \U0001F916 NEW: Automatic Commit Message Generation\n\nUse the included `gc` helper to automatically generate conventional commit messages:\n```bash\ngc                    # Preview generated commit message\ngc --execute          # Generate and commit automatically\ngc --verbose          # Show detailed analysis\n```\n"
+  footer: "## \U0001F433 Docker (Advanced Users)\n```bash\ndocker pull ghcr.io/stevengreensill/fast-cc-hooks:{{.Tag}}\n```\n\n## \U0001F4E6 Package Managers\n- **Ubuntu/Debian:** Download `.deb` file and run `sudo dpkg -i fast-cc-hooks_{{.Tag}}_linux_amd64.deb`\n- **RHEL/CentOS:** Download `.rpm` file and run `sudo rpm -i fast-cc-hooks_{{.Tag}}_linux_amd64.rpm`\n\n## \U0001F37A Coming Soon\n- **Homebrew:** `brew install greenstevester/tap/fast-cc-hooks`\n- **Windows Scoop:** `scoop install fast-cc-hooks`\n\n---\n\U0001F4A1 **Need help?** Run `fast-cc-hooks -h` for super friendly help!\n"
+  mode: replace
+builds:
+  - id: fast-cc-hooks
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    goamd64:
+      - v1
+    go386:
+      - sse2
+    goarm:
+      - "6"
+    goarm64:
+      - v8.0
+    gomips:
+      - hardfloat
+    goppc64:
+      - power8
+    goriscv64:
+      - rva20u64
+    targets:
+      - linux_amd64_v1
+      - linux_arm64_v8.0
+      - darwin_amd64_v1
+      - darwin_arm64_v8.0
+      - windows_amd64_v1
+      - windows_arm64_v8.0
+    dir: .
+    main: ./cmd/fast-cc-hooks
+    binary: fast-cc-hooks
+    builder: go
+    tool: go
+    command: build
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.buildTime={{.Date}}
+    flags:
+      - -trimpath
+    env:
+      - CGO_ENABLED=0
+  - id: gc
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    goamd64:
+      - v1
+    go386:
+      - sse2
+    goarm:
+      - "6"
+    goarm64:
+      - v8.0
+    gomips:
+      - hardfloat
+    goppc64:
+      - power8
+    goriscv64:
+      - rva20u64
+    targets:
+      - linux_amd64_v1
+      - linux_arm64_v8.0
+      - darwin_amd64_v1
+      - darwin_arm64_v8.0
+      - windows_amd64_v1
+      - windows_arm64_v8.0
+    dir: .
+    main: ./cmd/gc
+    binary: gc
+    builder: go
+    tool: go
+    command: build
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.buildTime={{.Date}}
+    flags:
+      - -trimpath
+    env:
+      - CGO_ENABLED=0
+archives:
+  - id: default
+    builds_info:
+      mode: 493
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+    formats:
+      - tar.gz
+    files:
+      - src: README.md
+      - src: LICENSE
+      - src: CHANGELOG.md
+      - src: examples/
+        dst: examples
+        strip_parent: true
+nfpms:
+  - file_name_template: '{{ .ConventionalFileName }}'
+    package_name: fast-cc-hooks
+    id: packages
+    formats:
+      - deb
+      - rpm
+      - apk
+    vendor: Steven Greensill
+    homepage: https://github.com/stevengreensill/fast-cc-git-hooks
+    maintainer: Steven Greensill <stevengreensill@example.com>
+    description: Fast conventional commits git hooks
+    license: MIT
+    bindir: /usr/bin
+    libdirs:
+      header: /usr/include
+      carchive: /usr/lib
+      cshared: /usr/lib
+snapshot:
+  version_template: '{{ .Version }}-SNAPSHOT-{{ .ShortCommit }}'
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+changelog:
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - merge conflict
+      - Merge pull request
+      - Merge remote-tracking branch
+      - Merge branch
+  sort: asc
+  use: github
+  format: '{{ .SHA }}: {{ .Message }} ({{ with .AuthorUsername }}@{{ . }}{{ else }}{{ .AuthorName }} <{{ .AuthorEmail }}>{{ end }})'
+  groups:
+    - title: New Features
+      regexp: ^.*feat[(\w)]*:+.*$
+    - title: Bug Fixes
+      regexp: ^.*fix[(\w)]*:+.*$
+      order: 1
+    - title: Performance Improvements
+      regexp: ^.*perf[(\w)]*:+.*$
+      order: 2
+    - title: Other Changes
+      order: 999
+dist: dist
+env_files:
+  github_token: ~/.config/goreleaser/github_token
+  gitlab_token: ~/.config/goreleaser/gitlab_token
+  gitea_token: ~/.config/goreleaser/gitea_token
+before:
+  hooks:
+    - go mod tidy
+    - go generate ./...
+source:
+  name_template: '{{ .ProjectName }}-{{ .Version }}'
+  format: tar.gz
+gomod:
+  gobinary: go
+announce:
+  twitter:
+    message_template: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
+  mastodon:
+    message_template: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
+    server: ""
+  reddit:
+    title_template: '{{ .ProjectName }} {{ .Tag }} is out!'
+    url_template: '{{ .ReleaseURL }}'
+  slack:
+    message_template: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
+    username: GoReleaser
+  discord:
+    message_template: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
+    author: GoReleaser
+    color: "3888754"
+    icon_url: https://goreleaser.com/static/avatar.png
+  teams:
+    title_template: '{{ .ProjectName }} {{ .Tag }} is out!'
+    message_template: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
+    color: '#2D313E'
+    icon_url: https://goreleaser.com/static/avatar.png
+  smtp:
+    subject_template: '{{ .ProjectName }} {{ .Tag }} is out!'
+    body_template: 'You can view details from: {{ .ReleaseURL }}'
+  mattermost:
+    message_template: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
+    title_template: '{{ .ProjectName }} {{ .Tag }} is out!'
+    username: GoReleaser
+  linkedin:
+    message_template: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
+  telegram:
+    message_template: '{{ mdv2escape .ProjectName }} {{ mdv2escape .Tag }} is out{{ mdv2escape "!" }} Check it out at {{ mdv2escape .ReleaseURL }}'
+    parse_mode: MarkdownV2
+  webhook:
+    message_template: '{ "message": "{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}"}'
+    content_type: application/json; charset=utf-8
+    expected_status_codes:
+      - 200
+      - 201
+      - 202
+      - 204
+  opencollective:
+    title_template: '{{ .Tag }}'
+    message_template: '{{ .ProjectName }} {{ .Tag }} is out!<br/>Check it out at <a href="{{ .ReleaseURL }}">{{ .ReleaseURL }}</a>'
+  bluesky:
+    message_template: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
+git:
+  tag_sort: -version:refname
+github_urls:
+  download: https://github.com
+gitlab_urls:
+  download: https://gitlab.com

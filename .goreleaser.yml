@@ -1,4 +1,4 @@
-version: 1
+version: 2
 
 project_name: fast-cc-hooks
 
@@ -51,18 +51,13 @@ builds:
 archives:
   - id: default
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
-    format: tar.gz
-    format_overrides:
-      - goos: windows
-        format: zip
-    builds:
-      - fast-cc-hooks
-      - gc
     files:
       - README.md
       - LICENSE
       - CHANGELOG.md
-      - examples/
+      - src: examples/
+        dst: examples
+        strip_parent: true
 
 checksum:
   name_template: "checksums.txt"
@@ -195,36 +190,36 @@ release:
 #     test: |
 #       system "#{bin}/fast-cc-hooks --version"
 
-# Docker images
-dockers:
-  - image_templates:
-      - "ghcr.io/stevengreensill/fast-cc-hooks:{{ .Tag }}"
-      - "ghcr.io/stevengreensill/fast-cc-hooks:v{{ .Major }}"
-      - "ghcr.io/stevengreensill/fast-cc-hooks:v{{ .Major }}.{{ .Minor }}"
-      - "ghcr.io/stevengreensill/fast-cc-hooks:latest"
-    dockerfile: Dockerfile
-    build_flag_templates:
-      - --platform=linux/amd64
-      - --label=org.opencontainers.image.title={{ .ProjectName }}
-      - --label=org.opencontainers.image.description=Fast conventional commits git hooks
-      - --label=org.opencontainers.image.url=https://github.com/stevengreensill/fast-cc-git-hooks
-      - --label=org.opencontainers.image.source=https://github.com/stevengreensill/fast-cc-git-hooks
-      - --label=org.opencontainers.image.version={{ .Version }}
-      - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
-      - --label=org.opencontainers.image.revision={{ .FullCommit }}
-      - --label=org.opencontainers.image.licenses=MIT
+# Docker images - disabled until Docker setup is fixed
+# dockers:
+#   - image_templates:
+#       - "ghcr.io/stevengreensill/fast-cc-hooks:{{ .Tag }}"
+#       - "ghcr.io/stevengreensill/fast-cc-hooks:v{{ .Major }}"
+#       - "ghcr.io/stevengreensill/fast-cc-hooks:v{{ .Major }}.{{ .Minor }}"
+#       - "ghcr.io/stevengreensill/fast-cc-hooks:latest"
+#     dockerfile: Dockerfile
+#     build_flag_templates:
+#       - --platform=linux/amd64
+#       - --label=org.opencontainers.image.title={{ .ProjectName }}
+#       - --label=org.opencontainers.image.description=Fast conventional commits git hooks
+#       - --label=org.opencontainers.image.url=https://github.com/stevengreensill/fast-cc-git-hooks
+#       - --label=org.opencontainers.image.source=https://github.com/stevengreensill/fast-cc-git-hooks
+#       - --label=org.opencontainers.image.version={{ .Version }}
+#       - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
+#       - --label=org.opencontainers.image.revision={{ .FullCommit }}
+#       - --label=org.opencontainers.image.licenses=MIT
 
-# Snapcraft packages
-snapcrafts:
-  - name: fast-cc-hooks
-    summary: Fast conventional commits git hooks
-    description: |
-      A high-performance pre-commit git hook system for enforcing conventional commits.
-      Supports custom validation rules, flexible configuration, and fast execution.
-    grade: stable
-    confinement: strict
-    publish: true
-    license: MIT
+# Snapcraft packages - disabled for now
+# snapcrafts:
+#   - name: fast-cc-hooks
+#     summary: Fast conventional commits git hooks
+#     description: |
+#       A high-performance pre-commit git hook system for enforcing conventional commits.
+#       Supports custom validation rules, flexible configuration, and fast execution.
+#     grade: stable
+#     confinement: strict
+#     publish: true
+#     license: MIT
 
 # Windows Scoop bucket - disabled until repository is created
 # scoops:

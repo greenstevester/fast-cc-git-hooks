@@ -10,19 +10,19 @@ import (
 
 func TestDefault(t *testing.T) {
 	cfg := Default()
-	
+
 	if cfg == nil {
 		t.Fatal("Default() returned nil")
 	}
-	
+
 	if len(cfg.Types) == 0 {
 		t.Error("Default config should have types")
 	}
-	
+
 	if cfg.MaxSubjectLength != DefaultMaxSubjectLength {
 		t.Errorf("Default MaxSubjectLength = %d, want %d", cfg.MaxSubjectLength, DefaultMaxSubjectLength)
 	}
-	
+
 	if !cfg.AllowBreakingChanges {
 		t.Error("Default should allow breaking changes")
 	}
@@ -78,7 +78,7 @@ func TestConfig_Validate(t *testing.T) {
 			wantErr: true,
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := tt.config.Validate()
@@ -93,7 +93,7 @@ func TestConfig_HasType(t *testing.T) {
 	cfg := &Config{
 		Types: []string{"feat", "fix", "docs"},
 	}
-	
+
 	tests := []struct {
 		typ  string
 		want bool
@@ -104,7 +104,7 @@ func TestConfig_HasType(t *testing.T) {
 		{"chore", false},
 		{"", false},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.typ, func(t *testing.T) {
 			if got := cfg.HasType(tt.typ); got != tt.want {
@@ -140,7 +140,7 @@ func TestConfig_HasScope(t *testing.T) {
 			want:   false,
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cfg := &Config{Scopes: tt.scopes}
@@ -212,19 +212,19 @@ types: [
 			wantErr: true,
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			reader := strings.NewReader(tt.yaml)
 			got, err := Parse(reader)
-			
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Parse() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			
+
 			if !tt.wantErr {
-				// Compare relevant fields
+				// Compare relevant fields.
 				if !reflect.DeepEqual(got.Types, tt.want.Types) {
 					t.Errorf("Parse() Types = %v, want %v", got.Types, tt.want.Types)
 				}
@@ -242,8 +242,8 @@ types: [
 func TestConfig_SaveAndLoad(t *testing.T) {
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "test-config.yaml")
-	
-	// Create config with custom values
+
+	// Create config with custom values.
 	original := &Config{
 		Types:                []string{"feat", "fix", "custom"},
 		Scopes:               []string{"api", "web"},
@@ -259,24 +259,24 @@ func TestConfig_SaveAndLoad(t *testing.T) {
 		},
 		IgnorePatterns: []string{"^WIP"},
 	}
-	
-	// Save config
+
+	// Save config.
 	if err := original.Save(configPath); err != nil {
 		t.Fatalf("Failed to save config: %v", err)
 	}
-	
-	// Verify file exists
+
+	// Verify file exists.
 	if _, err := os.Stat(configPath); err != nil {
 		t.Fatalf("Config file not created: %v", err)
 	}
-	
-	// Load config
+
+	// Load config.
 	loaded, err := Load(configPath)
 	if err != nil {
 		t.Fatalf("Failed to load config: %v", err)
 	}
-	
-	// Compare
+
+	// Compare.
 	if !reflect.DeepEqual(loaded, original) {
 		t.Errorf("Loaded config differs from original\nGot: %+v\nWant: %+v", loaded, original)
 	}
@@ -285,13 +285,13 @@ func TestConfig_SaveAndLoad(t *testing.T) {
 func TestLoad_NonExistentFile(t *testing.T) {
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "non-existent.yaml")
-	
+
 	cfg, err := Load(configPath)
 	if err != nil {
 		t.Fatalf("Load() with non-existent file should return default config, got error: %v", err)
 	}
-	
-	// Should return default config
+
+	// Should return default config.
 	if !reflect.DeepEqual(cfg, Default()) {
 		t.Error("Load() with non-existent file should return default config")
 	}
@@ -299,7 +299,7 @@ func TestLoad_NonExistentFile(t *testing.T) {
 
 func BenchmarkConfig_HasType(b *testing.B) {
 	cfg := Default()
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = cfg.HasType("feat")
@@ -308,7 +308,7 @@ func BenchmarkConfig_HasType(b *testing.B) {
 
 func BenchmarkConfig_Validate(b *testing.B) {
 	cfg := Default()
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = cfg.Validate()

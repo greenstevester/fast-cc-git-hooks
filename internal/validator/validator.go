@@ -13,7 +13,7 @@ import (
 	"github.com/stevengreensill/fast-cc-git-hooks/pkg/conventionalcommit"
 )
 
-// ValidationError represents a validation failure
+// ValidationError represents a validation failure.
 type ValidationError struct {
 	Field   string
 	Message string
@@ -27,18 +27,18 @@ func (e *ValidationError) Error() string {
 	return fmt.Sprintf("%s: %s", e.Field, e.Message)
 }
 
-// ValidationResult contains all validation errors
+// ValidationResult contains all validation errors.
 type ValidationResult struct {
 	Errors []error
 	Valid  bool
 }
 
-// Error implements the error interface
+// Error implements the error interface.
 func (r *ValidationResult) Error() string {
 	if r.Valid {
 		return ""
 	}
-	
+
 	var messages []string
 	for _, err := range r.Errors {
 		messages = append(messages, err.Error())
@@ -46,29 +46,29 @@ func (r *ValidationResult) Error() string {
 	return strings.Join(messages, "; ")
 }
 
-// Validator validates commit messages according to configuration
+// Validator validates commit messages according to configuration.
 type Validator struct {
 	config *config.Config
 	parser *conventionalcommit.Parser
-	// Compiled custom rules for performance
+	// Compiled custom rules for performance.
 	compiledRules map[string]*regexp.Regexp
-	// Compiled ignore patterns for performance
+	// Compiled ignore patterns for performance.
 	compiledIgnorePatterns []*regexp.Regexp
 }
 
-// New creates a new validator with the given configuration
+// New creates a new validator with the given configuration.
 func New(cfg *config.Config) (*Validator, error) {
 	if cfg == nil {
 		return nil, errors.New("config is required")
 	}
 
 	v := &Validator{
-		config: cfg,
-		parser: conventionalcommit.DefaultParser(),
+		config:        cfg,
+		parser:        conventionalcommit.DefaultParser(),
 		compiledRules: make(map[string]*regexp.Regexp),
 	}
 
-	// Compile custom rules
+	// Compile custom rules.
 	for _, rule := range cfg.CustomRules {
 		re, err := regexp.Compile(rule.Pattern)
 		if err != nil {
@@ -77,7 +77,7 @@ func New(cfg *config.Config) (*Validator, error) {
 		v.compiledRules[rule.Name] = re
 	}
 
-	// Compile JIRA ticket pattern if specified
+	// Compile JIRA ticket pattern if specified.
 	if cfg.JIRATicketPattern != "" {
 		re, err := regexp.Compile(cfg.JIRATicketPattern)
 		if err != nil {
@@ -86,7 +86,7 @@ func New(cfg *config.Config) (*Validator, error) {
 		v.compiledRules["jira-pattern"] = re
 	}
 
-	// Compile ignore patterns
+	// Compile ignore patterns.
 	v.compiledIgnorePatterns = make([]*regexp.Regexp, 0, len(cfg.IgnorePatterns))
 	for _, pattern := range cfg.IgnorePatterns {
 		re, err := regexp.Compile(pattern)
@@ -99,14 +99,14 @@ func New(cfg *config.Config) (*Validator, error) {
 	return v, nil
 }
 
-// Validate validates a commit message
+// Validate validates a commit message.
 func (v *Validator) Validate(ctx context.Context, message string) *ValidationResult {
 	result := &ValidationResult{
 		Errors: []error{},
 		Valid:  true,
 	}
 
-	// Check for cancellation
+	// Check for cancellation.
 	select {
 	case <-ctx.Done():
 		result.Valid = false
@@ -115,12 +115,12 @@ func (v *Validator) Validate(ctx context.Context, message string) *ValidationRes
 	default:
 	}
 
-	// Check ignore patterns
+	// Check ignore patterns.
 	if v.shouldIgnore(message) {
 		return result
 	}
 
-	// Parse the commit message
+	// Parse the commit message.
 	commit, err := v.parser.Parse(message)
 	if err != nil {
 		result.Valid = false
@@ -131,7 +131,7 @@ func (v *Validator) Validate(ctx context.Context, message string) *ValidationRes
 		return result
 	}
 
-	// Validate type
+	// Validate type.
 	if commit.Type != "" && !v.config.HasType(commit.Type) {
 		result.Valid = false
 		result.Errors = append(result.Errors, &ValidationError{
@@ -141,7 +141,7 @@ func (v *Validator) Validate(ctx context.Context, message string) *ValidationRes
 		})
 	}
 
-	// Validate scope
+	// Validate scope.
 	if v.config.ScopeRequired && commit.Scope == "" {
 		result.Valid = false
 		result.Errors = append(result.Errors, &ValidationError{
@@ -157,7 +157,7 @@ func (v *Validator) Validate(ctx context.Context, message string) *ValidationRes
 		})
 	}
 
-	// Validate subject length
+	// Validate subject length.
 	header := commit.Header()
 	if len(header) > v.config.MaxSubjectLength {
 		result.Valid = false
@@ -168,7 +168,7 @@ func (v *Validator) Validate(ctx context.Context, message string) *ValidationRes
 		})
 	}
 
-	// Validate breaking changes
+	// Validate breaking changes.
 	if commit.Breaking && !v.config.AllowBreakingChanges {
 		result.Valid = false
 		result.Errors = append(result.Errors, &ValidationError{
@@ -177,7 +177,7 @@ func (v *Validator) Validate(ctx context.Context, message string) *ValidationRes
 		})
 	}
 
-	// Apply custom rules
+	// Apply custom rules.
 	for _, rule := range v.config.CustomRules {
 		re := v.compiledRules[rule.Name]
 		if !re.MatchString(message) {
@@ -193,21 +193,21 @@ func (v *Validator) Validate(ctx context.Context, message string) *ValidationRes
 		}
 	}
 
-	// Validate ticket requirements
+	// Validate ticket requirements.
 	v.validateTicketRequirements(commit, result)
 
 	return result
 }
 
-// ValidateFile validates commit messages from a file
+// ValidateFile validates commit messages from a file.
 func (v *Validator) ValidateFile(ctx context.Context, path string) (*ValidationResult, error) {
-	// Read commit message from file
+	// Read commit message from file.
 	content, err := readFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("reading commit file: %w", err)
 	}
 
-	// Remove comment lines (lines starting with #)
+	// Remove comment lines (lines starting with #).
 	lines := strings.Split(content, "\n")
 	var messageLines []string
 	for _, line := range lines {
@@ -215,7 +215,7 @@ func (v *Validator) ValidateFile(ctx context.Context, path string) (*ValidationR
 			messageLines = append(messageLines, line)
 		}
 	}
-	
+
 	message := strings.TrimSpace(strings.Join(messageLines, "\n"))
 	if message == "" {
 		return &ValidationResult{
@@ -230,7 +230,7 @@ func (v *Validator) ValidateFile(ctx context.Context, path string) (*ValidationR
 	return v.Validate(ctx, message), nil
 }
 
-// shouldIgnore checks if a message matches any ignore pattern
+// shouldIgnore checks if a message matches any ignore pattern.
 func (v *Validator) shouldIgnore(message string) bool {
 	for _, re := range v.compiledIgnorePatterns {
 		if re.MatchString(message) {
@@ -240,76 +240,98 @@ func (v *Validator) shouldIgnore(message string) bool {
 	return false
 }
 
-// validateTicketRequirements validates ticket reference requirements
+// validateTicketRequirements validates ticket reference requirements.
 func (v *Validator) validateTicketRequirements(commit *conventionalcommit.Commit, result *ValidationResult) {
-	// Check if JIRA ticket is required
+	v.validateJiraTicketRequired(commit, result)
+	v.validateTicketRefRequired(commit, result)
+	v.validateJiraTicketPattern(commit, result)
+	v.validateJiraProjectPrefixes(commit, result)
+}
+
+// validateJiraTicketRequired checks if JIRA ticket is required.
+func (v *Validator) validateJiraTicketRequired(commit *conventionalcommit.Commit, result *ValidationResult) {
 	if v.config.RequireJIRATicket && !commit.HasJIRATicket() {
-		result.Valid = false
-		result.Errors = append(result.Errors, &ValidationError{
-			Field:   "ticket",
-			Message: "JIRA ticket reference is required",
-		})
+		v.addValidationError(result, "ticket", "JIRA ticket reference is required", "")
 	}
+}
 
-	// Check if any ticket reference is required
+// validateTicketRefRequired checks if any ticket reference is required.
+func (v *Validator) validateTicketRefRequired(commit *conventionalcommit.Commit, result *ValidationResult) {
 	if v.config.RequireTicketRef && !commit.HasTicketRefs() {
-		result.Valid = false
-		result.Errors = append(result.Errors, &ValidationError{
-			Field:   "ticket",
-			Message: "ticket reference is required",
-		})
+		v.addValidationError(result, "ticket", "ticket reference is required", "")
+	}
+}
+
+// validateJiraTicketPattern validates JIRA ticket format if present.
+func (v *Validator) validateJiraTicketPattern(commit *conventionalcommit.Commit, result *ValidationResult) {
+	if v.config.JIRATicketPattern == "" || !commit.HasJIRATicket() {
+		return
 	}
 
-	// Validate JIRA ticket format if present
-	if v.config.JIRATicketPattern != "" && commit.HasJIRATicket() {
-		re, exists := v.compiledRules["jira-pattern"]
-		if exists {
-			jiraTickets := commit.GetJIRATickets()
-			for _, ticket := range jiraTickets {
-				if !re.MatchString(ticket.ID) {
-					result.Valid = false
-					result.Errors = append(result.Errors, &ValidationError{
-						Field:   "ticket",
-						Message: fmt.Sprintf("JIRA ticket '%s' does not match required pattern", ticket.ID),
-						Value:   ticket.ID,
-					})
-				}
-			}
-		}
+	re, exists := v.compiledRules["jira-pattern"]
+	if !exists {
+		return
 	}
 
-	// Validate JIRA project prefixes if specified
-	if len(v.config.JIRAProjects) > 0 && commit.HasJIRATicket() {
-		jiraTickets := commit.GetJIRATickets()
-		for _, ticket := range jiraTickets {
-			// Extract project prefix (part before the dash)
-			parts := strings.Split(ticket.ID, "-")
-			if len(parts) < 2 {
-				continue // Skip malformed tickets
-			}
-			
-			projectPrefix := parts[0]
-			allowed := false
-			for _, allowedProject := range v.config.JIRAProjects {
-				if projectPrefix == allowedProject {
-					allowed = true
-					break
-				}
-			}
-			
-			if !allowed {
-				result.Valid = false
-				result.Errors = append(result.Errors, &ValidationError{
-					Field:   "ticket",
-					Message: fmt.Sprintf("JIRA project '%s' is not allowed (allowed: %s)", projectPrefix, strings.Join(v.config.JIRAProjects, ", ")),
-					Value:   ticket.ID,
-				})
-			}
+	jiraTickets := commit.GetJIRATickets()
+	for _, ticket := range jiraTickets {
+		if !re.MatchString(ticket.ID) {
+			message := fmt.Sprintf("JIRA ticket '%s' does not match required pattern", ticket.ID)
+			v.addValidationError(result, "ticket", message, ticket.ID)
 		}
 	}
 }
 
-// readFile reads the contents of a file
+// validateJiraProjectPrefixes validates JIRA project prefixes if specified.
+func (v *Validator) validateJiraProjectPrefixes(commit *conventionalcommit.Commit, result *ValidationResult) {
+	if len(v.config.JIRAProjects) == 0 || !commit.HasJIRATicket() {
+		return
+	}
+
+	jiraTickets := commit.GetJIRATickets()
+	for _, ticket := range jiraTickets {
+		v.validateJiraProjectPrefix(ticket, result)
+	}
+}
+
+// validateJiraProjectPrefix validates a single JIRA project prefix.
+func (v *Validator) validateJiraProjectPrefix(ticket conventionalcommit.TicketRef, result *ValidationResult) {
+	parts := strings.Split(ticket.ID, "-")
+	if len(parts) < 2 {
+		return // Skip malformed tickets.
+	}
+
+	projectPrefix := parts[0]
+	if v.isProjectAllowed(projectPrefix) {
+		return
+	}
+
+	message := fmt.Sprintf("JIRA project '%s' is not allowed (allowed: %s)", 
+		projectPrefix, strings.Join(v.config.JIRAProjects, ", "))
+	v.addValidationError(result, "ticket", message, ticket.ID)
+}
+
+// isProjectAllowed checks if a project prefix is in the allowed list.
+func (v *Validator) isProjectAllowed(projectPrefix string) bool {
+	for _, allowedProject := range v.config.JIRAProjects {
+		if projectPrefix == allowedProject {
+			return true
+		}
+	}
+	return false
+}
+
+// addValidationError adds a validation error to the result.
+func (v *Validator) addValidationError(result *ValidationResult, field, message, value string) {
+	result.Valid = false
+	result.Errors = append(result.Errors, &ValidationError{
+		Field:   field,
+		Message: message,
+		Value:   value,
+	})
+}
+
+// readFile reads the contents of a file.
 func readFile(path string) (string, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -318,14 +340,14 @@ func readFile(path string) (string, error) {
 	return string(data), nil
 }
 
-// Quick validation helper for simple use cases
+// Quick validation helper for simple use cases.
 func Quick(message string) error {
 	cfg := config.Default()
 	v, err := New(cfg)
 	if err != nil {
 		return err
 	}
-	
+
 	result := v.Validate(context.Background(), message)
 	if !result.Valid {
 		return result

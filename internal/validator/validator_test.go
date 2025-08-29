@@ -144,7 +144,7 @@ func TestValidator_Validate(t *testing.T) {
 }
 
 func TestValidator_ValidateFile(t *testing.T) {
-	// Create temporary directory for test files
+	// Create temporary directory for test files.
 	tmpDir := t.TempDir()
 
 	tests := []struct {
@@ -177,9 +177,9 @@ func TestValidator_ValidateFile(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Create test file
+			// Create test file.
 			file := filepath.Join(tmpDir, "COMMIT_MSG")
-			if err := os.WriteFile(file, []byte(tt.content), 0644); err != nil {
+			if err := os.WriteFile(file, []byte(tt.content), 0o644); err != nil {
 				t.Fatalf("Failed to write test file: %v", err)
 			}
 
@@ -255,7 +255,7 @@ func TestValidator_ContextCancellation(t *testing.T) {
 
 	result := v.Validate(ctx, "feat: test message")
 	if result.Valid {
-		t.Error("Expected validation to fail with cancelled context")
+		t.Error("Expected validation to fail with canceled context")
 	}
 }
 

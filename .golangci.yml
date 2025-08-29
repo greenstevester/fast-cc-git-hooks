@@ -5,7 +5,8 @@ run:
   modules-download-mode: readonly
 
 output:
-  format: colored-line-number
+  formats:
+    - format: colored-line-number
   print-issued-lines: true
   print-linter-name: true
 
@@ -21,7 +22,6 @@ linters-settings:
     local-prefixes: github.com/stevengreensill/fast-cc-git-hooks
 
   govet:
-    check-shadowing: true
     enable-all: true
 
   misspell:
