@@ -19,6 +19,7 @@ profile.cov
 
 # Build artifacts
 build/
+bin/
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
@@ -33,3 +34,6 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+# Ignore test/build output
+.out
+coverage.out
