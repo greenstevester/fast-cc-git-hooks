@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Fast Validation**: Microsecond-level commit message validation
 - **Flexible Configuration**: YAML config with custom types, scopes, and rules
 - **Safe Installation**: Automatic backup of existing git hooks
-- **Modern Go**: Built with Go 1.21+ using latest language features
+- **Modern Go**: Built with Go 1.24+ using latest language features
 - **Zero Dependencies**: Core functionality requires no external libraries
 - **Context Support**: Cancellation and timeout support for validation
 - **Parallel Processing**: Concurrent validation of multiple rules
