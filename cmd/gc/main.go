@@ -355,7 +355,7 @@ func generateCommitMessage(changes []ChangeType) string {
 	primary := changes[0]
 
 	// Create subject line.
-	subject := fmt.Sprintf("%s", primary.Type)
+	subject := primary.Type
 	if primary.Scope != "" {
 		subject += fmt.Sprintf("(%s)", primary.Scope)
 	}
@@ -373,8 +373,7 @@ func generateCommitMessage(changes []ChangeType) string {
 	var body []string
 
 	if len(changes) > 1 {
-		body = append(body, "")
-		body = append(body, "Changes include:")
+		body = append(body, "", "Changes include:")
 		for _, change := range changes {
 			line := fmt.Sprintf("- %s", capitalizeFirst(change.Description))
 			if len(change.Files) > 0 {
@@ -388,10 +387,7 @@ func generateCommitMessage(changes []ChangeType) string {
 	}
 
 	// Add footer.
-	body = append(body, "")
-	body = append(body, "🤖 Generated with [Claude Code](https://claude.ai/code)")
-	body = append(body, "")
-	body = append(body, "Co-Authored-By: Claude <noreply@anthropic.com>")
+	body = append(body, "", "🤖 Generated with [Claude Code](https://claude.ai/code)", "", "Co-Authored-By: Claude <noreply@anthropic.com>")
 
 	if len(body) > 0 {
 		return subject + strings.Join(body, "\n")

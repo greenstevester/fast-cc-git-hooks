@@ -180,7 +180,15 @@ func parseTicketRefs(message string) []TicketRef {
 	var refs []TicketRef
 	seen := make(map[string]bool)
 
-	// Parse GitHub issues first (most specific pattern).
+	refs = parseGithubRefs(message, refs, seen)
+	refs = parseGenericRefs(message, refs, seen)
+	refs = parseJiraRefs(message, refs, seen)
+
+	return refs
+}
+
+// parseGithubRefs extracts GitHub issue references.
+func parseGithubRefs(message string, refs []TicketRef, seen map[string]bool) []TicketRef {
 	matches := githubTicketRegex.FindAllStringSubmatch(message, -1)
 	for _, match := range matches {
 		if len(match) >= 3 {
@@ -196,17 +204,16 @@ func parseTicketRefs(message string) []TicketRef {
 					ID:   id,
 					Raw:  match[0],
 				}
-				key := ref.Type + ":" + ref.ID
-				if !seen[key] {
-					refs = append(refs, ref)
-					seen[key] = true
-				}
+				refs = addUniqueRef(refs, ref, seen)
 			}
 		}
 	}
+	return refs
+}
 
-	// Parse generic bracketed tickets [PROJ-123] (high priority).
-	matches = genericTicketRegex.FindAllStringSubmatch(message, -1)
+// parseGenericRefs extracts generic bracketed ticket references.
+func parseGenericRefs(message string, refs []TicketRef, seen map[string]bool) []TicketRef {
+	matches := genericTicketRegex.FindAllStringSubmatch(message, -1)
 	for _, match := range matches {
 		if len(match) > 1 {
 			ref := TicketRef{
@@ -214,22 +221,19 @@ func parseTicketRefs(message string) []TicketRef {
 				ID:   match[1],
 				Raw:  match[0],
 			}
-			key := ref.Type + ":" + ref.ID
-			if !seen[key] {
-				refs = append(refs, ref)
-				seen[key] = true
-			}
+			refs = addUniqueRef(refs, ref, seen)
 		}
 	}
+	return refs
+}
 
-	// Parse JIRA tickets (3-4 letter prefixes).
-	matches = jiraTicketRegex.FindAllStringSubmatch(message, -1)
+// parseJiraRefs extracts JIRA ticket references.
+func parseJiraRefs(message string, refs []TicketRef, seen map[string]bool) []TicketRef {
+	matches := jiraTicketRegex.FindAllStringSubmatch(message, -1)
 	for _, match := range matches {
 		if len(match) > 1 {
 			// Check if this was already classified as generic or github.
-			genericKey := "GENERIC:" + match[1]
-			githubKey := "GITHUB:" + match[1]
-			if seen[genericKey] || seen[githubKey] {
+			if isAlreadyClassified(match[1], seen) {
 				continue
 			}
 
@@ -243,15 +247,27 @@ func parseTicketRefs(message string) []TicketRef {
 				ID:   match[1],
 				Raw:  match[0],
 			}
-			key := ref.Type + ":" + ref.ID
-			if !seen[key] {
-				refs = append(refs, ref)
-				seen[key] = true
-			}
+			refs = addUniqueRef(refs, ref, seen)
 		}
 	}
-
 	return refs
+}
+
+// addUniqueRef adds a ticket reference if it hasn't been seen before.
+func addUniqueRef(refs []TicketRef, ref TicketRef, seen map[string]bool) []TicketRef {
+	key := ref.Type + ":" + ref.ID
+	if !seen[key] {
+		refs = append(refs, ref)
+		seen[key] = true
+	}
+	return refs
+}
+
+// isAlreadyClassified checks if a ticket ID was already classified.
+func isAlreadyClassified(id string, seen map[string]bool) bool {
+	genericKey := "GENERIC:" + id
+	githubKey := "GITHUB:" + id
+	return seen[genericKey] || seen[githubKey]
 }
 
 // HasTicketRefs returns true if the commit has any ticket references.

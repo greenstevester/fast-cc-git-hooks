@@ -242,71 +242,93 @@ func (v *Validator) shouldIgnore(message string) bool {
 
 // validateTicketRequirements validates ticket reference requirements.
 func (v *Validator) validateTicketRequirements(commit *conventionalcommit.Commit, result *ValidationResult) {
-	// Check if JIRA ticket is required.
+	v.validateJiraTicketRequired(commit, result)
+	v.validateTicketRefRequired(commit, result)
+	v.validateJiraTicketPattern(commit, result)
+	v.validateJiraProjectPrefixes(commit, result)
+}
+
+// validateJiraTicketRequired checks if JIRA ticket is required.
+func (v *Validator) validateJiraTicketRequired(commit *conventionalcommit.Commit, result *ValidationResult) {
 	if v.config.RequireJIRATicket && !commit.HasJIRATicket() {
-		result.Valid = false
-		result.Errors = append(result.Errors, &ValidationError{
-			Field:   "ticket",
-			Message: "JIRA ticket reference is required",
-		})
+		v.addValidationError(result, "ticket", "JIRA ticket reference is required", "")
 	}
+}
 
-	// Check if any ticket reference is required.
+// validateTicketRefRequired checks if any ticket reference is required.
+func (v *Validator) validateTicketRefRequired(commit *conventionalcommit.Commit, result *ValidationResult) {
 	if v.config.RequireTicketRef && !commit.HasTicketRefs() {
-		result.Valid = false
-		result.Errors = append(result.Errors, &ValidationError{
-			Field:   "ticket",
-			Message: "ticket reference is required",
-		})
+		v.addValidationError(result, "ticket", "ticket reference is required", "")
+	}
+}
+
+// validateJiraTicketPattern validates JIRA ticket format if present.
+func (v *Validator) validateJiraTicketPattern(commit *conventionalcommit.Commit, result *ValidationResult) {
+	if v.config.JIRATicketPattern == "" || !commit.HasJIRATicket() {
+		return
 	}
 
-	// Validate JIRA ticket format if present.
-	if v.config.JIRATicketPattern != "" && commit.HasJIRATicket() {
-		re, exists := v.compiledRules["jira-pattern"]
-		if exists {
-			jiraTickets := commit.GetJIRATickets()
-			for _, ticket := range jiraTickets {
-				if !re.MatchString(ticket.ID) {
-					result.Valid = false
-					result.Errors = append(result.Errors, &ValidationError{
-						Field:   "ticket",
-						Message: fmt.Sprintf("JIRA ticket '%s' does not match required pattern", ticket.ID),
-						Value:   ticket.ID,
-					})
-				}
-			}
+	re, exists := v.compiledRules["jira-pattern"]
+	if !exists {
+		return
+	}
+
+	jiraTickets := commit.GetJIRATickets()
+	for _, ticket := range jiraTickets {
+		if !re.MatchString(ticket.ID) {
+			message := fmt.Sprintf("JIRA ticket '%s' does not match required pattern", ticket.ID)
+			v.addValidationError(result, "ticket", message, ticket.ID)
 		}
 	}
+}
 
-	// Validate JIRA project prefixes if specified.
-	if len(v.config.JIRAProjects) > 0 && commit.HasJIRATicket() {
-		jiraTickets := commit.GetJIRATickets()
-		for _, ticket := range jiraTickets {
-			// Extract project prefix (part before the dash).
-			parts := strings.Split(ticket.ID, "-")
-			if len(parts) < 2 {
-				continue // Skip malformed tickets.
-			}
+// validateJiraProjectPrefixes validates JIRA project prefixes if specified.
+func (v *Validator) validateJiraProjectPrefixes(commit *conventionalcommit.Commit, result *ValidationResult) {
+	if len(v.config.JIRAProjects) == 0 || !commit.HasJIRATicket() {
+		return
+	}
 
-			projectPrefix := parts[0]
-			allowed := false
-			for _, allowedProject := range v.config.JIRAProjects {
-				if projectPrefix == allowedProject {
-					allowed = true
-					break
-				}
-			}
+	jiraTickets := commit.GetJIRATickets()
+	for _, ticket := range jiraTickets {
+		v.validateJiraProjectPrefix(ticket, result)
+	}
+}
 
-			if !allowed {
-				result.Valid = false
-				result.Errors = append(result.Errors, &ValidationError{
-					Field:   "ticket",
-					Message: fmt.Sprintf("JIRA project '%s' is not allowed (allowed: %s)", projectPrefix, strings.Join(v.config.JIRAProjects, ", ")),
-					Value:   ticket.ID,
-				})
-			}
+// validateJiraProjectPrefix validates a single JIRA project prefix.
+func (v *Validator) validateJiraProjectPrefix(ticket conventionalcommit.TicketRef, result *ValidationResult) {
+	parts := strings.Split(ticket.ID, "-")
+	if len(parts) < 2 {
+		return // Skip malformed tickets.
+	}
+
+	projectPrefix := parts[0]
+	if v.isProjectAllowed(projectPrefix) {
+		return
+	}
+
+	message := fmt.Sprintf("JIRA project '%s' is not allowed (allowed: %s)", 
+		projectPrefix, strings.Join(v.config.JIRAProjects, ", "))
+	v.addValidationError(result, "ticket", message, ticket.ID)
+}
+
+// isProjectAllowed checks if a project prefix is in the allowed list.
+func (v *Validator) isProjectAllowed(projectPrefix string) bool {
+	for _, allowedProject := range v.config.JIRAProjects {
+		if projectPrefix == allowedProject {
+			return true
 		}
 	}
+	return false
+}
+
+// addValidationError adds a validation error to the result.
+func (v *Validator) addValidationError(result *ValidationResult, field, message, value string) {
+	result.Valid = false
+	result.Errors = append(result.Errors, &ValidationError{
+		Field:   field,
+		Message: message,
+		Value:   value,
+	})
 }
 
 // readFile reads the contents of a file.

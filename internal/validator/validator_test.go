@@ -255,7 +255,7 @@ func TestValidator_ContextCancellation(t *testing.T) {
 
 	result := v.Validate(ctx, "feat: test message")
 	if result.Valid {
-		t.Error("Expected validation to fail with cancelled context")
+		t.Error("Expected validation to fail with canceled context")
 	}
 }
 

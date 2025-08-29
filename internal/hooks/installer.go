@@ -188,7 +188,10 @@ func (i *Installer) isOurHook(path string) bool {
 
 	// Read first few lines to check for identifier.
 	buf := make([]byte, 256)
-	n, _ := file.Read(buf)
+	n, err := file.Read(buf)
+	if err != nil && err != io.EOF {
+		return false
+	}
 	content := string(buf[:n])
 
 	return strings.Contains(content, HookIdentifier)
