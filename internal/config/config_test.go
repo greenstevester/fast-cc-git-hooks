@@ -224,7 +224,7 @@ types: [
 			}
 
 			if !tt.wantErr {
-				// Compare relevant fields
+				// Compare relevant fields.
 				if !reflect.DeepEqual(got.Types, tt.want.Types) {
 					t.Errorf("Parse() Types = %v, want %v", got.Types, tt.want.Types)
 				}
@@ -243,7 +243,7 @@ func TestConfig_SaveAndLoad(t *testing.T) {
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "test-config.yaml")
 
-	// Create config with custom values
+	// Create config with custom values.
 	original := &Config{
 		Types:                []string{"feat", "fix", "custom"},
 		Scopes:               []string{"api", "web"},
@@ -260,23 +260,23 @@ func TestConfig_SaveAndLoad(t *testing.T) {
 		IgnorePatterns: []string{"^WIP"},
 	}
 
-	// Save config
+	// Save config.
 	if err := original.Save(configPath); err != nil {
 		t.Fatalf("Failed to save config: %v", err)
 	}
 
-	// Verify file exists
+	// Verify file exists.
 	if _, err := os.Stat(configPath); err != nil {
 		t.Fatalf("Config file not created: %v", err)
 	}
 
-	// Load config
+	// Load config.
 	loaded, err := Load(configPath)
 	if err != nil {
 		t.Fatalf("Failed to load config: %v", err)
 	}
 
-	// Compare
+	// Compare.
 	if !reflect.DeepEqual(loaded, original) {
 		t.Errorf("Loaded config differs from original\nGot: %+v\nWant: %+v", loaded, original)
 	}
@@ -291,7 +291,7 @@ func TestLoad_NonExistentFile(t *testing.T) {
 		t.Fatalf("Load() with non-existent file should return default config, got error: %v", err)
 	}
 
-	// Should return default config
+	// Should return default config.
 	if !reflect.DeepEqual(cfg, Default()) {
 		t.Error("Load() with non-existent file should return default config")
 	}

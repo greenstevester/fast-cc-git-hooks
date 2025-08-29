@@ -87,6 +87,13 @@ fmt:
 	@echo "Formatting code..."
 	@go fmt ./...
 	@gofmt -s -w .
+	@GOBIN=$$(go env GOPATH)/bin; \
+	if ! command -v $$GOBIN/gofumpt &> /dev/null; then \
+		echo "Installing gofumpt..."; \
+		GOBIN=$$GOBIN go install mvdan.cc/gofumpt@latest; \
+	fi; \
+	echo "Running gofumpt..."; \
+	$$GOBIN/gofumpt -w .
 
 ## lint: Run linters
 lint:

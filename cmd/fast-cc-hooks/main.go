@@ -18,7 +18,7 @@ import (
 
 const version = "1.0.0"
 
-// Command represents a CLI command
+// Command represents a CLI command.
 type Command struct {
 	Name        string
 	Description string
@@ -27,11 +27,11 @@ type Command struct {
 }
 
 var (
-	// Global flags
+	// Global flags.
 	verbose    bool
 	configFile string
 
-	// Command-specific flags
+	// Command-specific flags..
 	validateFile string
 	forceInstall bool
 	localInstall bool
@@ -40,7 +40,7 @@ var (
 )
 
 func main() {
-	// Setup base logger
+	// Setup base logger.
 	setupLogger(false)
 
 	commands := map[string]*Command{
@@ -53,7 +53,7 @@ func main() {
 		"version":   versionCommand(),
 	}
 
-	// Parse global flags
+	// Parse global flags.
 	flag.BoolVar(&verbose, "v", false, "verbose output")
 	flag.StringVar(&configFile, "config", "", "path to config file")
 	flag.Usage = func() {
@@ -79,16 +79,16 @@ func main() {
 		fmt.Fprintf(os.Stderr, "\n💡 Need help? Use '%s <command> -h' for more details\n", os.Args[0])
 	}
 
-	// Need at least command name
+	// Need at least command name...
 	if len(os.Args) < 2 {
 		flag.Usage()
 		os.Exit(1)
 	}
 
-	// Extract command
+	// Extract command...
 	cmdName := os.Args[1]
 
-	// Handle help for commands
+	// Handle help for commands...
 	if cmdName == "-h" || cmdName == "--help" || cmdName == "help" {
 		flag.Usage()
 		os.Exit(0)
@@ -101,20 +101,20 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Parse command flags
+	// Parse command flags.
 	if err := cmd.Flags.Parse(os.Args[2:]); err != nil {
 		fmt.Fprintf(os.Stderr, "Error parsing flags: %v\n", err)
 		os.Exit(1)
 	}
 
-	// Update logger with verbose flag
+	// Update logger with verbose flag..
 	setupLogger(verbose)
 
-	// Create context with timeout
+	// Create context with timeout...
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	// Run command
+	// Run command...
 	if err := cmd.Run(ctx, cmd.Flags.Args()); err != nil {
 		logger.Error("command failed", "command", cmdName, "error", err)
 		os.Exit(1)
@@ -196,13 +196,13 @@ func validateCommand() *Command {
 		Description: "🔍 Test a commit message",
 		Flags:       fs,
 		Run: func(ctx context.Context, args []string) error {
-			// Load configuration
+			// Load configuration.
 			cfg, err := config.Load(configFile)
 			if err != nil {
 				return fmt.Errorf("loading config: %w", err)
 			}
 
-			// Create validator
+			// Create validator.
 			v, err := validator.New(cfg)
 			if err != nil {
 				return fmt.Errorf("creating validator: %w", err)
@@ -211,18 +211,18 @@ func validateCommand() *Command {
 			var result *validator.ValidationResult
 
 			if validateFile != "" {
-				// Validate from file
+				// Validate from file.
 				result, err = v.ValidateFile(ctx, validateFile)
 				if err != nil {
 					return fmt.Errorf("validating file: %w", err)
 				}
 			} else {
-				// Validate from arguments or stdin
+				// Validate from arguments or stdin.
 				var message string
 				if len(args) > 0 {
 					message = strings.Join(args, " ")
 				} else {
-					// Read from stdin
+					// Read from stdin.
 					buf := make([]byte, 0, 4096)
 					for {
 						n, err := os.Stdin.Read(buf[len(buf):cap(buf)])
@@ -231,7 +231,7 @@ func validateCommand() *Command {
 							break
 						}
 						if len(buf) == cap(buf) {
-							// Grow buffer
+							// Grow buffer.
 							newBuf := make([]byte, len(buf), cap(buf)*2)
 							copy(newBuf, buf)
 							buf = newBuf
@@ -274,15 +274,15 @@ func initCommand() *Command {
 				path = config.DefaultConfigFile
 			}
 
-			// Check if file exists
+			// Check if file exists.
 			if _, err := os.Stat(path); err == nil {
 				return fmt.Errorf("config file already exists: %s", path)
 			}
 
-			// Create default config
+			// Create default config..
 			cfg := config.Default()
 
-			// Save to file
+			// Save to file..
 			if err := cfg.Save(path); err != nil {
 				return fmt.Errorf("saving config: %w", err)
 			}

@@ -9,13 +9,13 @@ import (
 )
 
 var (
-	// ErrInvalidFormat indicates the commit message doesn't match conventional format
+	// ErrInvalidFormat indicates the commit message doesn't match conventional format.
 	ErrInvalidFormat = errors.New("invalid conventional commit format")
-	// ErrEmptyMessage indicates the commit message is empty
+	// ErrEmptyMessage indicates the commit message is empty.
 	ErrEmptyMessage = errors.New("empty commit message")
 )
 
-// Commit represents a parsed conventional commit message
+// Commit represents a parsed conventional commit message.
 type Commit struct {
 	Type        string
 	Scope       string
@@ -27,22 +27,22 @@ type Commit struct {
 	TicketRefs  []TicketRef
 }
 
-// TicketRef represents a ticket reference (e.g., JIRA ticket)
+// TicketRef represents a ticket reference (e.g., JIRA ticket).
 type TicketRef struct {
 	Type string // e.g., "JIRA", "GITHUB", "LINEAR"
 	ID   string // e.g., "PROJ-123", "#456", "ABC-789"
 	Raw  string // Original reference as found in commit
 }
 
-// Parser provides conventional commit parsing with configurable options
+// Parser provides conventional commit parsing with configurable options.
 type Parser struct {
-	// StrictMode enforces strict conventional commit format
+	// StrictMode enforces strict conventional commit format.
 	StrictMode bool
-	// AllowEmptyScope permits commits without scope
+	// AllowEmptyScope permits commits without scope.
 	AllowEmptyScope bool
 }
 
-// DefaultParser returns a parser with default settings
+// DefaultParser returns a parser with default settings.
 func DefaultParser() *Parser {
 	return &Parser{
 		StrictMode:      true,
@@ -50,23 +50,23 @@ func DefaultParser() *Parser {
 	}
 }
 
-// conventionalCommitRegex matches: type(scope)!: description
-// Groups: 1=type, 2=scope with parens, 3=scope, 4=breaking indicator, 5=description
+// conventionalCommitRegex matches: type(scope)!: description.
+// Groups: 1=type, 2=scope with parens, 3=scope, 4=breaking indicator, 5=description.
 var conventionalCommitRegex = regexp.MustCompile(`^(\w+)(\(([^)]*)\))?(!)?:\s*(.+)`)
 
-// Ticket reference patterns
+// Ticket reference patterns.
 var (
-	// jiraTicketRegex matches JIRA tickets: PROJ-123, ABC-456 (3-4 letter prefixes)
+	// jiraTicketRegex matches JIRA tickets: PROJ-123, ABC-456 (3-4 letter prefixes).
 	jiraTicketRegex = regexp.MustCompile(`\b([A-Z]{3,4}-\d+)\b`)
 
-	// githubTicketRegex matches GitHub issues: #123, GH-456
+	// githubTicketRegex matches GitHub issues: #123, GH-456.
 	githubTicketRegex = regexp.MustCompile(`(?:#(\d+)|GH-(\d+))\b`)
 
-	// genericTicketRegex matches generic format: [TICKET-123] (3-4 letter prefixes)
+	// genericTicketRegex matches generic format: [TICKET-123] (3-4 letter prefixes).
 	genericTicketRegex = regexp.MustCompile(`\[([A-Z]{3,4}-\d+)\]`)
 )
 
-// Parse parses a commit message into a Commit struct
+// Parse parses a commit message into a Commit struct.
 func (p *Parser) Parse(message string) (*Commit, error) {
 	if message == "" {
 		return nil, ErrEmptyMessage
@@ -77,7 +77,7 @@ func (p *Parser) Parse(message string) (*Commit, error) {
 		return nil, ErrEmptyMessage
 	}
 
-	// Parse the first line (header)
+	// Parse the first line (header).
 	header := lines[0]
 	matches := conventionalCommitRegex.FindStringSubmatch(header)
 
@@ -85,7 +85,7 @@ func (p *Parser) Parse(message string) (*Commit, error) {
 		if p.StrictMode {
 			return nil, fmt.Errorf("%w: expected 'type(scope): description' format", ErrInvalidFormat)
 		}
-		// In non-strict mode, treat entire message as description
+		// In non-strict mode, treat entire message as description.
 		return &Commit{
 			Description: header,
 			Raw:         message,
@@ -100,15 +100,15 @@ func (p *Parser) Parse(message string) (*Commit, error) {
 		Raw:         message,
 	}
 
-	// Parse body and footer if present
+	// Parse body and footer if present.
 	if len(lines) > 1 {
 		bodyStart := 1
-		// Skip empty line after header if present
+		// Skip empty line after header if present.
 		if bodyStart < len(lines) && lines[bodyStart] == "" {
 			bodyStart++
 		}
 
-		// Find footer (starts with BREAKING CHANGE: or contains : )
+		// Find footer (starts with BREAKING CHANGE: or contains : ).
 		footerStart := -1
 		for i := len(lines) - 1; i >= bodyStart; i-- {
 			line := lines[i]
@@ -117,7 +117,7 @@ func (p *Parser) Parse(message string) (*Commit, error) {
 				isFooterLine(line) {
 				footerStart = i
 			} else if line != "" && footerStart == -1 {
-				// Non-footer line found, stop looking
+				// Non-footer line found, stop looking.
 				break
 			}
 		}
@@ -130,7 +130,7 @@ func (p *Parser) Parse(message string) (*Commit, error) {
 
 		if footerStart != -1 {
 			commit.Footer = strings.TrimSpace(strings.Join(lines[footerStart:], "\n"))
-			// Check for breaking change in footer
+			// Check for breaking change in footer.
 			if strings.Contains(commit.Footer, "BREAKING CHANGE:") ||
 				strings.Contains(commit.Footer, "BREAKING-CHANGE:") {
 				commit.Breaking = true
@@ -138,15 +138,15 @@ func (p *Parser) Parse(message string) (*Commit, error) {
 		}
 	}
 
-	// Parse ticket references from entire commit message
+	// Parse ticket references from entire commit message.
 	commit.TicketRefs = parseTicketRefs(message)
 
 	return commit, nil
 }
 
-// isFooterLine checks if a line looks like a footer token
+// isFooterLine checks if a line looks like a footer token.
 func isFooterLine(line string) bool {
-	// Common footer tokens
+	// Common footer tokens.
 	footerTokens := []string{
 		"Signed-off-by:",
 		"Co-authored-by:",
@@ -162,10 +162,10 @@ func isFooterLine(line string) bool {
 		}
 	}
 
-	// Generic token format: Word-Word: or Word:
+	// Generic token format: Word-Word: or Word:.
 	matched, err := regexp.MatchString(`^[A-Z][a-z]+(-[A-Z][a-z]+)*:\s+`, line)
 	if err != nil {
-		// If regex compilation fails, return false to be safe
+		// If regex compilation fails, return false to be safe.
 		return false
 	}
 	if matched {
@@ -175,19 +175,19 @@ func isFooterLine(line string) bool {
 	return false
 }
 
-// parseTicketRefs extracts ticket references from a commit message
+// parseTicketRefs extracts ticket references from a commit message.
 func parseTicketRefs(message string) []TicketRef {
 	var refs []TicketRef
 	seen := make(map[string]bool)
 
-	// Parse GitHub issues first (most specific pattern)
+	// Parse GitHub issues first (most specific pattern).
 	matches := githubTicketRegex.FindAllStringSubmatch(message, -1)
 	for _, match := range matches {
 		if len(match) >= 3 {
 			var id string
-			if match[1] != "" { // #123 format
+			if match[1] != "" { // #123 format.
 				id = match[1]
-			} else if match[2] != "" { // GH-456 format
+			} else if match[2] != "" { // GH-456 format.
 				id = match[2]
 			}
 			if id != "" {
@@ -205,7 +205,7 @@ func parseTicketRefs(message string) []TicketRef {
 		}
 	}
 
-	// Parse generic bracketed tickets [PROJ-123] (high priority)
+	// Parse generic bracketed tickets [PROJ-123] (high priority).
 	matches = genericTicketRegex.FindAllStringSubmatch(message, -1)
 	for _, match := range matches {
 		if len(match) > 1 {
@@ -222,18 +222,18 @@ func parseTicketRefs(message string) []TicketRef {
 		}
 	}
 
-	// Parse JIRA tickets (3-4 letter prefixes)
+	// Parse JIRA tickets (3-4 letter prefixes).
 	matches = jiraTicketRegex.FindAllStringSubmatch(message, -1)
 	for _, match := range matches {
 		if len(match) > 1 {
-			// Check if this was already classified as generic or github
+			// Check if this was already classified as generic or github.
 			genericKey := "GENERIC:" + match[1]
 			githubKey := "GITHUB:" + match[1]
 			if seen[genericKey] || seen[githubKey] {
 				continue
 			}
 
-			// Skip GitHub-style references (GH-123 format)
+			// Skip GitHub-style references (GH-123 format).
 			if strings.HasPrefix(match[1], "GH-") {
 				continue
 			}
@@ -254,12 +254,12 @@ func parseTicketRefs(message string) []TicketRef {
 	return refs
 }
 
-// HasTicketRefs returns true if the commit has any ticket references
+// HasTicketRefs returns true if the commit has any ticket references.
 func (c *Commit) HasTicketRefs() bool {
 	return len(c.TicketRefs) > 0
 }
 
-// HasJIRATicket returns true if the commit has JIRA ticket references
+// HasJIRATicket returns true if the commit has JIRA ticket references.
 func (c *Commit) HasJIRATicket() bool {
 	for _, ref := range c.TicketRefs {
 		if ref.Type == "JIRA" {
@@ -269,7 +269,7 @@ func (c *Commit) HasJIRATicket() bool {
 	return false
 }
 
-// GetJIRATickets returns all JIRA ticket references
+// GetJIRATickets returns all JIRA ticket references.
 func (c *Commit) GetJIRATickets() []TicketRef {
 	var jiraRefs []TicketRef
 	for _, ref := range c.TicketRefs {
@@ -280,11 +280,11 @@ func (c *Commit) GetJIRATickets() []TicketRef {
 	return jiraRefs
 }
 
-// Format formats a Commit back to conventional commit format
+// Format formats a Commit back to conventional commit format.
 func (c *Commit) Format() string {
 	var sb strings.Builder
 
-	// Write header
+	// Write header.
 	sb.WriteString(c.Type)
 	if c.Scope != "" {
 		sb.WriteString("(")
@@ -297,13 +297,13 @@ func (c *Commit) Format() string {
 	sb.WriteString(": ")
 	sb.WriteString(c.Description)
 
-	// Write body if present
+	// Write body if present.
 	if c.Body != "" {
 		sb.WriteString("\n\n")
 		sb.WriteString(c.Body)
 	}
 
-	// Write footer if present
+	// Write footer if present.
 	if c.Footer != "" {
 		sb.WriteString("\n\n")
 		sb.WriteString(c.Footer)
@@ -312,7 +312,7 @@ func (c *Commit) Format() string {
 	return sb.String()
 }
 
-// Header returns the first line of the commit message
+// Header returns the first line of the commit message.
 func (c *Commit) Header() string {
 	var sb strings.Builder
 	sb.WriteString(c.Type)

@@ -29,7 +29,7 @@ var (
 	buildTime = "unknown"
 	commit    = "unknown"
 
-	// Command line flags
+	// Command line flags.
 	noVerify = flag.Bool("no-verify", false, "Skip pre-commit hooks")
 	execute  = flag.Bool("execute", false, "Execute the commit after generating message")
 	verbose  = flag.Bool("verbose", false, "Show detailed analysis")
@@ -48,7 +48,7 @@ func main() {
 		log.Fatal("Not a git repository")
 	}
 
-	// Get git status and diffs
+	// Get git status and diffs.
 	status, err := getGitStatus()
 	if err != nil {
 		log.Fatalf("Failed to get git status: %v", err)
@@ -60,12 +60,12 @@ func main() {
 		fmt.Println()
 	}
 
-	// Add all changes
+	// Add all changes.
 	if err := addAllChanges(); err != nil {
 		log.Fatalf("Failed to add changes: %v", err)
 	}
 
-	// Get staged diff
+	// Get staged diff.
 	diff, err := getStagedDiff()
 	if err != nil {
 		log.Fatalf("Failed to get diff: %v", err)
@@ -76,7 +76,7 @@ func main() {
 		return
 	}
 
-	// Analyze changes
+	// Analyze changes.
 	changes := analyzeDiff(diff)
 	if *verbose {
 		fmt.Println("Detected changes:")
@@ -87,7 +87,7 @@ func main() {
 		fmt.Println()
 	}
 
-	// Generate commit message
+	// Generate commit message.
 	message := generateCommitMessage(changes)
 	fmt.Println("Generated commit message:")
 	fmt.Println("─────────────────────────────────────────")
@@ -154,7 +154,7 @@ func analyzeDiff(diff string) []ChangeType {
 	var changes []ChangeType
 	fileChanges := make(map[string]*ChangeType)
 
-	// Parse diff by files
+	// Parse diff by files.
 	files := strings.Split(diff, "diff --git")
 	for _, file := range files {
 		if strings.TrimSpace(file) == "" {
@@ -163,7 +163,7 @@ func analyzeDiff(diff string) []ChangeType {
 
 		change := analyzeFileChange(file)
 		if change != nil {
-			// Merge similar changes
+			// Merge similar changes.
 			key := change.Type + ":" + change.Scope
 			if existing, ok := fileChanges[key]; ok {
 				existing.Files = append(existing.Files, change.Files...)
@@ -176,7 +176,7 @@ func analyzeDiff(diff string) []ChangeType {
 		}
 	}
 
-	// Convert to slice and sort by priority
+	// Convert to slice and sort by priority.
 	for _, change := range fileChanges {
 		changes = append(changes, *change)
 	}
@@ -194,7 +194,7 @@ func analyzeFileChange(fileDiff string) *ChangeType {
 		return nil
 	}
 
-	// Extract filename
+	// Extract filename.
 	var filename string
 	for _, line := range lines {
 		if strings.HasPrefix(line, " a/") && strings.Contains(line, " b/") {
@@ -210,7 +210,7 @@ func analyzeFileChange(fileDiff string) *ChangeType {
 		return nil
 	}
 
-	// Determine change type and scope
+	// Determine change type and scope.
 	changeType, scope := determineTypeAndScope(filename, fileDiff)
 	description := generateDescription(filename, fileDiff, changeType)
 
@@ -224,7 +224,7 @@ func analyzeFileChange(fileDiff string) *ChangeType {
 }
 
 func determineTypeAndScope(filename, diff string) (string, string) {
-	// Determine scope from filename
+	// Determine scope from filename.
 	scope := ""
 	if strings.HasPrefix(filename, "cmd/") {
 		scope = "cli"
@@ -245,7 +245,7 @@ func determineTypeAndScope(filename, diff string) (string, string) {
 		scope = "build"
 	}
 
-	// Determine type from diff content and filename
+	// Determine type from diff content and filename.
 	changeType := "chore"
 
 	if strings.Contains(diff, "new file mode") {
@@ -277,7 +277,7 @@ func generateDescription(filename, diff, changeType string) string {
 	base := strings.TrimSuffix(filename, ".go")
 	base = strings.TrimSuffix(base, ".md")
 
-	// Extract meaningful part of filename
+	// Extract meaningful part of filename.
 	parts := strings.Split(base, "/")
 	name := parts[len(parts)-1]
 
@@ -351,17 +351,17 @@ func generateCommitMessage(changes []ChangeType) string {
 		return "chore: update files"
 	}
 
-	// Use the highest priority change as primary
+	// Use the highest priority change as primary.
 	primary := changes[0]
 
-	// Create subject line
+	// Create subject line.
 	subject := fmt.Sprintf("%s", primary.Type)
 	if primary.Scope != "" {
 		subject += fmt.Sprintf("(%s)", primary.Scope)
 	}
 	subject += fmt.Sprintf(": %s", primary.Description)
 
-	// Truncate subject if too long
+	// Truncate subject if too long.
 	if utf8.RuneCountInString(subject) > maxSubjectLength {
 		runes := []rune(subject)
 		if len(runes) > maxSubjectLength-3 {
@@ -369,7 +369,7 @@ func generateCommitMessage(changes []ChangeType) string {
 		}
 	}
 
-	// Generate body for multiple changes or complex single change
+	// Generate body for multiple changes or complex single change.
 	var body []string
 
 	if len(changes) > 1 {
@@ -387,7 +387,7 @@ func generateCommitMessage(changes []ChangeType) string {
 		}
 	}
 
-	// Add footer
+	// Add footer.
 	body = append(body, "")
 	body = append(body, "🤖 Generated with [Claude Code](https://claude.ai/code)")
 	body = append(body, "")
