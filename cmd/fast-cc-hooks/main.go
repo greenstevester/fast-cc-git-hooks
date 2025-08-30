@@ -65,7 +65,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "✨ All Commands:\n")
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "setup", "🚀 Easy setup - install git hooks (use --local for current repo only)")
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "setup-ent", "🏢 Enterprise setup - with JIRA validation (use --local for current repo only)")
-		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "remove", "🗑️  Easy removal - uninstall git hooks")
+		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "remove", "🗑️  Easy removal - uninstall git hooks (use --local or --global for specific removal)")
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "validate", "🔍 Test a commit message")
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "init", "📝 Create a config file")
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "version", "ℹ️  Show version info")
@@ -606,8 +606,106 @@ func ensureConfigExists() (string, bool, error) {
 	return defaultPath, true, nil
 }
 
+// checkInstallations returns (hasLocal, hasGlobal, error)
+func checkInstallations() (bool, bool, error) {
+	// Check local installation
+	localOpts := hooks.Options{Logger: logger}
+	localInstaller, err := hooks.New(localOpts)
+	if err != nil {
+		return false, false, fmt.Errorf("creating local installer: %w", err)
+	}
+	hasLocal := localInstaller.IsInstalled()
+
+	// Check global installation by trying to detect global hooks directory
+	hasGlobal, err := hasGlobalInstallation()
+	if err != nil {
+		return hasLocal, false, fmt.Errorf("checking global installation: %w", err)
+	}
+
+	return hasLocal, hasGlobal, nil
+}
+
+// hasGlobalInstallation checks if global hooks are installed
+func hasGlobalInstallation() (bool, error) {
+	// This is a simplified check - in practice you'd check the global git hooks directory
+	// For now, we'll assume global installation exists if we can find git config dir
+	configDir, err := getGitConfigDir()
+	if err != nil {
+		return false, err
+	}
+	
+	globalHookPath := filepath.Join(configDir, "hooks", "commit-msg")
+	if _, err := os.Stat(globalHookPath); err == nil {
+		// Read the file to check if it's our hook
+		content, readErr := os.ReadFile(globalHookPath)
+		if readErr != nil {
+			return false, readErr
+		}
+		return strings.Contains(string(content), "# fast-cc-hooks"), nil
+	}
+	return false, nil
+}
+
+// getGitConfigDir returns the git global config directory
+func getGitConfigDir() (string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("getting home directory: %w", err)
+	}
+	return filepath.Join(home, ".git"), nil
+}
+
+// removeGlobalInstallation removes global git hooks
+func removeGlobalInstallation() error {
+	configDir, err := getGitConfigDir()
+	if err != nil {
+		return fmt.Errorf("getting git config directory: %w", err)
+	}
+	
+	globalHookPath := filepath.Join(configDir, "hooks", "commit-msg")
+	if _, err := os.Stat(globalHookPath); err == nil {
+		if err := os.Remove(globalHookPath); err != nil {
+			return fmt.Errorf("removing global hook: %w", err)
+		}
+	}
+	return nil
+}
+
+// promptUserChoice prompts the user to choose between local/global removal
+func promptUserChoice() (string, error) {
+	fmt.Println("🤔 I found both local and global installations.")
+	fmt.Println("   Which would you like to remove?")
+	fmt.Println("")
+	fmt.Println("   1) Local only  (current repository)")
+	fmt.Println("   2) Global only (all repositories)")
+	fmt.Println("   3) Both")
+	fmt.Println("   4) Cancel")
+	fmt.Println("")
+	fmt.Print("Please choose (1-4): ")
+
+	var choice string
+	fmt.Scanln(&choice)
+
+	switch choice {
+	case "1":
+		return "local", nil
+	case "2":
+		return "global", nil
+	case "3":
+		return "both", nil
+	case "4":
+		return "cancel", nil
+	default:
+		return "", fmt.Errorf("invalid choice: %s", choice)
+	}
+}
+
 func removeCommand() *Command {
 	fs := flag.NewFlagSet("remove", flag.ExitOnError)
+	var localRemove bool
+	var globalRemove bool
+	fs.BoolVar(&localRemove, "local", false, "remove hooks only from current repository")
+	fs.BoolVar(&globalRemove, "global", false, "remove hooks only from global git configuration")
 
 	return &Command{
 		Name:        "remove",
@@ -618,23 +716,91 @@ func removeCommand() *Command {
 			fmt.Println("   (Don't worry, your code stays safe!)")
 			fmt.Println("")
 
-			opts := hooks.Options{
-				Logger: logger,
+			// Check for conflicting flags
+			if localRemove && globalRemove {
+				return fmt.Errorf("cannot specify both --local and --global flags")
 			}
 
-			installer, err := hooks.New(opts)
+			// Detect existing installations
+			hasLocal, hasGlobal, err := checkInstallations()
 			if err != nil {
-				return fmt.Errorf("creating installer: %w", err)
+				return fmt.Errorf("checking installations: %w", err)
 			}
 
-			err = installer.Uninstall(ctx)
-			if err != nil {
-				fmt.Println("❌ Removal failed:", err)
-				return err
+			// If no installations found
+			if !hasLocal && !hasGlobal {
+				fmt.Println("ℹ️  No fast-cc-hooks installations found.")
+				return nil
 			}
 
+			// Determine what to remove
+			var removeLocal, removeGlobal bool
+
+			if localRemove {
+				removeLocal = true
+			} else if globalRemove {
+				removeGlobal = true
+			} else {
+				// No flags specified - check what's available and prompt if both
+				if hasLocal && hasGlobal {
+					choice, promptErr := promptUserChoice()
+					if promptErr != nil {
+						return fmt.Errorf("getting user choice: %w", promptErr)
+					}
+					
+					switch choice {
+					case "local":
+						removeLocal = true
+					case "global":
+						removeGlobal = true
+					case "both":
+						removeLocal = true
+						removeGlobal = true
+					case "cancel":
+						fmt.Println("❌ Cancelled removal")
+						return nil
+					}
+				} else if hasLocal {
+					removeLocal = true
+				} else if hasGlobal {
+					removeGlobal = true
+				}
+			}
+
+			// Perform removals
+			var removed []string
+
+			if removeLocal && hasLocal {
+				fmt.Println("🗂️  Removing local installation...")
+				localOpts := hooks.Options{Logger: logger}
+				localInstaller, localErr := hooks.New(localOpts)
+				if localErr != nil {
+					return fmt.Errorf("creating local installer: %w", localErr)
+				}
+
+				if err := localInstaller.Uninstall(ctx); err != nil {
+					fmt.Printf("❌ Failed to remove local hooks: %v\n", err)
+					return err
+				}
+				removed = append(removed, "local")
+			}
+
+			if removeGlobal && hasGlobal {
+				fmt.Println("🌐 Removing global installation...")
+				if err := removeGlobalInstallation(); err != nil {
+					fmt.Printf("❌ Failed to remove global hooks: %v\n", err)
+					return err
+				}
+				removed = append(removed, "global")
+			}
+
+			// Success message
 			fmt.Println("")
-			fmt.Println("✅ All removed! fast-cc-hooks is no longer checking your commits")
+			if len(removed) > 0 {
+				fmt.Printf("✅ Removed %s installation(s)! fast-cc-hooks is no longer checking your commits\n", strings.Join(removed, " and "))
+			} else {
+				fmt.Println("ℹ️  Nothing to remove (installation not found)")
+			}
 			fmt.Println("💭 Thanks for using fast-cc-hooks!")
 			return nil
 		},

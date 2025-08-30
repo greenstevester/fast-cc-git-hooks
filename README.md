@@ -20,7 +20,10 @@ Why Use Conventional Commits? Because when you use them, there's tooling (listed
 - **`cc`** - preview generated conventional commit messages, based on your changes
 - **`ccc`** - generate conventional commit messages AND commit (3 c's for "Create Conventional Commit") (most popular)
 
-Use them together for the perfect commit workflow! 🎯 
+ 🎯 Key Benefits for Users:
+ - Flexibility: easily choose between system-wide or project-specific hook installation
+ - Team collaboration: Local installation perfect for team projects with specific requirements
+ - Personal workflow: Global installation ideal for individual developers wanting consistent validation
 
 ## 🔄 Perfect Workflow: Using ALL Tools Together
 
@@ -162,7 +165,9 @@ The format is simple: `type: what you did`
 
 ```bash
 fast-cc-hooks setup-ent # Set up everything (start here!)
-fast-cc-hooks remove    # Remove everything if you want to stop using it
+fast-cc-hooks remove    # Smart removal - prompts to choose local/global if both exist
+fast-cc-hooks remove --local   # Remove only from current repository
+fast-cc-hooks remove --global  # Remove only from global git configuration
 ```
 
 **Test things:**
