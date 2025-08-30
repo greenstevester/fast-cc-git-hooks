@@ -104,6 +104,14 @@ sudo mv fcgh cc /usr/local/bin/
 ```
 
 **🍎 macOS:**
+
+**Option A: Easy Installation Script (Recommended)**
+```bash
+# One-line install - automatically detects your Mac type and handles PATH
+curl -sSL https://raw.githubusercontent.com/greenstevester/fast-cc-git-hooks/main/install-macos.sh | bash
+```
+
+**Option B: Manual Installation**
 ```bash
 # Intel Macs
 curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fcgh_darwin_amd64.tar.gz
@@ -117,6 +125,16 @@ tar -xzf fcgh.tar.gz
 chmod +x fcgh cc
 sudo mv fcgh cc /usr/local/bin/
 ```
+
+**📱 For macOS Security (Both Options):**
+If you see "fcgh cannot be opened" security warning:
+1. Click "Done" in the dialog
+2. Go to **System Preferences** → **Security & Privacy** → **General** tab
+3. Click "Allow Anyway" next to the fcgh message
+4. Try running `fcgh` again and click "Open" when prompted
+
+*Note: The installation script automatically handles the quarantine removal to minimize security warnings.*
+
 
 ### Step 2: Verify tools work on your machine (a.k.a. "Is it installed ...smoke test?")
 
