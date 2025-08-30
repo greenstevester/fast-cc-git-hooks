@@ -45,7 +45,6 @@ func main() {
 	setupLogger(false)
 
 	commands := map[string]*Command{
-		"install":    installCommand(),
 		"setup":      setupCommand(),
 		"setup-ent":  setupEnterpriseCommand(),
 		"remove":     removeCommand(),
@@ -71,7 +70,6 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "init", "📝 Create a config file")
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "version", "ℹ️  Show version info")
 		fmt.Fprintf(os.Stderr, "\n🤓 Advanced Commands:\n")
-		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "install", "Install git hooks globally for all repositories")
 
 		fmt.Fprintf(os.Stderr, "\n🏁 Quick Start:\n")
 		fmt.Fprintf(os.Stderr, "   %s setup\n", os.Args[0])
@@ -138,34 +136,6 @@ func setupLogger(verbose bool) {
 	slog.SetDefault(logger)
 }
 
-func installCommand() *Command {
-	fs := flag.NewFlagSet("install", flag.ExitOnError)
-	fs.BoolVar(&forceInstall, "force", false, "force installation, overwriting existing hooks")
-	fs.BoolVar(&localInstall, "local", false, "install only for current repository (default: install globally)")
-
-	return &Command{
-		Name:        "install",
-		Description: "Install git hooks globally for all repositories",
-		Flags:       fs,
-		Run: func(ctx context.Context, _ []string) error {
-			if localInstall {
-				opts := hooks.Options{
-					Logger:       logger,
-					ForceInstall: forceInstall,
-				}
-
-				installer, err := hooks.New(opts)
-				if err != nil {
-					return fmt.Errorf("creating installer: %w", err)
-				}
-
-				return installer.Install(ctx)
-			}
-
-			return hooks.GlobalInstall(ctx, logger)
-		},
-	}
-}
 
 func validateCommand() *Command {
 	fs := flag.NewFlagSet("validate", flag.ExitOnError)

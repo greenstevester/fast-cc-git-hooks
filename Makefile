@@ -192,9 +192,6 @@ check: fmt vet test-short
 	@echo "Pre-commit checks complete"
 
 # Installation targets for git hooks
-## hook-install: Install pre-commit hook
-hook-install: build
-	@./$(BUILD_DIR)/$(BINARY_NAME) install
 
 
 ## init-config: Initialize configuration file
