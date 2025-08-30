@@ -109,3 +109,76 @@ func TestGenerateCommitMessageFooterRemoval(t *testing.T) {
 		}
 	}
 }
+
+func TestGenerateCommitMessageFormat(t *testing.T) {
+	// Test that commit messages follow conventional commit format
+	tests := []struct {
+		name    string
+		changes []ChangeType
+		wantPrefix string
+	}{
+		{
+			name: "feat with scope",
+			changes: []ChangeType{
+				{
+					Type:        "feat",
+					Scope:       "auth",
+					Description: "add user authentication",
+					Files:       []string{"auth.go"},
+					Priority:    1,
+				},
+			},
+			wantPrefix: "feat(auth):",
+		},
+		{
+			name: "fix without scope",
+			changes: []ChangeType{
+				{
+					Type:        "fix",
+					Scope:       "",
+					Description: "resolve memory leak",
+					Files:       []string{"main.go"},
+					Priority:    2,
+				},
+			},
+			wantPrefix: "fix:",
+		},
+		{
+			name: "docs with scope",
+			changes: []ChangeType{
+				{
+					Type:        "docs",
+					Scope:       "api",
+					Description: "update API documentation",
+					Files:       []string{"README.md"},
+					Priority:    6,
+				},
+			},
+			wantPrefix: "docs(api):",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := generateCommitMessage(tt.changes)
+			
+			if !strings.HasPrefix(result, tt.wantPrefix) {
+				t.Errorf("Expected commit message to start with '%s', got: %s", tt.wantPrefix, result)
+			}
+			
+			// Verify conventional commit format (no footer)
+			lines := strings.Split(result, "\n")
+			firstLine := lines[0]
+			
+			// Check that first line doesn't exceed recommended length
+			if len(firstLine) > 72 {
+				t.Errorf("Subject line too long (%d chars): %s", len(firstLine), firstLine)
+			}
+			
+			// Ensure no footer is present anywhere in the message
+			if strings.Contains(result, "Generated with") || strings.Contains(result, "Co-Authored-By") {
+				t.Errorf("Commit message should not contain footer, got: %s", result)
+			}
+		})
+	}
+}

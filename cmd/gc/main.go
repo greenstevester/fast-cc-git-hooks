@@ -89,10 +89,9 @@ func main() {
 
 	// Generate commit message.
 	message := generateCommitMessage(changes)
-	fmt.Println("Generated commit message:")
 	fmt.Println("─────────────────────────────────────────")
+	fmt.Println(">>> based on your changes, gc created the following git commit message for you:")
 	fmt.Println(message)
-	fmt.Println("─────────────────────────────────────────")
 
 	if *execute {
 		if err := executeCommit(message); err != nil {
@@ -100,9 +99,8 @@ func main() {
 		}
 		fmt.Println("Commit created successfully!")
 	} else {
-		fmt.Println("\nTo commit with this message, run:")
+		fmt.Println("\nWant this git commit message?, If Y, then run cmd below, and we will commit for you:")
 		fmt.Printf("gc --execute\n")
-		fmt.Println("\nOr copy the message above and use: git commit -m \"<message>\"")
 	}
 }
 
