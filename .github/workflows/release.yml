@@ -78,8 +78,20 @@ jobs:
     - name: Generate tag
       id: tag
       run: |
-        # Get the latest tag
-        LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+        # Fetch all tags to ensure we have the latest
+        echo "Fetching all tags..."
+        git fetch --tags --force
+        
+        # List all existing tags for debugging
+        echo "Existing tags:"
+        git tag -l 'v*' | sort -V || echo "No tags found"
+        
+        # Get the latest tag using version sort
+        LATEST_TAG=$(git tag -l 'v*' | sort -V | tail -n1)
+        if [ -z "$LATEST_TAG" ]; then
+          echo "No existing tags found, starting from v0.0.0"
+          LATEST_TAG="v0.0.0"
+        fi
         echo "Latest tag: $LATEST_TAG"
         
         # Extract version numbers
@@ -89,19 +101,74 @@ jobs:
         MINOR=${VERSION_PARTS[1]:-0}
         PATCH=${VERSION_PARTS[2]:-0}
         
-        # Increment patch version
-        NEW_PATCH=$((PATCH + 1))
-        NEW_TAG="v${MAJOR}.${MINOR}.${NEW_PATCH}"
+        echo "Current version: ${MAJOR}.${MINOR}.${PATCH}"
         
-        echo "New tag: $NEW_TAG"
+        # Determine version bump based on commit messages
+        # Check for breaking changes or features
+        COMMIT_MSG=$(git log -1 --pretty=%B)
+        if echo "$COMMIT_MSG" | grep -q "BREAKING CHANGE\|^feat!:"; then
+          echo "Breaking change detected, incrementing major version"
+          MAJOR=$((MAJOR + 1))
+          MINOR=0
+          PATCH=0
+        elif echo "$COMMIT_MSG" | grep -q "^feat:"; then
+          echo "Feature detected, incrementing minor version"
+          MINOR=$((MINOR + 1))
+          PATCH=0
+        else
+          echo "Patch/fix detected, incrementing patch version"
+          PATCH=$((PATCH + 1))
+        fi
+        
+        NEW_TAG="v${MAJOR}.${MINOR}.${PATCH}"
+        
+        # Keep incrementing patch until we find an unused tag
+        ATTEMPTS=0
+        MAX_ATTEMPTS=100
+        while git rev-parse "$NEW_TAG" >/dev/null 2>&1; do
+          echo "Tag $NEW_TAG already exists, incrementing patch..."
+          PATCH=$((PATCH + 1))
+          NEW_TAG="v${MAJOR}.${MINOR}.${PATCH}"
+          ATTEMPTS=$((ATTEMPTS + 1))
+          if [ $ATTEMPTS -ge $MAX_ATTEMPTS ]; then
+            echo "Error: Unable to find available tag after $MAX_ATTEMPTS attempts"
+            exit 1
+          fi
+        done
+        
+        echo "Generated new tag: $NEW_TAG"
         echo "tag=$NEW_TAG" >> $GITHUB_OUTPUT
+        echo "version=${MAJOR}.${MINOR}.${PATCH}" >> $GITHUB_OUTPUT
+
+    - name: Display release information
+      run: |
+        echo "🎉 Preparing to release version ${{ steps.tag.outputs.tag }}"
+        echo "Version: ${{ steps.tag.outputs.version }}"
+        echo ""
+        echo "Recent commits since last tag:"
+        git log $(git describe --tags --abbrev=0 2>/dev/null || echo "")..HEAD --oneline || echo "First release"
 
     - name: Create and push tag
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        git tag ${{ steps.tag.outputs.tag }}
+        
+        # Double-check the tag doesn't exist before creating
+        if git rev-parse "${{ steps.tag.outputs.tag }}" >/dev/null 2>&1; then
+          echo "Error: Tag ${{ steps.tag.outputs.tag }} already exists!"
+          echo "This should not happen - the tag generation step should have handled this."
+          echo "Existing tags:"
+          git tag -l 'v*' | sort -V
+          exit 1
+        fi
+        
+        echo "Creating tag ${{ steps.tag.outputs.tag }}..."
+        git tag -a ${{ steps.tag.outputs.tag }} -m "Release ${{ steps.tag.outputs.tag }}"
+        
+        echo "Pushing tag to origin..."
         git push origin ${{ steps.tag.outputs.tag }}
+        
+        echo "✅ Tag ${{ steps.tag.outputs.tag }} created and pushed successfully!"
 
     - name: Run GoReleaser
       uses: goreleaser/goreleaser-action@v5
