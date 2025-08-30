@@ -85,13 +85,7 @@ chmod +x fast-cc-hooks cc
 sudo mv fast-cc-hooks cc /usr/local/bin/
 ```
 
-**Option C: Using Homebrew** (macOS/Linux - coming soon!)
-```bash
-# Will be available after first release
-brew install greenstevester/tap/fast-cc-hooks
-```
-
-### Step 2: Verify all tools work
+### Step 2: Verify tools work on your machine (a.k.a. "Is it installed ...smoke test?")
 
 ```bash
 fast-cc-hooks version  # shows version info
@@ -99,15 +93,29 @@ cc --verbose           # runs cc in verbose mode
 ccc --verbose           # runs cc in verbose mode
 ```
 
-If you see version/help info for both, you're good to go! If not, make sure `/usr/local/bin` is in your PATH.
+If you see version/help info for both, you're good to go! If not, make sure all tool are on your PATH.
 
-### Step 3: Set it up (takes 5 seconds!)
+### 🛠️ Step 3: Setup
 
 ```bash
-fast-cc-hooks setup OR fast-cc-hooks setup-ent
+fast-cc-hooks setup
+```
+OR (for Enterprise users)
+
+```bash
+fast-cc-hooks setup-ent
 ```
 
-**That's it!** 🎉 Now every time you make a commit, it will automatically check that your message is compliant conventional commit message.
+#### fast-cc-hooks Setup Command 
+
+- User-friendly: Includes helpful messages, emoji, and step-by-step feedback
+- Comprehensive: Does TWO things automatically:
+  a. Creates/checks configuration: Ensures a config file exists (creates default if needed)
+  b. Installs hooks: Then installs the git hooks
+- Guided experience: Shows exactly what it's doing with clear output
+- Default behavior: Installs globally for all repositories
+
+**That's it!** 🎉 Now every time you make a commit, compliant conventional commit messages will be your default.
 
 
 ## ✨ How to write good commit messages
@@ -116,13 +124,13 @@ Instead of writing messy commits like:
 ```bash
 git commit -m "fixed stuff"
 git commit -m "update"
-git commit -m "asdfasdf"
+git commit -m "CGC-0000 blah blah blah"
 ```
 
 Write clear commits like:
 ```bash
 git commit -m "feat: add login button"
-git commit -m "fix: resolve login bug"  
+git commit -m "fix: CGC-4561 Resolved login bug"  
 git commit -m "docs: update README"
 ```
 
@@ -135,20 +143,17 @@ The format is simple: `type: what you did`
 - `test` - when you add tests
 - `chore` - when you do maintenance stuff
 
-## 🛠️ Simple Commands
 
-### Git Hook Commands (fast-cc-hooks)
-
-**The only commands you need:**
+### Commands (fast-cc-hooks)
 
 ```bash
-fast-cc-hooks setup     # Set up everything (start here!)
+fast-cc-hooks setup-ent # Set up everything (start here!)
 fast-cc-hooks remove    # Remove everything if you want to stop using it
 ```
 
 **Test things:**
 ```bash
-fast-cc-hooks validate "feat: my commit message"  # Test if a message is good
+fast-cc-hooks validate "freak: my terrible message"  # Test if a message is bad
 ```
 
 ### Commit Helper Commands (cc)
@@ -156,30 +161,30 @@ fast-cc-hooks validate "feat: my commit message"  # Test if a message is good
 **Smart commit generation:**
 
 ```bash
-cc                      # Preview generated commit message
+cc                     # Preview generated commit message
 ccc                    # Generate perfect commit message and commit
 cc --verbose           # Show detailed analysis of your changes
-cc --help             # Show all available options
+cc --help              # Show all available options
 ```
 
-**That's it!** Most people only ever need `fast-cc-hooks setup` and `ccc`.
+**That's it!** Most people only ever need `fast-cc-hooks setup-ent` and `ccc`.
 
 ## 🤔 Common Questions
 
-**Q: Do I need both tools?**
-A: No! They're completely independent. Use hooks for validation, cc for generation, or both together.
+**Q: Do I need all tools?**
+A: No! They're completely independent. Install hooks for validation, ccc for generation, or both together.
 
 **Q: What if I want to turn off validation temporarily?**
-A: Just run `fast-cc-hooks remove` and it's gone! Run `fast-cc-hooks setup` to turn it back on.
+A: Just run `fast-cc-hooks remove` and it's gone! Run `fast-cc-hooks setup-ent` to turn it back on.
 
 **Q: Will this mess up my code?**
 A: Nope! The hooks only check commit messages, cc only generates them. Your code stays exactly the same.
 
 **Q: What if cc generates a bad commit message?**
-A: The hook will catch it! That's why they work so well together. Plus, cc learns from conventional commit standards.
+A: The hook will catch it! That's why they work so well together.
 
 **Q: Can I use this on all my projects?**
-A: Yes! When you run `fast-cc-hooks setup`, it works for ALL your Git projects. cc works in any git repo.
+A: Yes! When you run `fast-cc-hooks setup-ent`, it works for ALL your Git projects. cc works in any git repo.
 
 **Q: What if I don't like the cc generated message?**
 A: Just use `cc` (without ccc) to preview first, then write your own and let the hook validate it!
@@ -194,12 +199,11 @@ git commit -m "asdf"
 git commit -m "WIP"
 ```
 
-✅ **Good commits** (these will work):
+✅ **Good Enterprise commits** (these will work):
 ```bash
-git commit -m "feat: add user login page"
-git commit -m "fix: resolve password validation bug"
-git commit -m "docs: add installation instructions"
-git commit -m "test: add login form tests"
+git commit -m "feat: CGC-5641 Added user login page"
+git commit -m "fix: CAHC-4132 Resolve password validation bug"
+git commit -m "docs: LIND-4777 installation instructions"
 ```
 
 ## ⚙️ Want to Customize? (Optional)
@@ -238,7 +242,7 @@ fast-cc-hooks setup
 Try setting it up again:
 ```bash
 fast-cc-hooks remove
-fast-cc-hooks setup
+fast-cc-hooks setup-ent
 ```
 
 ## 🏗️ Advanced Examples
