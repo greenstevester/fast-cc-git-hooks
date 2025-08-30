@@ -223,9 +223,9 @@ func analyzeFileChange(fileDiff string) *ChangeType {
 	}
 }
 
-func determineTypeAndScope(filename, diff string) (string, string) {
-	scope := determineScope(filename)
-	changeType := determineType(filename, diff)
+func determineTypeAndScope(filename, diff string) (changeType, scope string) {
+	scope = determineScope(filename)
+	changeType = determineType(filename, diff)
 	return changeType, scope
 }
 

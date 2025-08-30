@@ -117,6 +117,7 @@ func main() {
 	// Run command...
 	if err := cmd.Run(ctx, cmd.Flags.Args()); err != nil {
 		logger.Error("command failed", "command", cmdName, "error", err)
+		cancel()
 		os.Exit(1)
 	}
 }
@@ -145,7 +146,7 @@ func installCommand() *Command {
 		Name:        "install",
 		Description: "Install git hooks globally for all repositories",
 		Flags:       fs,
-		Run: func(ctx context.Context, args []string) error {
+		Run: func(ctx context.Context, _ []string) error {
 			if localInstall {
 				opts := hooks.Options{
 					Logger:       logger,
@@ -172,7 +173,7 @@ func uninstallCommand() *Command {
 		Name:        "uninstall",
 		Description: "Remove git hooks from current repository",
 		Flags:       fs,
-		Run: func(ctx context.Context, args []string) error {
+		Run: func(ctx context.Context, _ []string) error {
 			opts := hooks.Options{
 				Logger: logger,
 			}
@@ -268,7 +269,7 @@ func initCommand() *Command {
 		Name:        "init",
 		Description: "📝 Create a config file",
 		Flags:       fs,
-		Run: func(ctx context.Context, args []string) error {
+		Run: func(_ context.Context, _ []string) error {
 			path := configFile
 			if path == "" {
 				path = config.DefaultConfigFile
@@ -308,7 +309,7 @@ func versionCommand() *Command {
 		Name:        "version",
 		Description: "ℹ️  Show version info",
 		Flags:       fs,
-		Run: func(ctx context.Context, args []string) error {
+		Run: func(_ context.Context, _ []string) error {
 			fmt.Printf("fast-cc-hooks version %s\n", version)
 			fmt.Printf("Go version: %s\n", runtime.Version())
 			fmt.Printf("OS/Arch: %s/%s\n", runtime.GOOS, runtime.GOARCH)
@@ -326,7 +327,7 @@ func setupCommand() *Command {
 		Name:        "setup",
 		Description: "🚀 Easy setup - install git hooks everywhere!",
 		Flags:       fs,
-		Run: func(ctx context.Context, args []string) error {
+		Run: func(ctx context.Context, _ []string) error {
 			fmt.Println("🚀 Setting up fast-cc-hooks...")
 			fmt.Println("   This will help you write better commit messages!")
 			fmt.Println("")
@@ -370,7 +371,7 @@ func removeCommand() *Command {
 		Name:        "remove",
 		Description: "🗑️  Easy removal - uninstall git hooks",
 		Flags:       fs,
-		Run: func(ctx context.Context, args []string) error {
+		Run: func(ctx context.Context, _ []string) error {
 			fmt.Println("🗑️  Removing fast-cc-hooks...")
 			fmt.Println("   (Don't worry, your code stays safe!)")
 			fmt.Println("")

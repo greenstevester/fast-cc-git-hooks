@@ -39,7 +39,7 @@ func (r *ValidationResult) Error() string {
 		return ""
 	}
 
-	var messages []string
+	messages := make([]string, 0, len(r.Errors))
 	for _, err := range r.Errors {
 		messages = append(messages, err.Error())
 	}
@@ -241,7 +241,7 @@ func (v *Validator) validateJiraProjectPrefix(ticket conventionalcommit.TicketRe
 		return
 	}
 
-	message := fmt.Sprintf("JIRA project '%s' is not allowed (allowed: %s)", 
+	message := fmt.Sprintf("JIRA project '%s' is not allowed (allowed: %s)",
 		projectPrefix, strings.Join(v.config.JIRAProjects, ", "))
 	v.addValidationError(result, "ticket", message, ticket.ID)
 }
@@ -290,8 +290,8 @@ func Quick(message string) error {
 	return nil
 }
 
-// checkCancellation checks if the context is cancelled and updates the result.
-func (v *Validator) checkCancellation(ctx context.Context, result *ValidationResult) bool {
+// checkCancellation checks if the context is canceled and updates the result.
+func (*Validator) checkCancellation(ctx context.Context, result *ValidationResult) bool {
 	select {
 	case <-ctx.Done():
 		result.Valid = false

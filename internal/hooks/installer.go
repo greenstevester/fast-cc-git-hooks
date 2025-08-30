@@ -79,7 +79,7 @@ func New(opts Options) (*Installer, error) {
 }
 
 // Install installs the commit-msg hook.
-func (i *Installer) Install(ctx context.Context) error {
+func (i *Installer) Install(_ context.Context) error {
 	hooksDir := filepath.Join(i.gitDir, "hooks")
 
 	// Ensure hooks directory exists.
@@ -110,6 +110,7 @@ func (i *Installer) Install(ctx context.Context) error {
 	script := i.generateHookScript()
 
 	// Write hook file.
+	// #nosec G306 - Git hooks must be executable (755 permissions required)
 	if err := os.WriteFile(hookPath, []byte(script), 0o755); err != nil {
 		return fmt.Errorf("writing hook: %w", err)
 	}
@@ -122,7 +123,7 @@ func (i *Installer) Install(ctx context.Context) error {
 }
 
 // Uninstall removes the commit-msg hook.
-func (i *Installer) Uninstall(ctx context.Context) error {
+func (i *Installer) Uninstall(_ context.Context) error {
 	hookPath := filepath.Join(i.gitDir, "hooks", HookName)
 
 	// Check if hook exists.
@@ -179,7 +180,7 @@ func (i *Installer) generateHookScript() string {
 }
 
 // isOurHook checks if a hook file was created by us.
-func (i *Installer) isOurHook(path string) bool {
+func (*Installer) isOurHook(path string) bool {
 	file, err := os.Open(path)
 	if err != nil {
 		return false
@@ -324,7 +325,7 @@ func getGitConfigDir() (string, error) {
 }
 
 // configureGitTemplate sets up git to use our template directory.
-func configureGitTemplate(templateDir string) error {
+func configureGitTemplate(_ string) error {
 	// This would typically call git config.
 	// For now, we'll document that users need to run:.
 	// git config --global init.templateDir <templateDir>.
