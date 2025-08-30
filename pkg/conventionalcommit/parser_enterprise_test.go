@@ -98,15 +98,15 @@ func TestParser_ParseEnterpriseFormats(t *testing.T) {
 		},
 		{
 			name:    "Enterprise ticket with GitHub reference",
-			message: "fix(cli): CGC-333 Fixed CLI parsing (#456)",
+			message: "fix(cli): CAVH-3334 Fixed CLI parsing (#456)",
 			want: &Commit{
 				Type:        "fix",
 				Scope:       "cli",
-				Description: "CGC-333 Fixed CLI parsing (#456)",
-				Raw:         "fix(cli): CGC-333 Fixed CLI parsing (#456)",
+				Description: "CAVH-3334 Fixed CLI parsing (#456)",
+				Raw:         "fix(cli): CAVH-3334 Fixed CLI parsing (#456)",
 				TicketRefs: []TicketRef{
 					{Type: "GITHUB", ID: "456", Raw: "#456"},
-					{Type: "JIRA", ID: "CGC-333", Raw: "CGC-333"},
+					{Type: "JIRA", ID: "CAVH-3334", Raw: "CAVH-3334"},
 				},
 			},
 		},

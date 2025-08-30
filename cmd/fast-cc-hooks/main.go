@@ -45,13 +45,14 @@ func main() {
 	setupLogger(false)
 
 	commands := map[string]*Command{
-		"install":   installCommand(),
-		"setup":     setupCommand(),
-		"uninstall": uninstallCommand(),
-		"remove":    removeCommand(),
-		"validate":  validateCommand(),
-		"init":      initCommand(),
-		"version":   versionCommand(),
+		"install":    installCommand(),
+		"setup":      setupCommand(),
+		"setup-ent":  setupEnterpriseCommand(),
+		"uninstall":  uninstallCommand(),
+		"remove":     removeCommand(),
+		"validate":   validateCommand(),
+		"init":       initCommand(),
+		"version":    versionCommand(),
 	}
 
 	// Parse global flags.
@@ -65,6 +66,7 @@ func main() {
 
 		fmt.Fprintf(os.Stderr, "✨ All Commands:\n")
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "setup", "🚀 Easy setup - install git hooks everywhere!")
+		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "setup-ent", "🏢 Enterprise setup - with JIRA ticket validation!")
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "remove", "🗑️  Easy removal - uninstall git hooks")
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "validate", "🔍 Test a commit message")
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "init", "📝 Create a config file")
@@ -385,6 +387,222 @@ func setupCommand() *Command {
 			return nil
 		},
 	}
+}
+
+func setupEnterpriseCommand() *Command {
+	fs := flag.NewFlagSet("setup-ent", flag.ExitOnError)
+	fs.BoolVar(&forceInstall, "force", false, "force installation, overwriting existing hooks")
+	fs.BoolVar(&localInstall, "local", false, "install only for current repository (default: install globally)")
+
+	return &Command{
+		Name:        "setup-ent",
+		Description: "🏢 Enterprise setup - with JIRA ticket validation!",
+		Flags:       fs,
+		Run: func(ctx context.Context, _ []string) error {
+			fmt.Println("🏢 Setting up fast-cc-hooks for Enterprise...")
+			fmt.Println("   This includes JIRA ticket validation and enterprise-ready rules!")
+			fmt.Println("")
+
+			// Step 1: Check/create enterprise configuration
+			configPath, configCreated, configErr := ensureEnterpriseConfigExists()
+			if configErr != nil {
+				fmt.Printf("⚠️  Warning: Could not create enterprise config: %v\n", configErr)
+				fmt.Println("   Hooks will use default settings.")
+			} else if configCreated {
+				fmt.Printf("📝 Created enterprise configuration: %s\n", configPath)
+				fmt.Println("   ✅ JIRA ticket validation enabled")
+				fmt.Println("   ✅ Enterprise scopes configured")
+				fmt.Println("   ✅ Advanced validation rules ready")
+			} else {
+				fmt.Printf("📝 Using existing configuration: %s\n", configPath)
+			}
+			fmt.Println("")
+
+			// Step 2: Install hooks
+			var err error
+			if localInstall {
+				fmt.Println("📁 Installing hooks for this repository only...")
+				opts := hooks.Options{
+					Logger:       logger,
+					ForceInstall: forceInstall,
+				}
+
+				installer, instErr := hooks.New(opts)
+				if instErr != nil {
+					return fmt.Errorf("creating installer: %w", instErr)
+				}
+
+				err = installer.Install(ctx)
+			} else {
+				fmt.Println("🌍 Installing hooks globally (for all your repositories)...")
+				err = hooks.GlobalInstall(ctx, logger)
+			}
+
+			if err != nil {
+				fmt.Println("❌ Setup failed:", err)
+				return err
+			}
+
+			fmt.Println("")
+			fmt.Println("✅ Enterprise setup complete! Your commit messages will be validated with:")
+			fmt.Println("   🎫 JIRA ticket references (required)")
+			fmt.Println("   📋 Enterprise scopes (api, web, cli, db, auth, core, etc.)")
+			fmt.Println("   🔧 Advanced validation rules")
+			if configPath != "" {
+				fmt.Printf("⚙️  Configuration stored at: %s\n", configPath)
+				fmt.Println("   Edit this file to customize enterprise rules.")
+			}
+			fmt.Println("💡 Try: git commit -m \"feat(api): PROJ-123 Add user authentication\"")
+			return nil
+		},
+	}
+}
+
+// ensureEnterpriseConfigExists checks for existing config or creates enterprise config.
+// Returns (configPath, wasCreated, error).
+func ensureEnterpriseConfigExists() (string, bool, error) {
+	// First check if there's already a config file specified
+	if configFile != "" {
+		if _, err := os.Stat(configFile); err == nil {
+			return configFile, false, nil
+		}
+		return "", false, fmt.Errorf("specified config file not found: %s", configFile)
+	}
+
+	// Get the default config path in home directory
+	defaultPath, err := config.GetDefaultConfigPath()
+	if err != nil {
+		return "", false, fmt.Errorf("cannot determine config path: %w", err)
+	}
+
+	// Check if any config already exists in home directory
+	if _, err := os.Stat(defaultPath); err == nil {
+		return defaultPath, false, nil
+	}
+
+	// Check for old filename in home directory for backward compatibility
+	oldPath := filepath.Join(filepath.Dir(defaultPath), ".fast-cc-hooks.yaml")
+	if _, err := os.Stat(oldPath); err == nil {
+		return oldPath, false, nil
+	}
+
+	// Check if config exists in current directory (new filename first)
+	if _, err := os.Stat(config.DefaultConfigFile); err == nil {
+		return config.DefaultConfigFile, false, nil
+	}
+
+	// Check for old filename in current directory
+	if _, err := os.Stat(".fast-cc-hooks.yaml"); err == nil {
+		return ".fast-cc-hooks.yaml", false, nil
+	}
+
+	// Create enterprise config in home directory
+	if err := copyEnterpriseConfig(defaultPath); err != nil {
+		return "", false, fmt.Errorf("creating enterprise config: %w", err)
+	}
+
+	return defaultPath, true, nil
+}
+
+// copyEnterpriseConfig copies the enterprise config template to the specified path.
+func copyEnterpriseConfig(destPath string) error {
+	// Get the path to the enterprise config template
+	executable, err := os.Executable()
+	if err != nil {
+		return fmt.Errorf("finding executable: %w", err)
+	}
+	
+	// Look for enterprise config relative to executable
+	exeDir := filepath.Dir(executable)
+	templatePath := filepath.Join(exeDir, "example-configs", "fast-cc-hooks.enterprise.yaml")
+	
+	// If not found, try relative to current directory (development scenario)
+	if _, err := os.Stat(templatePath); os.IsNotExist(err) {
+		templatePath = filepath.Join("example-configs", "fast-cc-hooks.enterprise.yaml")
+	}
+
+	// Read the enterprise config template
+	templateData, err := os.ReadFile(templatePath)
+	if err != nil {
+		// If we can't find the template, create a basic enterprise config
+		return createBasicEnterpriseConfig(destPath)
+	}
+
+	// Ensure the destination directory exists
+	if err := os.MkdirAll(filepath.Dir(destPath), 0o750); err != nil {
+		return fmt.Errorf("creating config directory: %w", err)
+	}
+
+	// Write the enterprise config
+	if err := os.WriteFile(destPath, templateData, 0o644); err != nil {
+		return fmt.Errorf("writing enterprise config: %w", err)
+	}
+
+	return nil
+}
+
+// createBasicEnterpriseConfig creates a basic enterprise config if template is not found.
+func createBasicEnterpriseConfig(destPath string) error {
+	enterpriseConfig := `# fast-cc-hooks enterprise configuration
+
+# Allowed commit types
+types:
+  - feat
+  - fix
+  - docs
+  - style
+  - refactor
+  - test
+  - chore
+  - perf
+  - ci
+  - build
+  - revert
+
+# Enterprise scopes
+scopes:
+  - api
+  - web
+  - cli
+  - db
+  - auth
+  - core
+  - mw
+  - net
+  - sec
+  - iam
+  - app
+
+# Scope is not required by default
+scope_required: false
+
+# Maximum length of the subject line
+max_subject_length: 72
+
+# Allow breaking changes
+allow_breaking_changes: true
+
+# Require JIRA ticket references in commits
+require_jira_ticket: true
+
+# No general ticket reference requirement
+require_ticket_ref: false
+
+# Custom rules (empty by default)
+custom_rules: []
+`
+
+	// Ensure the destination directory exists
+	if err := os.MkdirAll(filepath.Dir(destPath), 0o750); err != nil {
+		return fmt.Errorf("creating config directory: %w", err)
+	}
+
+	// Write the basic enterprise config
+	if err := os.WriteFile(destPath, []byte(enterpriseConfig), 0o644); err != nil {
+		return fmt.Errorf("writing basic enterprise config: %w", err)
+	}
+
+	return nil
 }
 
 // ensureConfigExists checks for existing config or creates a default one.
