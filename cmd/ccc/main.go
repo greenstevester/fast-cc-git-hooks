@@ -21,6 +21,9 @@ var (
 )
 
 func main() {
+	// Print banner
+	fmt.Println("<<Made for Boo>>")
+	
 	flag.Parse()
 
 	if *help {

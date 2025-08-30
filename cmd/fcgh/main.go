@@ -41,6 +41,9 @@ var (
 )
 
 func main() {
+	// Print banner
+	fmt.Println("<<Made for Boo>>")
+
 	// Setup base logger.
 	setupLogger(false)
 
