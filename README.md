@@ -23,21 +23,21 @@ git commit -m "feat: add login button"
 # ↳ The fast-cc-hooks hook, automatically validates your message ✅
 ```
 
-### Option 2: Commit messages are generated bases on your changes (using gc) and validated by the fast-cc-hooks hook
+### Option 2: Commit messages are generated bases on your changes (using gce) and validated by the fast-cc-hooks hook
 ```bash
-# Let gc generate the conventional commit message for you
-gc --execute
-# ↳ gc analyzes your git changes and creates a commit message
+# Let gce generate the conventional commit message and execute it for you
+gce
+# ↳ gce analyzes your git changes and creates a commit message
 # ↳ When git commit runs, the git hook (installed via fast-cc-hooks) validates the generated message ✅
 # ↳ Valid and compliant conventional commit, every time! 
 ```
 
 ### You can mix and match:
 - **Use fast-cc-hooks alone**: Manual commits with automatic validation
-- **Use gc alone**: Generated commits without validation (but why would you?)
+- **Use gce alone**: Generated commits without validation (but why would you?)
 - **Use both**: Generated commits with validation - the perfect combo! 🎯
 
-**Pro tip**: Start with `gc` to see what good commit messages look like, then graduate to writing your own!
+**Pro tip**: Start with `gce` to see what good commit messages look like, then graduate to writing your own!
 
 ## ⚡️ Super Quick Setup (3 steps!)
 
@@ -163,12 +163,12 @@ fast-cc-hooks validate "feat: my commit message"  # Test if a message is good
 
 ```bash
 gc                      # Preview generated commit message
-gc --execute           # Generate perfect commit message and commit
+gce                    # Generate perfect commit message and commit
 gc --verbose           # Show detailed analysis of your changes
 gc --help             # Show all available options
 ```
 
-**That's it!** Most people only ever need `fast-cc-hooks setup` and `gc --execute`.
+**That's it!** Most people only ever need `fast-cc-hooks setup` and `gce`.
 
 ## 🤔 Common Questions
 
