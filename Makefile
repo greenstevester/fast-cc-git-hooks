@@ -86,7 +86,7 @@ bench:
 ## coverage: Generate test coverage report
 coverage:
 	@echo "Generating coverage report..."
-	@go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+	@go test -v -race -coverprofile='coverage.out' -covermode='atomic' './...'
 	@go tool cover -html=coverage.out -o coverage.html
 	@echo "Coverage report generated: coverage.html"
 	@go tool cover -func=coverage.out
