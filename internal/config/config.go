@@ -24,26 +24,24 @@ type Config struct {
 	Types []string `yaml:"types"`
 	// Scopes defines allowed scopes (empty means any scope allowed).
 	Scopes []string `yaml:"scopes,omitempty"`
-	// ScopeRequired indicates if scope is mandatory.
-	ScopeRequired bool `yaml:"scope_required"`
-	// MaxSubjectLength defines maximum subject line length.
-	MaxSubjectLength int `yaml:"max_subject_length"`
-	// AllowBreakingChanges permits breaking change indicators (!).
-	AllowBreakingChanges bool `yaml:"allow_breaking_changes"`
 	// CustomRules defines additional validation rules.
 	CustomRules []CustomRule `yaml:"custom_rules,omitempty"`
 	// IgnorePatterns defines patterns to skip validation.
 	IgnorePatterns []string `yaml:"ignore_patterns,omitempty"`
-
-	// Ticket reference validation.
+	// JIRAProjects defines allowed JIRA project prefixes.
+	JIRAProjects []string `yaml:"jira_projects,omitempty"`
+	// JIRATicketPattern defines a regex pattern for valid JIRA tickets.
+	JIRATicketPattern string `yaml:"jira_ticket_pattern,omitempty"`
+	// MaxSubjectLength defines maximum subject line length.
+	MaxSubjectLength int `yaml:"max_subject_length"`
+	// ScopeRequired indicates if scope is mandatory.
+	ScopeRequired bool `yaml:"scope_required"`
+	// AllowBreakingChanges permits breaking change indicators (!).
+	AllowBreakingChanges bool `yaml:"allow_breaking_changes"`
 	// RequireJIRATicket requires JIRA ticket references in commits.
 	RequireJIRATicket bool `yaml:"require_jira_ticket"`
 	// RequireTicketRef requires any type of ticket reference in commits.
 	RequireTicketRef bool `yaml:"require_ticket_ref"`
-	// JIRATicketPattern defines a regex pattern for valid JIRA tickets.
-	JIRATicketPattern string `yaml:"jira_ticket_pattern,omitempty"`
-	// JIRAProjects defines allowed JIRA project prefixes.
-	JIRAProjects []string `yaml:"jira_projects,omitempty"`
 }
 
 // CustomRule defines a custom validation rule.

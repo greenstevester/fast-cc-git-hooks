@@ -107,12 +107,8 @@ func (v *Validator) Validate(ctx context.Context, message string) *ValidationRes
 	}
 
 	// Check for cancellation.
-	select {
-	case <-ctx.Done():
-		result.Valid = false
-		result.Errors = append(result.Errors, ctx.Err())
+	if v.checkCancellation(ctx, result) {
 		return result
-	default:
 	}
 
 	// Check ignore patterns.
@@ -123,77 +119,16 @@ func (v *Validator) Validate(ctx context.Context, message string) *ValidationRes
 	// Parse the commit message.
 	commit, err := v.parser.Parse(message)
 	if err != nil {
-		result.Valid = false
-		result.Errors = append(result.Errors, &ValidationError{
-			Field:   "format",
-			Message: err.Error(),
-		})
+		v.addValidationError(result, "format", err.Error(), "")
 		return result
 	}
 
-	// Validate type.
-	if commit.Type != "" && !v.config.HasType(commit.Type) {
-		result.Valid = false
-		result.Errors = append(result.Errors, &ValidationError{
-			Field:   "type",
-			Message: fmt.Sprintf("invalid type (allowed: %s)", strings.Join(v.config.Types, ", ")),
-			Value:   commit.Type,
-		})
-	}
-
-	// Validate scope.
-	if v.config.ScopeRequired && commit.Scope == "" {
-		result.Valid = false
-		result.Errors = append(result.Errors, &ValidationError{
-			Field:   "scope",
-			Message: "scope is required",
-		})
-	} else if commit.Scope != "" && !v.config.HasScope(commit.Scope) {
-		result.Valid = false
-		result.Errors = append(result.Errors, &ValidationError{
-			Field:   "scope",
-			Message: fmt.Sprintf("invalid scope (allowed: %s)", strings.Join(v.config.Scopes, ", ")),
-			Value:   commit.Scope,
-		})
-	}
-
-	// Validate subject length.
-	header := commit.Header()
-	if len(header) > v.config.MaxSubjectLength {
-		result.Valid = false
-		result.Errors = append(result.Errors, &ValidationError{
-			Field:   "subject",
-			Message: fmt.Sprintf("exceeds maximum length of %d characters", v.config.MaxSubjectLength),
-			Value:   fmt.Sprintf("%d characters", len(header)),
-		})
-	}
-
-	// Validate breaking changes.
-	if commit.Breaking && !v.config.AllowBreakingChanges {
-		result.Valid = false
-		result.Errors = append(result.Errors, &ValidationError{
-			Field:   "breaking",
-			Message: "breaking changes are not allowed",
-		})
-	}
-
-	// Apply custom rules.
-	for _, rule := range v.config.CustomRules {
-		re := v.compiledRules[rule.Name]
-		if !re.MatchString(message) {
-			result.Valid = false
-			msg := rule.Message
-			if msg == "" {
-				msg = fmt.Sprintf("failed custom rule: %s", rule.Name)
-			}
-			result.Errors = append(result.Errors, &ValidationError{
-				Field:   "custom",
-				Message: msg,
-			})
-		}
-	}
-
-	// Validate ticket requirements.
+	// Run all validations.
+	v.validateType(commit, result)
+	v.validateScope(commit, result)
+	v.validateSubjectLength(commit, result)
+	v.validateBreakingChanges(commit, result)
+	v.validateCustomRules(message, result)
 	v.validateTicketRequirements(commit, result)
 
 	return result
@@ -322,7 +257,7 @@ func (v *Validator) isProjectAllowed(projectPrefix string) bool {
 }
 
 // addValidationError adds a validation error to the result.
-func (v *Validator) addValidationError(result *ValidationResult, field, message, value string) {
+func (*Validator) addValidationError(result *ValidationResult, field, message, value string) {
 	result.Valid = false
 	result.Errors = append(result.Errors, &ValidationError{
 		Field:   field,
@@ -353,4 +288,67 @@ func Quick(message string) error {
 		return result
 	}
 	return nil
+}
+
+// checkCancellation checks if the context is cancelled and updates the result.
+func (v *Validator) checkCancellation(ctx context.Context, result *ValidationResult) bool {
+	select {
+	case <-ctx.Done():
+		result.Valid = false
+		result.Errors = append(result.Errors, ctx.Err())
+		return true
+	default:
+		return false
+	}
+}
+
+// validateType validates the commit type.
+func (v *Validator) validateType(commit *conventionalcommit.Commit, result *ValidationResult) {
+	if commit.Type != "" && !v.config.HasType(commit.Type) {
+		v.addValidationError(result, "type", 
+			fmt.Sprintf("invalid type (allowed: %s)", strings.Join(v.config.Types, ", ")), 
+			commit.Type)
+	}
+}
+
+// validateScope validates the commit scope.
+func (v *Validator) validateScope(commit *conventionalcommit.Commit, result *ValidationResult) {
+	if v.config.ScopeRequired && commit.Scope == "" {
+		v.addValidationError(result, "scope", "scope is required", "")
+	} else if commit.Scope != "" && !v.config.HasScope(commit.Scope) {
+		v.addValidationError(result, "scope", 
+			fmt.Sprintf("invalid scope (allowed: %s)", strings.Join(v.config.Scopes, ", ")), 
+			commit.Scope)
+	}
+}
+
+// validateSubjectLength validates the subject line length.
+func (v *Validator) validateSubjectLength(commit *conventionalcommit.Commit, result *ValidationResult) {
+	header := commit.Header()
+	if len(header) > v.config.MaxSubjectLength {
+		v.addValidationError(result, "subject", 
+			fmt.Sprintf("exceeds maximum length of %d characters", v.config.MaxSubjectLength),
+			fmt.Sprintf("%d characters", len(header)))
+	}
+}
+
+// validateBreakingChanges validates breaking change rules.
+func (v *Validator) validateBreakingChanges(commit *conventionalcommit.Commit, result *ValidationResult) {
+	if commit.Breaking && !v.config.AllowBreakingChanges {
+		v.addValidationError(result, "breaking", "breaking changes are not allowed", "")
+	}
+}
+
+// validateCustomRules applies custom validation rules.
+func (v *Validator) validateCustomRules(message string, result *ValidationResult) {
+	for _, rule := range v.config.CustomRules {
+		re := v.compiledRules[rule.Name]
+		if !re.MatchString(message) {
+			msg := rule.Message
+			if msg == "" {
+				msg = fmt.Sprintf("failed custom rule: %s", rule.Name)
+			}
+			v.addValidationError(result, "custom", msg, "")
+		}
+	}
 }

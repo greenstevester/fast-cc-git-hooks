@@ -151,11 +151,11 @@ func getStagedDiff() (string, error) {
 }
 
 func analyzeDiff(diff string) []ChangeType {
-	var changes []ChangeType
 	fileChanges := make(map[string]*ChangeType)
 
 	// Parse diff by files.
 	files := strings.Split(diff, "diff --git")
+	changes := make([]ChangeType, 0, len(files))
 	for _, file := range files {
 		if strings.TrimSpace(file) == "" {
 			continue
@@ -224,53 +224,61 @@ func analyzeFileChange(fileDiff string) *ChangeType {
 }
 
 func determineTypeAndScope(filename, diff string) (string, string) {
-	// Determine scope from filename.
-	scope := ""
-	if strings.HasPrefix(filename, "cmd/") {
-		scope = "cli"
-	} else if strings.HasPrefix(filename, "internal/") {
+	scope := determineScope(filename)
+	changeType := determineType(filename, diff)
+	return changeType, scope
+}
+
+// determineScope determines the scope from the filename.
+func determineScope(filename string) string {
+	switch {
+	case strings.HasPrefix(filename, "cmd/"):
+		return "cli"
+	case strings.HasPrefix(filename, "internal/"):
 		parts := strings.Split(filename, "/")
 		if len(parts) > 1 {
-			scope = parts[1]
+			return parts[1]
 		}
-	} else if strings.HasPrefix(filename, "pkg/") {
-		scope = "api"
-	} else if strings.HasPrefix(filename, ".github/") {
-		scope = "ci"
-	} else if strings.HasPrefix(filename, "docs/") || strings.HasSuffix(filename, ".md") {
-		scope = "docs"
-	} else if strings.Contains(filename, "test") || strings.HasSuffix(filename, "_test.go") {
-		scope = "test"
-	} else if filename == "Makefile" || filename == "go.mod" || filename == "go.sum" {
-		scope = "build"
+		return ""
+	case strings.HasPrefix(filename, "pkg/"):
+		return "api"
+	case strings.HasPrefix(filename, ".github/"):
+		return "ci"
+	case strings.HasPrefix(filename, "docs/") || strings.HasSuffix(filename, ".md"):
+		return "docs"
+	case strings.Contains(filename, "test") || strings.HasSuffix(filename, "_test.go"):
+		return "test"
+	case filename == "Makefile" || filename == "go.mod" || filename == "go.sum":
+		return "build"
+	default:
+		return ""
 	}
+}
 
-	// Determine type from diff content and filename.
-	changeType := "chore"
-
-	if strings.Contains(diff, "new file mode") {
-		changeType = "feat"
-	} else if strings.Contains(diff, "deleted file mode") {
-		changeType = "refactor"
-	} else if strings.HasSuffix(filename, "_test.go") {
-		changeType = "test"
-	} else if strings.HasSuffix(filename, ".md") {
-		changeType = "docs"
-	} else if strings.Contains(filename, "github/workflows") {
-		changeType = "ci"
-	} else if filename == "Makefile" || filename == "go.mod" || filename == "go.sum" {
-		changeType = "build"
-	} else if strings.Contains(diff, "+func ") && !strings.Contains(diff, "-func ") {
-		changeType = "feat"
-	} else if strings.Contains(diff, "fix") || strings.Contains(diff, "Fix") {
-		changeType = "fix"
-	} else if countAdditions(diff) > countDeletions(diff) {
-		changeType = "feat"
-	} else {
-		changeType = "refactor"
+// determineType determines the commit type from the filename and diff.
+func determineType(filename, diff string) string {
+	switch {
+	case strings.Contains(diff, "new file mode"):
+		return "feat"
+	case strings.Contains(diff, "deleted file mode"):
+		return "refactor"
+	case strings.HasSuffix(filename, "_test.go"):
+		return "test"
+	case strings.HasSuffix(filename, ".md"):
+		return "docs"
+	case strings.Contains(filename, "github/workflows"):
+		return "ci"
+	case filename == "Makefile" || filename == "go.mod" || filename == "go.sum":
+		return "build"
+	case strings.Contains(diff, "+func ") && !strings.Contains(diff, "-func "):
+		return "feat"
+	case strings.Contains(diff, "fix") || strings.Contains(diff, "Fix"):
+		return "fix"
+	case countAdditions(diff) > countDeletions(diff):
+		return "feat"
+	default:
+		return "refactor"
 	}
-
-	return changeType, scope
 }
 
 func generateDescription(filename, diff, changeType string) string {
@@ -400,9 +408,9 @@ func capitalizeFirst(s string) string {
 	if s == "" {
 		return s
 	}
-	runes := []rune(s)
-	runes[0] = []rune(strings.ToUpper(string(runes[0])))[0]
-	return string(runes)
+	firstRune, size := utf8.DecodeRuneInString(s)
+	upperFirst, _ := utf8.DecodeRuneInString(strings.ToUpper(string(firstRune)))
+	return string(upperFirst) + s[size:]
 }
 
 func wrapLine(line string, maxLength int) string {
