@@ -5,12 +5,12 @@ import (
 	"testing"
 )
 
-func TestFindGCBinary(t *testing.T) {
-	// Test that findGCBinary doesn't panic
-	_, err := findGCBinary()
-	// It's okay if gc is not found in test environment
-	if err != nil && !strings.Contains(err.Error(), "gc binary not found") {
-		t.Errorf("Unexpected error from findGCBinary: %v", err)
+func TestFindCCBinary(t *testing.T) {
+	// Test that findCCBinary doesn't panic
+	_, err := findCCBinary()
+	// It's okay if cc is not found in test environment
+	if err != nil && !strings.Contains(err.Error(), "cc binary not found") {
+		t.Errorf("Unexpected error from findCCBinary: %v", err)
 	}
 }
 

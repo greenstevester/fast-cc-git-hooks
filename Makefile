@@ -2,11 +2,11 @@
 
 # Variables
 BINARY_NAME := fast-cc-hooks
-GC_BINARY_NAME := gc
+CC_BINARY_NAME := cc
 GCE_BINARY_NAME := gce
 BUILD_DIR := build
 CMD_DIR := cmd/fast-cc-hooks
-GC_CMD_DIR := cmd/gc
+CC_CMD_DIR := cmd/cc
 GCE_CMD_DIR := cmd/gce
 VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 BUILD_TIME := $(shell date -u '+%Y-%m-%d_%H:%M:%S')
@@ -35,12 +35,12 @@ build:
 	@go build $(GOFLAGS) $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME) ./$(CMD_DIR)
 	@echo "Build complete: $(BUILD_DIR)/$(BINARY_NAME)"
 
-## build-gc: Build the gc helper utility
-build-gc:
-	@echo "Building $(GC_BINARY_NAME) $(VERSION)..."
+## build-cc: Build the cc helper utility
+build-cc:
+	@echo "Building $(CC_BINARY_NAME) $(VERSION)..."
 	@mkdir -p $(BUILD_DIR)
-	@go build $(GOFLAGS) $(LDFLAGS) -o $(BUILD_DIR)/$(GC_BINARY_NAME) ./$(GC_CMD_DIR)
-	@echo "Build complete: $(BUILD_DIR)/$(GC_BINARY_NAME)"
+	@go build $(GOFLAGS) $(LDFLAGS) -o $(BUILD_DIR)/$(CC_BINARY_NAME) ./$(CC_CMD_DIR)
+	@echo "Build complete: $(BUILD_DIR)/$(CC_BINARY_NAME)"
 
 ## build-gce: Build the gce helper utility  
 build-gce:
@@ -50,7 +50,7 @@ build-gce:
 	@echo "Build complete: $(BUILD_DIR)/$(GCE_BINARY_NAME)"
 
 ## build-all-tools: Build all tools
-build-all-tools: build build-gc build-gce
+build-all-tools: build build-cc build-gce
 
 ## build-all: Build for multiple platforms
 build-all: clean
@@ -139,20 +139,20 @@ install: build
 	@go install $(LDFLAGS) ./$(CMD_DIR)
 	@echo "Installation complete"
 
-## install-gc: Install the gc utility to GOPATH/bin
-install-gc: build-gc
-	@echo "Installing $(GC_BINARY_NAME) to GOPATH/bin..."
-	@go install $(LDFLAGS) ./$(GC_CMD_DIR)
+## install-cc: Install the cc utility to GOPATH/bin
+install-cc: build-cc
+	@echo "Installing $(CC_BINARY_NAME) to GOPATH/bin..."
+	@go install $(LDFLAGS) ./$(CC_CMD_DIR)
 	@echo "Installation complete"
 
 ## install-all: Install all tools
-install-all: install install-gc
+install-all: install install-cc
 
 ## uninstall: Remove the binary from GOPATH/bin
 uninstall:
 	@echo "Uninstalling $(BINARY_NAME)..."
 	@rm -f $$(go env GOPATH)/bin/$(BINARY_NAME)
-	@rm -f $$(go env GOPATH)/bin/$(GC_BINARY_NAME)
+	@rm -f $$(go env GOPATH)/bin/$(CC_BINARY_NAME)
 	@echo "Uninstall complete"
 
 ## run: Build and run the binary

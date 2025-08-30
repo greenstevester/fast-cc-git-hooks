@@ -8,7 +8,7 @@ Why Use Conventional Commits? Because when you use them, there's tooling (listed
  
 ## Value Prop: This **performance focused** "git companion" toolkit, provides two (2) complementary tools that do the heavy lifting:
 - **`fast-cc-hooks`** - This tool is a one-shot installation of a git-hook, that checks your commit messages, making sure they comply to conventional commit format.  
-- **`gc`** - Goes one step further analyzes your changes and ACTUALLY creates the conventional commit messages FOR YOU! (for the lazy coders, me included)
+- **`cc`** - Goes one step further analyzes your changes and ACTUALLY creates the conventional commit messages FOR YOU! (for the lazy coders, me included)
 
 Use them together for the perfect commit workflow! 🎯 
 
@@ -23,34 +23,34 @@ git commit -m "feat: add login button"
 # ↳ The fast-cc-hooks hook, automatically validates your message ✅
 ```
 
-### Option 2: Commit messages are generated bases on your changes (using gce) and validated by the fast-cc-hooks hook
+### Option 2: Commit messages are generated based on your changes (using gce) and validated by the fast-cc-hooks hook
 ```bash
 # Let gce generate the conventional commit message and execute it for you
 gce
-# ↳ gce analyzes your git changes and creates a commit message
+# ↳ gce analyzes your git changes and creates a conventional commit message
 # ↳ When git commit runs, the git hook (installed via fast-cc-hooks) validates the generated message ✅
-# ↳ Valid and compliant conventional commit, every time! 
+# ↳ which means: compliant conventional commits, every time! 
 ```
 
 ### You can mix and match:
-- **Use fast-cc-hooks alone**: Manual commits with automatic validation
-- **Use gce alone**: Generated commits without validation (but why would you?)
-- **Use both**: Generated commits with validation - the perfect combo! 🎯
+- **Use fast-cc-hooks alone**: Ensures your manual commit messages get automatic validation
+- **Use gce alone**: Generated compliant conventional commits, without validation (but why would you?)
+- **Use both**: Generated conventional commits PLUS BONUS validation, talk about the perfect combo! 🎯
 
 **Pro tip**: Start with `gce` to see what good commit messages look like, then graduate to writing your own!
 
-## ⚡️ Super Quick Setup (3 steps!)
+## ⚡️ Quick Setup (In 3 steps!)
 
 ### Step 1: Install the tools
 
-**Option A: Download Binary** (easiest! 🎯)
+**Option A: Download the Binary** 
 
 Each release includes **both tools** - you get everything in one download!
 
 *** Windows:**
 1. Go to [Releases Page](https://github.com/greenstevester/fast-cc-git-hooks/releases/latest)
 2. Download `fast-cc-hooks_windows_amd64.zip`
-3. Extract and add both `fast-cc-hooks.exe` and `gc.exe` to a directory on your PATH
+3. Extract and add both `fast-cc-hooks.exe` and `cc.exe` to a directory on your PATH
 NOTE: In windows, there's an option to change only your environment variables - use that.
 
 **🐧 Linux:**
@@ -58,14 +58,14 @@ NOTE: In windows, there's an option to change only your environment variables - 
 # Most common (AMD64)
 curl -L -o fast-cc-hooks.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fast-cc-hooks_linux_amd64.tar.gz
 tar -xzf fast-cc-hooks.tar.gz
-chmod +x fast-cc-hooks gc
-sudo mv fast-cc-hooks gc /usr/local/bin/
+chmod +x fast-cc-hooks cc
+sudo mv fast-cc-hooks cc /usr/local/bin/
 
 # ARM64 (Raspberry Pi, etc.)
 curl -L -o fast-cc-hooks.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fast-cc-hooks_linux_arm64.tar.gz
 tar -xzf fast-cc-hooks.tar.gz
-chmod +x fast-cc-hooks gc
-sudo mv fast-cc-hooks gc /usr/local/bin/
+chmod +x fast-cc-hooks cc
+sudo mv fast-cc-hooks cc /usr/local/bin/
 ```
 
 **🍎 macOS:**
@@ -73,14 +73,14 @@ sudo mv fast-cc-hooks gc /usr/local/bin/
 # Intel Macs
 curl -L -o fast-cc-hooks.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fast-cc-hooks_darwin_amd64.tar.gz
 tar -xzf fast-cc-hooks.tar.gz
-chmod +x fast-cc-hooks gc
-sudo mv fast-cc-hooks gc /usr/local/bin/
+chmod +x fast-cc-hooks cc
+sudo mv fast-cc-hooks cc /usr/local/bin/
 
 # Apple Silicon (M1/M2/M3) - most common now
 curl -L -o fast-cc-hooks.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fast-cc-hooks_darwin_arm64.tar.gz
 tar -xzf fast-cc-hooks.tar.gz
-chmod +x fast-cc-hooks gc
-sudo mv fast-cc-hooks gc /usr/local/bin/
+chmod +x fast-cc-hooks cc
+sudo mv fast-cc-hooks cc /usr/local/bin/
 ```
 
 
@@ -89,7 +89,7 @@ sudo mv fast-cc-hooks gc /usr/local/bin/
 ```bash
 # Install both tools
 go install github.com/greenstevester/fast-cc-git-hooks/cmd/fast-cc-hooks@latest
-go install github.com/greenstevester/fast-cc-git-hooks/cmd/gc@latest
+go install github.com/greenstevester/fast-cc-git-hooks/cmd/cc@latest
 ```
 
 **Option C: Using Homebrew** (macOS/Linux - coming soon!)
@@ -102,7 +102,7 @@ brew install greenstevester/tap/fast-cc-hooks
 
 ```bash
 fast-cc-hooks version  # shows version info
-gc --verbose           # runs gc in verbose mode
+cc --verbose           # runs cc in verbose mode
 ```
 
 If you see version/help info for both, you're good to go! If not, make sure `/usr/local/bin` is in your PATH.
@@ -157,15 +157,15 @@ fast-cc-hooks remove    # Remove everything if you want to stop using it
 fast-cc-hooks validate "feat: my commit message"  # Test if a message is good
 ```
 
-### Commit Helper Commands (gc)
+### Commit Helper Commands (cc)
 
 **Smart commit generation:**
 
 ```bash
-gc                      # Preview generated commit message
+cc                      # Preview generated commit message
 gce                    # Generate perfect commit message and commit
-gc --verbose           # Show detailed analysis of your changes
-gc --help             # Show all available options
+cc --verbose           # Show detailed analysis of your changes
+cc --help             # Show all available options
 ```
 
 **That's it!** Most people only ever need `fast-cc-hooks setup` and `gce`.
@@ -173,22 +173,22 @@ gc --help             # Show all available options
 ## 🤔 Common Questions
 
 **Q: Do I need both tools?**
-A: No! They're completely independent. Use hooks for validation, gc for generation, or both together.
+A: No! They're completely independent. Use hooks for validation, cc for generation, or both together.
 
 **Q: What if I want to turn off validation temporarily?**
 A: Just run `fast-cc-hooks remove` and it's gone! Run `fast-cc-hooks setup` to turn it back on.
 
 **Q: Will this mess up my code?**
-A: Nope! The hooks only check commit messages, gc only generates them. Your code stays exactly the same.
+A: Nope! The hooks only check commit messages, cc only generates them. Your code stays exactly the same.
 
-**Q: What if gc generates a bad commit message?**
-A: The hook will catch it! That's why they work so well together. Plus, gc learns from conventional commit standards.
+**Q: What if cc generates a bad commit message?**
+A: The hook will catch it! That's why they work so well together. Plus, cc learns from conventional commit standards.
 
 **Q: Can I use this on all my projects?**
-A: Yes! When you run `fast-cc-hooks setup`, it works for ALL your Git projects. gc works in any git repo.
+A: Yes! When you run `fast-cc-hooks setup`, it works for ALL your Git projects. cc works in any git repo.
 
-**Q: What if I don't like the gc generated message?**
-A: Just use `gc` (without --execute) to preview first, then write your own and let the hook validate it!
+**Q: What if I don't like the cc generated message?**
+A: Just use `cc` (without gce) to preview first, then write your own and let the hook validate it!
 
 ## 🎯 Examples of Good vs Bad Commits
 

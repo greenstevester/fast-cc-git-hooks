@@ -28,9 +28,9 @@ builds:
     flags:
       - -trimpath
 
-  - id: gc
-    main: ./cmd/gc
-    binary: gc
+  - id: cc
+    main: ./cmd/cc
+    binary: cc
     goos:
       - linux
       - darwin
@@ -123,7 +123,7 @@ release:
     
     This release includes **two powerful tools**:
     - **`fast-cc-hooks`** - Git hook for enforcing conventional commits
-    - **`gc`** - Helper utility for generating commit messages automatically
+    - **`cc`** - Helper utility for generating commit messages automatically
 
     ## ⚡️ Super Quick Setup (2 steps!)
 
@@ -134,14 +134,14 @@ release:
     # Most common (AMD64)
     curl -L -o fast-cc-hooks.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_linux_amd64.tar.gz
     tar -xzf fast-cc-hooks.tar.gz
-    chmod +x fast-cc-hooks gc
-    sudo mv fast-cc-hooks gc /usr/local/bin/
+    chmod +x fast-cc-hooks cc
+    sudo mv fast-cc-hooks cc /usr/local/bin/
 
     # ARM64 (Raspberry Pi, etc.)
     curl -L -o fast-cc-hooks.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_linux_arm64.tar.gz
     tar -xzf fast-cc-hooks.tar.gz
-    chmod +x fast-cc-hooks gc
-    sudo mv fast-cc-hooks gc /usr/local/bin/
+    chmod +x fast-cc-hooks cc
+    sudo mv fast-cc-hooks cc /usr/local/bin/
     ```
 
     **🍎 macOS:**
@@ -149,20 +149,20 @@ release:
     # Intel Macs
     curl -L -o fast-cc-hooks.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_darwin_amd64.tar.gz
     tar -xzf fast-cc-hooks.tar.gz
-    chmod +x fast-cc-hooks gc
-    sudo mv fast-cc-hooks gc /usr/local/bin/
+    chmod +x fast-cc-hooks cc
+    sudo mv fast-cc-hooks cc /usr/local/bin/
 
     # Apple Silicon (M1/M2/M3)
     curl -L -o fast-cc-hooks.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_darwin_arm64.tar.gz
     tar -xzf fast-cc-hooks.tar.gz
-    chmod +x fast-cc-hooks gc
-    sudo mv fast-cc-hooks gc /usr/local/bin/
+    chmod +x fast-cc-hooks cc
+    sudo mv fast-cc-hooks cc /usr/local/bin/
     ```
 
     **🪟 Windows:**
     ```powershell
     # Download and extract fast-cc-hooks_{{.Tag}}_windows_amd64.zip
-    # Add both fast-cc-hooks.exe and gc.exe to your PATH
+    # Add both fast-cc-hooks.exe and cc.exe to your PATH
     ```
 
     ### Step 2: Set it up (takes 5 seconds!)
@@ -174,11 +174,11 @@ release:
 
     ## 🤖 NEW: Automatic Commit Message Generation
     
-    Use the included `gc` helper to automatically generate conventional commit messages:
+    Use the included `cc` helper to automatically generate conventional commit messages:
     ```bash
-    gc                    # Preview generated commit message
-    gc --execute          # Generate and commit automatically
-    gc --verbose          # Show detailed analysis
+    cc                    # Preview generated commit message
+    gce                   # Generate and commit automatically
+    cc --verbose          # Show detailed analysis
     ```
 
   footer: |
