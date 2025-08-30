@@ -305,8 +305,8 @@ func (*Validator) checkCancellation(ctx context.Context, result *ValidationResul
 // validateType validates the commit type.
 func (v *Validator) validateType(commit *conventionalcommit.Commit, result *ValidationResult) {
 	if commit.Type != "" && !v.config.HasType(commit.Type) {
-		v.addValidationError(result, "type", 
-			fmt.Sprintf("invalid type (allowed: %s)", strings.Join(v.config.Types, ", ")), 
+		v.addValidationError(result, "type",
+			fmt.Sprintf("invalid type (allowed: %s)", strings.Join(v.config.Types, ", ")),
 			commit.Type)
 	}
 }
@@ -316,8 +316,8 @@ func (v *Validator) validateScope(commit *conventionalcommit.Commit, result *Val
 	if v.config.ScopeRequired && commit.Scope == "" {
 		v.addValidationError(result, "scope", "scope is required", "")
 	} else if commit.Scope != "" && !v.config.HasScope(commit.Scope) {
-		v.addValidationError(result, "scope", 
-			fmt.Sprintf("invalid scope (allowed: %s)", strings.Join(v.config.Scopes, ", ")), 
+		v.addValidationError(result, "scope",
+			fmt.Sprintf("invalid scope (allowed: %s)", strings.Join(v.config.Scopes, ", ")),
 			commit.Scope)
 	}
 }

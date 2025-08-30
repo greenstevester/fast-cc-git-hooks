@@ -20,10 +20,10 @@ const version = "1.0.0"
 
 // Command represents a CLI command.
 type Command struct {
-	Name        string
-	Description string
 	Run         func(ctx context.Context, args []string) error
 	Flags       *flag.FlagSet
+	Name        string
+	Description string
 }
 
 var (
@@ -112,14 +112,14 @@ func main() {
 
 	// Create context with timeout...
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
 
 	// Run command...
 	if err := cmd.Run(ctx, cmd.Flags.Args()); err != nil {
-		logger.Error("command failed", "command", cmdName, "error", err)
 		cancel()
+		logger.Error("command failed", "command", cmdName, "error", err)
 		os.Exit(1)
 	}
+	cancel()
 }
 
 func setupLogger(verbose bool) {

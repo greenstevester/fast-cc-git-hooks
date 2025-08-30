@@ -17,14 +17,14 @@ var (
 
 // Commit represents a parsed conventional commit message.
 type Commit struct {
+	TicketRefs  []TicketRef
 	Type        string
 	Scope       string
-	Breaking    bool
 	Description string
 	Body        string
 	Footer      string
 	Raw         string
-	TicketRefs  []TicketRef
+	Breaking    bool
 }
 
 // TicketRef represents a ticket reference (e.g., JIRA ticket).
@@ -77,10 +77,31 @@ func (p *Parser) Parse(message string) (*Commit, error) {
 		return nil, ErrEmptyMessage
 	}
 
-	// Parse the first line (header).
-	header := lines[0]
-	matches := conventionalCommitRegex.FindStringSubmatch(header)
+	// Parse the header
+	commit, err := p.parseHeader(lines[0], message)
+	if err != nil {
+		return nil, err
+	}
+	if commit.Type == "" {
+		// Non-strict mode fallback already handled in parseHeader
+		return commit, nil
+	}
 
+	// Parse body and footer if present
+	if len(lines) > 1 {
+		p.parseBodyAndFooter(commit, lines)
+	}
+
+	// Parse ticket references from entire commit message
+	commit.TicketRefs = parseTicketRefs(message)
+
+	return commit, nil
+}
+
+// parseHeader parses the commit header (first line) and returns a commit struct.
+func (p *Parser) parseHeader(header, fullMessage string) (*Commit, error) {
+	matches := conventionalCommitRegex.FindStringSubmatch(header)
+	
 	if matches == nil {
 		if p.StrictMode {
 			return nil, fmt.Errorf("%w: expected 'type(scope): description' format", ErrInvalidFormat)
@@ -88,60 +109,71 @@ func (p *Parser) Parse(message string) (*Commit, error) {
 		// In non-strict mode, treat entire message as description.
 		return &Commit{
 			Description: header,
-			Raw:         message,
+			Raw:         fullMessage,
 		}, nil
 	}
 
-	commit := &Commit{
+	return &Commit{
 		Type:        matches[1],
 		Scope:       matches[3],
 		Breaking:    matches[4] == "!",
 		Description: matches[5],
-		Raw:         message,
+		Raw:         fullMessage,
+	}, nil
+}
+
+// parseBodyAndFooter parses the body and footer sections of a commit message.
+func (p *Parser) parseBodyAndFooter(commit *Commit, lines []string) {
+	bodyStart := 1
+	// Skip empty line after header if present.
+	if bodyStart < len(lines) && lines[bodyStart] == "" {
+		bodyStart++
 	}
 
-	// Parse body and footer if present.
-	if len(lines) > 1 {
-		bodyStart := 1
-		// Skip empty line after header if present.
-		if bodyStart < len(lines) && lines[bodyStart] == "" {
-			bodyStart++
-		}
+	// Find footer (starts with BREAKING CHANGE: or contains : ).
+	footerStart := p.findFooterStart(lines, bodyStart)
 
-		// Find footer (starts with BREAKING CHANGE: or contains : ).
-		footerStart := -1
-		for i := len(lines) - 1; i >= bodyStart; i-- {
-			line := lines[i]
-			if strings.HasPrefix(line, "BREAKING CHANGE:") ||
-				strings.HasPrefix(line, "BREAKING-CHANGE:") ||
-				isFooterLine(line) {
-				footerStart = i
-			} else if line != "" && footerStart == -1 {
-				// Non-footer line found, stop looking.
-				break
-			}
-		}
-
-		if footerStart > bodyStart {
-			commit.Body = strings.TrimSpace(strings.Join(lines[bodyStart:footerStart], "\n"))
-		} else if footerStart == -1 && bodyStart < len(lines) {
-			commit.Body = strings.TrimSpace(strings.Join(lines[bodyStart:], "\n"))
-		}
-
-		if footerStart != -1 {
-			commit.Footer = strings.TrimSpace(strings.Join(lines[footerStart:], "\n"))
-			// Check for breaking change in footer.
-			if strings.Contains(commit.Footer, "BREAKING CHANGE:") ||
-				strings.Contains(commit.Footer, "BREAKING-CHANGE:") {
-				commit.Breaking = true
-			}
-		}
+	// Set body
+	if footerStart > bodyStart {
+		commit.Body = strings.TrimSpace(strings.Join(lines[bodyStart:footerStart], "\n"))
+	} else if footerStart == -1 && bodyStart < len(lines) {
+		commit.Body = strings.TrimSpace(strings.Join(lines[bodyStart:], "\n"))
 	}
 
-	// Parse ticket references from entire commit message.
-	commit.TicketRefs = parseTicketRefs(message)
+	// Set footer and check for breaking changes
+	if footerStart != -1 {
+		commit.Footer = strings.TrimSpace(strings.Join(lines[footerStart:], "\n"))
+		if p.hasBreakingChangeInFooter(commit.Footer) {
+			commit.Breaking = true
+		}
+	}
+}
 
-	return commit, nil
+// findFooterStart finds the starting line index of the footer section.
+func (p *Parser) findFooterStart(lines []string, bodyStart int) int {
+	footerStart := -1
+	for i := len(lines) - 1; i >= bodyStart; i-- {
+		line := lines[i]
+		if p.isBreakingChangeLine(line) || isFooterLine(line) {
+			footerStart = i
+		} else if line != "" && footerStart == -1 {
+			// Non-footer line found, stop looking.
+			break
+		}
+	}
+	return footerStart
+}
+
+// isBreakingChangeLine checks if a line indicates a breaking change.
+func (*Parser) isBreakingChangeLine(line string) bool {
+	return strings.HasPrefix(line, "BREAKING CHANGE:") ||
+		strings.HasPrefix(line, "BREAKING-CHANGE:")
+}
+
+// hasBreakingChangeInFooter checks if the footer contains breaking change indicators.
+func (*Parser) hasBreakingChangeInFooter(footer string) bool {
+	return strings.Contains(footer, "BREAKING CHANGE:") ||
+		strings.Contains(footer, "BREAKING-CHANGE:")
 }
 
 // isFooterLine checks if a line looks like a footer token.
