@@ -275,6 +275,59 @@ make test
 
 All commits to this project must follow conventional format too! 😄
 
+## 🔄 Changelog Generation Tools
+
+Once you're using conventional commits, you can automatically generate changelogs and manage versioning! Here are the most popular tools:
+
+### 🚀 **Fully Automated Release Tools** (Recommended)
+
+- **[semantic-release](https://github.com/semantic-release/semantic-release)** - The gold standard for automated releases
+  - Fully automates: version bumping, changelog generation, git tagging, and publishing
+  - Works with GitHub, GitLab, npm, Docker, and more
+  - Perfect for CI/CD pipelines
+
+- **[commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version)** - Drop-in replacement for `npm version`
+  - Handles version bumping, tagging, and CHANGELOG generation
+  - Great for manual releases with automation
+
+### 📊 **Changelog-Focused Tools**
+
+- **[conventional-changelog](https://github.com/conventional-changelog/conventional-changelog)** - The original changelog generator
+  - Generate changelog from git metadata
+  - Multiple presets (Angular, Atom, etc.)
+  - Highly customizable
+
+- **[git-cliff](https://git-cliff.org/)** - Modern Rust-based changelog generator
+  - Highly customizable templates
+  - Fast and reliable
+  - Great for complex projects
+
+### 🏢 **Enterprise & Monorepo Tools**
+
+- **[cocogitto](https://github.com/oknozor/cocogitto)** - Complete conventional commits toolkit
+  - Version bumping, changelog generation, and commit linting
+  - Great for complex workflows
+
+- **[versio](https://github.com/chaaz/versio)** - Monorepo-compatible versioning
+  - Handles project dependencies
+  - Generates tags and changelogs
+
+### ⚙️ **Language-Specific Tools**
+
+- **Go**: [chglog](https://github.com/goreleaser/chglog) - Template-based changelog generation
+- **Python**: [python-semantic-release](https://github.com/relekang/python-semantic-release)
+- **PHP**: [php-conventional-changelog](https://github.com/marcocesarato/php-conventional-changelog)
+- **Java**: [git-changelog-lib](https://github.com/tomasbjerre/git-changelog-lib)
+
+### 🎯 **Quick Start Recommendations**
+
+1. **For automated CI/CD**: Use `semantic-release`
+2. **For manual releases**: Use `commit-and-tag-version`
+3. **For just changelogs**: Use `conventional-changelog` or `git-cliff`
+4. **For monorepos**: Use `versio` or `cocogitto`
+
+All these tools work perfectly with the conventional commit messages that `fast-cc-hooks` enforces! 🎉
+
 ## 📝 License
 
 MIT License - do whatever you want with this code!
