@@ -48,7 +48,6 @@ func main() {
 		"install":    installCommand(),
 		"setup":      setupCommand(),
 		"setup-ent":  setupEnterpriseCommand(),
-		"uninstall":  uninstallCommand(),
 		"remove":     removeCommand(),
 		"validate":   validateCommand(),
 		"init":       initCommand(),
@@ -73,7 +72,6 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "version", "ℹ️  Show version info")
 		fmt.Fprintf(os.Stderr, "\n🤓 Advanced Commands:\n")
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "install", "Install git hooks globally for all repositories")
-		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "uninstall", "Remove git hooks from current repository")
 
 		fmt.Fprintf(os.Stderr, "\n🏁 Quick Start:\n")
 		fmt.Fprintf(os.Stderr, "   %s setup\n", os.Args[0])
@@ -165,28 +163,6 @@ func installCommand() *Command {
 			}
 
 			return hooks.GlobalInstall(ctx, logger)
-		},
-	}
-}
-
-func uninstallCommand() *Command {
-	fs := flag.NewFlagSet("uninstall", flag.ExitOnError)
-
-	return &Command{
-		Name:        "uninstall",
-		Description: "Remove git hooks from current repository",
-		Flags:       fs,
-		Run: func(ctx context.Context, _ []string) error {
-			opts := hooks.Options{
-				Logger: logger,
-			}
-
-			installer, err := hooks.New(opts)
-			if err != nil {
-				return fmt.Errorf("creating installer: %w", err)
-			}
-
-			return installer.Uninstall(ctx)
 		},
 	}
 }

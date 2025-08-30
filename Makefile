@@ -196,9 +196,6 @@ check: fmt vet test-short
 hook-install: build
 	@./$(BUILD_DIR)/$(BINARY_NAME) install
 
-## hook-uninstall: Uninstall pre-commit hook  
-hook-uninstall: build
-	@./$(BUILD_DIR)/$(BINARY_NAME) uninstall
 
 ## init-config: Initialize configuration file
 init-config: build

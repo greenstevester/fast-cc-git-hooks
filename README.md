@@ -7,19 +7,20 @@ Why Use Conventional Commits? Because when you use them, there's tooling (listed
 - make it dead simple for YOU and the community of coders to contribute to projects *without lazy commit messages*.
  
 ## Value Prop: This **performance focused** "git companion" toolkit, provides two (2) complementary tools that do the heavy lifting:
-- **`fast-cc-hooks`** - This tool is a one-shot installation of a git-hook, that checks your commit messages, making sure they comply to conventional commit format.  
-- **`cc`** - Goes one step further analyzes your changes and ACTUALLY creates the conventional commit messages FOR YOU! (for the lazy coders, me included)
+- **`cc`** - preview generated conventional commit messages, based on your changes
+- **`ccc`** - generate conventional commit messages AND commit (3 c's for "Create Conventional Commit") (most popular)
+- **`fast-cc-hooks`** - installer of a git-hook, that checks your commit messages, ensuring they comply to conventional commit format.
 
 Use them together for the perfect commit workflow! 🎯 
 
-## 🔄 Perfect Workflow: Using Both Tools Together
+## 🔄 Perfect Workflow: Using ALL Tools Together
 
 The tools are **completely independent** but work beautifully together:
 
 ### Option 1: You write your own commit messages (with fast-cc-hooks installed)
 ```bash
 # Write your commit message manually
-git commit -m "feat: add login button"
+git commit -m "feat: CGC-1245 Added login authentication"
 # ↳ The fast-cc-hooks hook, automatically validates your message ✅
 ```
 
@@ -34,6 +35,7 @@ ccc
 
 ### You can mix and match:
 - **Use fast-cc-hooks alone**: Ensures your manual commit messages get automatic validation
+- **Use cc alone**: Preview generated conventional commit messages, based on your changes, but you do the commit yourself
 - **Use ccc alone**: Generated compliant conventional commits, without validation (but why would you?)
 - **Use both**: Generated conventional commits PLUS BONUS validation, talk about the perfect combo! 🎯
 
@@ -51,7 +53,7 @@ Each release includes **both tools** - you get everything in one download!
 1. Go to [Releases Page](https://github.com/greenstevester/fast-cc-git-hooks/releases/latest)
 2. Download `fast-cc-hooks_windows_amd64.zip`
 3. Extract and add both `fast-cc-hooks.exe` and `cc.exe` to a directory on your PATH
-NOTE: In windows, there's an option to change only your environment variables - use that.
+NOTE: In windows, there's an option to change only your environment variables - use that as a preference, or just add both to your PATH.
 
 **🐧 Linux:**
 ```bash
@@ -83,26 +85,18 @@ chmod +x fast-cc-hooks cc
 sudo mv fast-cc-hooks cc /usr/local/bin/
 ```
 
-
-
-**Option B: Using Go**
-```bash
-# Install both tools
-go install github.com/greenstevester/fast-cc-git-hooks/cmd/fast-cc-hooks@latest
-go install github.com/greenstevester/fast-cc-git-hooks/cmd/cc@latest
-```
-
 **Option C: Using Homebrew** (macOS/Linux - coming soon!)
 ```bash
 # Will be available after first release
 brew install greenstevester/tap/fast-cc-hooks
 ```
 
-### Step 2: Verify both tools work
+### Step 2: Verify all tools work
 
 ```bash
 fast-cc-hooks version  # shows version info
 cc --verbose           # runs cc in verbose mode
+ccc --verbose           # runs cc in verbose mode
 ```
 
 If you see version/help info for both, you're good to go! If not, make sure `/usr/local/bin` is in your PATH.
@@ -110,7 +104,7 @@ If you see version/help info for both, you're good to go! If not, make sure `/us
 ### Step 3: Set it up (takes 5 seconds!)
 
 ```bash
-fast-cc-hooks setup
+fast-cc-hooks setup OR fast-cc-hooks setup-ent
 ```
 
 **That's it!** 🎉 Now every time you make a commit, it will automatically check that your message is compliant conventional commit message.
