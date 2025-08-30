@@ -1,4 +1,4 @@
-module github.com/stevengreensill/fast-cc-git-hooks
+module github.com/greenstevester/fast-cc-git-hooks
 
 go 1.25
 
