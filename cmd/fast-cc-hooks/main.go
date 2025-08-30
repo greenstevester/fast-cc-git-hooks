@@ -63,8 +63,8 @@ func main() {
 		fmt.Fprintf(os.Stderr, "   2️⃣  git commit -m \"feat: your message\"  ← Write better commits!\n\n")
 
 		fmt.Fprintf(os.Stderr, "✨ All Commands:\n")
-		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "setup", "🚀 Easy setup - install git hooks (use --local for current repo only)")
-		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "setup-ent", "🏢 Enterprise setup - with JIRA validation (use --local for current repo only)")
+		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "setup", "🚀 Easy setup - global by default (local overrides global)")
+		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "setup-ent", "🏢 Enterprise setup - global by default (local overrides global)")
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "remove", "🗑️  Easy removal - uninstall git hooks (use --local or --global for specific removal)")
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "validate", "🔍 Test a commit message")
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "init", "📝 Create a config file")
@@ -279,7 +279,7 @@ func setupCommand() *Command {
 
 	return &Command{
 		Name:        "setup",
-		Description: "🚀 Easy setup - install git hooks everywhere!",
+		Description: "🚀 Easy setup - install git hooks (global by default, local overrides global)",
 		Flags:       fs,
 		Run: func(ctx context.Context, _ []string) error {
 			fmt.Println("🚀 Setting up fast-cc-hooks...")
@@ -342,7 +342,7 @@ func setupEnterpriseCommand() *Command {
 
 	return &Command{
 		Name:        "setup-ent",
-		Description: "🏢 Enterprise setup - with JIRA ticket validation!",
+		Description: "🏢 Enterprise setup - with JIRA validation (global by default, local overrides global)",
 		Flags:       fs,
 		Run: func(ctx context.Context, _ []string) error {
 			fmt.Println("🏢 Setting up fast-cc-hooks for Enterprise...")

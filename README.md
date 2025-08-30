@@ -20,10 +20,23 @@ Why Use Conventional Commits? Because when you use them, there's tooling (listed
 - **`cc`** - preview generated conventional commit messages, based on your changes
 - **`ccc`** - generate conventional commit messages AND commit (3 c's for "Create Conventional Commit") (most popular)
 
- 🎯 Key Benefits for Users:
+ 🎯 Key Benefits:
  - Flexibility: easily choose between system-wide or project-specific hook installation
  - Team collaboration: Local installation perfect for team projects with specific requirements
  - Personal workflow: Global installation ideal for individual developers wanting consistent validation
+ 
+ - 🚀 Enhanced User Experience:
+- Smart Detection: Automatically detects both local and global installations
+- Interactive Prompts: User-friendly menu when both installations exist
+- Precise Control: --local and --global flags for specific removal
+
+🎯 Real-World Scenarios Handled:
+- Team Developer: Can remove only local hooks while keeping global ones
+- Personal Setup: Can remove global hooks without affecting project-specific local ones
+- Clean Slate: Can remove both installations when switching tools
+- Accidental Installs: Can target specific installation types
+
+
 
 ## 🔄 Perfect Workflow: Using ALL Tools Together
 
@@ -128,9 +141,28 @@ fast-cc-hooks setup-ent --local  # Enterprise setup for current repository only
   - Creates/checks configuration: Ensures a config file exists (creates default if needed)
   - Installs hooks: Then installs the git hooks
 - **Guided experience**: Shows exactly what it's doing with clear output
-- **Global vs Local**:
+- **Global vs Local Installation**:
   - **Global (default)**: Installs hooks for ALL git repositories on your system
   - **Local (--local)**: Installs hooks only for the current repository
+  - **⚡ Precedence Rule**: When both exist, **local always takes precedence** over global configuration
+
+#### 🏆 Configuration Precedence (Important!)
+
+When you have both local and global installations:
+
+```
+Local Repository Hook  ➤  ALWAYS WINS  ⚡
+Global Git Hook        ➤  Ignored when local exists
+```
+
+**Real-World Example:**
+- **Global setup**: Enforces standard conventional commits for all your projects
+- **Local setup**: Project has specific JIRA validation rules
+- **Result**: The local JIRA rules apply, global rules are ignored
+
+This design lets you have:
+- **Personal defaults** (global) for your general workflow
+- **Project-specific overrides** (local) for team requirements
 
 **That's it!** 🎉 Now every time you make a commit, compliant conventional commit messages will be your default.
 

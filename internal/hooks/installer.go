@@ -78,7 +78,8 @@ func New(opts Options) (*Installer, error) {
 	}, nil
 }
 
-// Install installs the commit-msg hook.
+// Install installs the commit-msg hook in the local git repository.
+// Local hooks installed here take precedence over any global template hooks.
 func (i *Installer) Install(_ context.Context) error {
 	hooksDir := filepath.Join(i.gitDir, "hooks")
 
@@ -272,6 +273,8 @@ func findGitDir() (string, error) {
 }
 
 // GlobalInstall installs hooks globally for all repositories.
+// Note: Git's precedence rules ensure that local repository hooks (installed via Install()) 
+// will always take precedence over global template hooks when both exist.
 func GlobalInstall(ctx context.Context, logger *slog.Logger) error {
 	// Get git config directory.
 	configDir, err := getGitConfigDir()
