@@ -55,8 +55,8 @@ archives:
       - README.md
       - LICENSE
       - CHANGELOG.md
-      - src: examples/
-        dst: examples
+      - src: example-configs/
+        dst: example-configs
         strip_parent: true
 
 checksum:

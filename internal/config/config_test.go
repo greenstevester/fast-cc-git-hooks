@@ -297,6 +297,52 @@ func TestLoad_NonExistentFile(t *testing.T) {
 	}
 }
 
+func TestLoad_EnterpriseConfig(t *testing.T) {
+	// Test loading the enterprise configuration example
+	enterpriseConfigPath := filepath.Join("..", "..", "example-configs", ".fast-cc-hooks.enterprise.yaml")
+	
+	cfg, err := Load(enterpriseConfigPath)
+	if err != nil {
+		t.Fatalf("Failed to load enterprise config: %v", err)
+	}
+
+	// Verify enterprise-specific configurations
+	expectedTypes := []string{"feat", "fix", "docs", "style", "refactor", "test", "chore", "perf", "ci", "build", "revert"}
+	if !reflect.DeepEqual(cfg.Types, expectedTypes) {
+		t.Errorf("Enterprise config types = %v, want %v", cfg.Types, expectedTypes)
+	}
+
+	expectedScopes := []string{"api", "web", "cli", "db", "auth", "core", "mw", "net", "sec", "iam", "app"}
+	if !reflect.DeepEqual(cfg.Scopes, expectedScopes) {
+		t.Errorf("Enterprise config scopes = %v, want %v", cfg.Scopes, expectedScopes)
+	}
+
+	if cfg.ScopeRequired != false {
+		t.Errorf("Enterprise config scope_required = %v, want false", cfg.ScopeRequired)
+	}
+
+	if cfg.MaxSubjectLength != 72 {
+		t.Errorf("Enterprise config max_subject_length = %d, want 72", cfg.MaxSubjectLength)
+	}
+
+	if cfg.AllowBreakingChanges != true {
+		t.Errorf("Enterprise config allow_breaking_changes = %v, want true", cfg.AllowBreakingChanges)
+	}
+
+	if cfg.RequireJIRATicket != true {
+		t.Errorf("Enterprise config require_jira_ticket = %v, want true", cfg.RequireJIRATicket)
+	}
+
+	if cfg.RequireTicketRef != false {
+		t.Errorf("Enterprise config require_ticket_ref = %v, want false", cfg.RequireTicketRef)
+	}
+
+	// Verify config is valid
+	if err := cfg.Validate(); err != nil {
+		t.Errorf("Enterprise config validation failed: %v", err)
+	}
+}
+
 func BenchmarkConfig_HasType(b *testing.B) {
 	cfg := Default()
 

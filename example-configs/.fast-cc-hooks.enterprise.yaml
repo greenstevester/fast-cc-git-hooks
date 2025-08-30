@@ -1,0 +1,73 @@
+# fast-cc-hooks configuration for a large enterprise project
+
+# Allowed commit types
+types:
+  - feat     # New feature
+  - fix      # Bug fix
+  - docs     # Documentation changes
+  - style    # Code style changes (formatting, semicolons, etc)
+  - refactor # Code refactoring
+  - test     # Adding or modifying tests
+  - chore    # Maintenance tasks
+  - perf     # Performance improvements
+  - ci       # CI/CD changes
+  - build    # Build system changes
+  - revert   # Reverts a previous commit
+
+# Allowed scopes
+scopes:
+   - api
+   - web
+   - cli
+   - db
+   - auth
+   - core
+   - mw
+   - net
+   - sec
+   - iam
+   - app
+
+# Whether scope is required
+scope_required: false
+
+# Maximum length of the subject line (header)
+max_subject_length: 72
+
+# Allow breaking changes (indicated by ! or BREAKING CHANGE in footer)
+allow_breaking_changes: true
+
+# === TICKET REFERENCE VALIDATION ===
+# Require JIRA ticket references in commits (e.g., CGC-1234, PROJ-789)
+require_jira_ticket: true
+
+# Require any type of ticket reference (JIRA, GitHub issues, Linear, etc.)
+require_ticket_ref: false
+
+# Custom pattern for JIRA ticket validation (optional)
+# Default pattern: [A-Z]{3,4}-\d+ matches CGC-1234, PROJ-789, WORK-456, etc.
+# jira_ticket_pattern: "^[A-Z]{3}-\\d+$"  # Example: only 3-letter prefixes
+
+# Allowed JIRA project prefixes (optional, any prefix allowed if empty)
+# jira_projects:
+#   - CGC
+#   - PROJ
+#   - DEV
+
+# Custom validation rules using regex patterns
+# Each rule must have a name and pattern, a message is optional
+custom_rules: []
+  # Example: Require JIRA ticket reference (alternative to require_jira_ticket)
+  # - name: jira-ticket
+  #   pattern: '\\b[A-Z]{3,4}-\\d+\\b'
+  #   message: 'Commit must reference a JIRA ticket (e.g., CGC-1234)'
+  
+  # Example: JIRA ticket must be in subject line
+  # - name: jira-in-subject
+  #   pattern: '^[^:]+:[^\\n]*\\b[A-Z]{3,4}-\\d+\\b'
+  #   message: 'JIRA ticket must appear in the commit subject'
+  
+  # Example: Prohibit certain words
+  # - name: no-todo
+  #   pattern: '^(?!.*\\bTODO\\b).*$'
+  #   message: 'Commit messages should not contain TODO'

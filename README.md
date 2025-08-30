@@ -1,12 +1,43 @@
 # 🚀 fast-cc-hooks
 
-**The easiest way to write better commit messages!** 
+**The fastest (and laziest) way for YOU, to write [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) messages for ALL your git commits!** 
 
-This toolkit provides two complementary tools for conventional commits:
-- **`fast-cc-hooks`** - Automatically checks your commit messages (git hooks)  
-- **`gc`** - Generates beautiful commit messages for you (commit helper)
+Why Use Conventional Commits? Because when you use them, there's tooling (listed later in this page) that can:
+- auto-generate CHANGELOG's AND even determine semantic version bumps 
+- make it dead simple for YOU and the community of coders to contribute to projects *without lazy commit messages*.
+ 
+## Value Prop: This **performance focused** "git companion" toolkit, provides two (2) complementary tools that do the heavy lifting:
+- **`fast-cc-hooks`** - This tool is a one-shot installation of a git-hook, that checks your commit messages, making sure they comply to conventional commit format.  
+- **`gc`** - Goes one step further analyzes your changes and ACTUALLY creates the conventional commit messages FOR YOU! (for the lazy coders, me included)
 
 Use them together for the perfect commit workflow! 🎯 
+
+## 🔄 Perfect Workflow: Using Both Tools Together
+
+The tools are **completely independent** but work beautifully together:
+
+### Option 1: You write your own commit messages (with fast-cc-hooks installed)
+```bash
+# Write your commit message manually
+git commit -m "feat: add login button"
+# ↳ The fast-cc-hooks hook, automatically validates your message ✅
+```
+
+### Option 2: Commit messages are generated bases on your changes (using gc) and validated by the fast-cc-hooks hook
+```bash
+# Let gc generate the conventional commit message for you
+gc --execute
+# ↳ gc analyzes your git changes and creates a commit message
+# ↳ When git commit runs, the git hook (installed via fast-cc-hooks) validates the generated message ✅
+# ↳ Valid and compliant conventional commit, every time! 
+```
+
+### You can mix and match:
+- **Use fast-cc-hooks alone**: Manual commits with automatic validation
+- **Use gc alone**: Generated commits without validation (but why would you?)
+- **Use both**: Generated commits with validation - the perfect combo! 🎯
+
+**Pro tip**: Start with `gc` to see what good commit messages look like, then graduate to writing your own!
 
 ## ⚡️ Super Quick Setup (3 steps!)
 
@@ -15,6 +46,12 @@ Use them together for the perfect commit workflow! 🎯
 **Option A: Download Binary** (easiest! 🎯)
 
 Each release includes **both tools** - you get everything in one download!
+
+*** Windows:**
+1. Go to [Releases Page](https://github.com/greenstevester/fast-cc-git-hooks/releases/latest)
+2. Download `fast-cc-hooks_windows_amd64.zip`
+3. Extract and add both `fast-cc-hooks.exe` and `gc.exe` to a directory on your PATH
+NOTE: In windows, there's an option to change only your environment variables - use that.
 
 **🐧 Linux:**
 ```bash
@@ -46,10 +83,7 @@ chmod +x fast-cc-hooks gc
 sudo mv fast-cc-hooks gc /usr/local/bin/
 ```
 
-**🪟 Windows:**
-1. Go to [Releases Page](https://github.com/greenstevester/fast-cc-git-hooks/releases/latest)
-2. Download `fast-cc-hooks_windows_amd64.zip`
-3. Extract and add both `fast-cc-hooks.exe` and `gc.exe` to your PATH
+
 
 **Option B: Using Go**
 ```bash
@@ -67,8 +101,8 @@ brew install greenstevester/tap/fast-cc-hooks
 ### Step 2: Verify both tools work
 
 ```bash
-fast-cc-hooks version  # Should show version info
-gc help               # Should show gc helper usage
+fast-cc-hooks version  # shows version info
+gc --verbose           # runs gc in verbose mode
 ```
 
 If you see version/help info for both, you're good to go! If not, make sure `/usr/local/bin` is in your PATH.
@@ -79,34 +113,8 @@ If you see version/help info for both, you're good to go! If not, make sure `/us
 fast-cc-hooks setup
 ```
 
-**That's it!** 🎉 Now every time you make a commit, it will automatically check that your message is good!
+**That's it!** 🎉 Now every time you make a commit, it will automatically check that your message is compliant conventional commit message.
 
-## 🔄 Perfect Workflow: Using Both Tools Together
-
-The tools are **completely independent** but work beautifully together:
-
-### Option 1: Manual commits (hooks only)
-```bash
-# Write your commit message manually
-git commit -m "feat: add login button"
-# ↳ The hook automatically validates your message ✅
-```
-
-### Option 2: Automated commits (gc helper + hooks)
-```bash
-# Let gc generate the perfect commit message for you
-gc --execute
-# ↳ gc analyzes your changes and creates a commit
-# ↳ When git commit runs, the hook validates the generated message ✅
-# ↳ Perfect commit every time! 
-```
-
-### You can mix and match:
-- **Use hooks alone**: Manual commits with automatic validation
-- **Use gc alone**: Generated commits without validation (but why would you?)  
-- **Use both**: Generated commits with validation - the perfect combo! 🎯
-
-**Pro tip**: Start with `gc` to see what good commit messages look like, then graduate to writing your own!
 
 ## ✨ How to write good commit messages
 
