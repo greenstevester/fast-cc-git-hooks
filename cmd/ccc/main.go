@@ -14,7 +14,7 @@ var (
 	buildTime = "unknown"
 	commit    = "unknown"
 
-	// Command line flags for gce.
+	// Command line flags for ccc.
 	noVerify = flag.Bool("no-verify", false, "Skip pre-commit hooks")
 	verbose  = flag.Bool("verbose", false, "Show detailed analysis")
 	help     = flag.Bool("help", false, "Show help")
@@ -60,17 +60,17 @@ func main() {
 	}
 }
 
-// findCCBinary locates the cc binary relative to gce.
+// findCCBinary locates the cc binary relative to ccc.
 func findCCBinary() (string, error) {
-	// Get the path of the current executable (gce)
-	gceExe, err := os.Executable()
+	// Get the path of the current executable (ccc)
+	cccExe, err := os.Executable()
 	if err != nil {
-		return "", fmt.Errorf("cannot find gce executable: %w", err)
+		return "", fmt.Errorf("cannot find ccc executable: %w", err)
 	}
 
 	// Look for cc in the same directory
-	gceDir := filepath.Dir(gceExe)
-	ccPath := filepath.Join(gceDir, "cc")
+	cccDir := filepath.Dir(cccExe)
+	ccPath := filepath.Join(cccDir, "cc")
 	
 	// Check if cc exists in the same directory
 	if _, statErr := os.Stat(ccPath); statErr == nil {
@@ -89,16 +89,16 @@ func findCCBinary() (string, error) {
 		return ccInPath, nil
 	}
 
-	return "", fmt.Errorf("cc binary not found in %s or PATH", gceDir)
+	return "", fmt.Errorf("cc binary not found in %s or PATH", cccDir)
 }
 
 func showHelp() {
-	fmt.Printf(`gce - Generate Commit & Execute v%s
+	fmt.Printf(`ccc - Generate Commit & Execute v%s
 
 A shortcut for 'cc --execute' that generates a conventional commit message and executes it.
 
 USAGE:
-    gce [options]
+    ccc [options]
 
 OPTIONS:
     --no-verify     Skip pre-commit hooks when committing
@@ -106,16 +106,16 @@ OPTIONS:
     --help          Show this help message
 
 DESCRIPTION:
-    gce is a convenient shortcut that combines commit message generation with 
+    ccc is a convenience tool, that combines commit message generation with 
     immediate execution. It analyzes your staged changes, generates an appropriate
     conventional commit message, and commits the changes automatically.
 
     This command is equivalent to running: cc --execute
 
 EXAMPLES:
-    gce                    # Generate and commit with default settings
-    gce --no-verify        # Generate and commit, skipping pre-commit hooks
-    gce --verbose          # Generate and commit with detailed analysis
+    ccc                    # Generate and commit with default settings
+    ccc --no-verify        # Generate and commit, skipping pre-commit hooks
+    ccc --verbose          # Generate and commit with detailed analysis
 
 NOTES:
     - Requires the 'cc' command to be available

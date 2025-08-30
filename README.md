@@ -13,15 +13,19 @@
 
 **The fastest way for YOU, to write [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) messages for ALL your git commits!** 
 
-## WHY CONVENTIONAL COMMITS? 
+WHY CONVENTIONAL COMMITS? 
 - 
 - Because when you use them, there's tooling (listed below) to save you more time, while giving your code repo that professional touch, and can:
 - generate CHANGELOG's
 - employ semantic versioning easily
 
 It all stems from something simple, but usually this means more discipline AND (worst of all) strict adherence to a specific workflow. Most people automate this via their bash shell, but bash only goes so far - ergo this tool. 
-This alone is enough to scare away most coders, who just want to build without the added "admin" tasks and accounting and audits while they're in flow.
-It also makes it dead simple for YOU and the wider community of coders, to contribute *absent of crappy commit messages* polluting an otherwise great repo.
+
+Strict adherence to a specific workflow alone, is enough to scare away most coders, who just want to build without the added "admin" overhead / accounting / audits while they're in flow.
+
+Its for YOU and the wider community of coders, to contribute *absent of crappy commit messages* polluting an otherwise great repo.
+
+Inspired by Boo, after seeing lots of great work being committed all with "feat: CGC-0000 added X" messages.
 
 ## WHY WOULD I USE THIS?
  

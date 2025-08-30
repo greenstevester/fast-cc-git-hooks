@@ -90,7 +90,7 @@ func main() {
 	// Generate commit message.
 	message := generateCommitMessage(changes)
 	fmt.Println("─────────────────────────────────────────")
-	fmt.Println(">>> based on your changes, gc created the following git commit message for you:")
+	fmt.Println(">>> based on your changes, cc created the following git commit message for you:")
 	fmt.Println(message)
 
 	if *execute {
@@ -100,16 +100,16 @@ func main() {
 		fmt.Println("Commit created successfully!")
 	} else {
 		fmt.Println("\nWant this git commit message?, If Y, then run cmd below, and we will commit for you:")
-		fmt.Printf("gc --execute\n")
+		fmt.Printf("cc --execute\n")
 	}
 }
 
 func showHelp() {
-	fmt.Printf("gc - Git Commit message generator v%s\n\n", version)
+	fmt.Printf("cc - Git Commit message generator v%s\n\n", version)
 	fmt.Println("Analyzes staged changes and generates conventional commit messages.")
 	fmt.Println()
 	fmt.Println("Usage:")
-	fmt.Println("  gc [flags]")
+	fmt.Println("  cc [flags]")
 	fmt.Println()
 	fmt.Println("Flags:")
 	fmt.Println("  --execute      Execute the commit after generating message")
@@ -118,10 +118,10 @@ func showHelp() {
 	fmt.Println("  --help         Show this help message")
 	fmt.Println()
 	fmt.Println("Examples:")
-	fmt.Println("  gc                    # Generate commit message only")
-	fmt.Println("  gc --execute          # Generate and commit")
-	fmt.Println("  gc --verbose          # Show detailed analysis")
-	fmt.Println("  gc --execute --no-verify  # Commit without hooks")
+	fmt.Println("  cc                    # Generate commit message only")
+	fmt.Println("  cc --execute          # Generate and commit")
+	fmt.Println("  cc --verbose          # Show detailed analysis")
+	fmt.Println("  cc --execute --no-verify  # Commit without hooks")
 	fmt.Println()
 	fmt.Printf("Build info: %s (%s)\n", buildTime, commit)
 }
