@@ -311,6 +311,8 @@ func BenchmarkConfig_Validate(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = cfg.Validate()
+		if err := cfg.Validate(); err != nil {
+			b.Fatal(err)
+		}
 	}
 }

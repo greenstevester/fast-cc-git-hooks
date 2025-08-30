@@ -179,7 +179,7 @@ func TestValidator_ValidateFile(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create test file.
 			file := filepath.Join(tmpDir, "COMMIT_MSG")
-			if err := os.WriteFile(file, []byte(tt.content), 0o644); err != nil {
+			if err := os.WriteFile(file, []byte(tt.content), 0o600); err != nil {
 				t.Fatalf("Failed to write test file: %v", err)
 			}
 
@@ -261,13 +261,19 @@ func TestValidator_ContextCancellation(t *testing.T) {
 
 func BenchmarkValidator_Validate(b *testing.B) {
 	cfg := config.Default()
-	v, _ := New(cfg)
+	v, err := New(cfg)
+	if err != nil {
+		b.Fatal(err)
+	}
 	ctx := context.Background()
 	message := "feat(scope): add new feature with a reasonably long description"
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = v.Validate(ctx, message)
+		result := v.Validate(ctx, message)
+		if !result.Valid {
+			b.Fatal(result.Error())
+		}
 	}
 }
 
@@ -286,12 +292,18 @@ func BenchmarkValidator_ValidateWithCustomRules(b *testing.B) {
 			},
 		},
 	}
-	v, _ := New(cfg)
+	v, err := New(cfg)
+	if err != nil {
+		b.Fatal(err)
+	}
 	ctx := context.Background()
 	message := "feat: [JIRA-123] add new feature"
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = v.Validate(ctx, message)
+		result := v.Validate(ctx, message)
+		if !result.Valid {
+			b.Fatal(result.Error())
+		}
 	}
 }

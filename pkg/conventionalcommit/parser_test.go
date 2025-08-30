@@ -234,7 +234,9 @@ func BenchmarkParser_Parse(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = parser.Parse(message)
+		if _, err := parser.Parse(message); err != nil {
+			b.Fatal(err)
+		}
 	}
 }
 
@@ -244,7 +246,9 @@ func BenchmarkParser_ParseSimple(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = parser.Parse(message)
+		if _, err := parser.Parse(message); err != nil {
+			b.Fatal(err)
+		}
 	}
 }
 

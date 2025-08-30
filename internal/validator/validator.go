@@ -268,7 +268,7 @@ func (*Validator) addValidationError(result *ValidationResult, field, message, v
 
 // readFile reads the contents of a file.
 func readFile(path string) (string, error) {
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) // #nosec G304 - path is provided by caller for commit file reading
 	if err != nil {
 		return "", err
 	}

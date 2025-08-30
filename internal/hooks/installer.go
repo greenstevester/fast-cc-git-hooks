@@ -83,7 +83,7 @@ func (i *Installer) Install(_ context.Context) error {
 	hooksDir := filepath.Join(i.gitDir, "hooks")
 
 	// Ensure hooks directory exists.
-	if err := os.MkdirAll(hooksDir, 0o755); err != nil {
+	if err := os.MkdirAll(hooksDir, 0o750); err != nil {
 		return fmt.Errorf("creating hooks directory: %w", err)
 	}
 
@@ -181,7 +181,7 @@ func (i *Installer) generateHookScript() string {
 
 // isOurHook checks if a hook file was created by us.
 func (*Installer) isOurHook(path string) bool {
-	file, err := os.Open(path)
+	file, err := os.Open(path) // #nosec G304 - path is controlled internally
 	if err != nil {
 		return false
 	}
@@ -209,13 +209,13 @@ func (i *Installer) backupHook(path string, info os.FileInfo) error {
 	}
 
 	// Copy the file.
-	src, err := os.Open(path)
+	src, err := os.Open(path) // #nosec G304 - path is controlled internally
 	if err != nil {
 		return err
 	}
 	defer src.Close()
 
-	dst, err := os.Create(backupPath)
+	dst, err := os.Create(backupPath) // #nosec G304 - path is controlled internally
 	if err != nil {
 		return err
 	}
@@ -249,6 +249,7 @@ func findGitDir() (string, error) {
 				return gitDir, nil
 			}
 			// Handle git worktrees (.git as file).
+			// #nosec G304 - gitDir is controlled internally
 			if content, err := os.ReadFile(gitDir); err == nil {
 				if strings.HasPrefix(string(content), "gitdir:") {
 					gitPath := strings.TrimSpace(strings.TrimPrefix(string(content), "gitdir:"))
@@ -279,13 +280,13 @@ func GlobalInstall(ctx context.Context, logger *slog.Logger) error {
 	}
 
 	templateDir := filepath.Join(configDir, "hooks")
-	if err := os.MkdirAll(templateDir, 0o755); err != nil {
-		return fmt.Errorf("creating template directory: %w", err)
+	if mkdirErr := os.MkdirAll(templateDir, 0o750); mkdirErr != nil {
+		return fmt.Errorf("creating template directory: %w", mkdirErr)
 	}
 
 	// Configure git to use template directory.
-	if err := configureGitTemplate(templateDir); err != nil {
-		return fmt.Errorf("configuring git template: %w", err)
+	if configErr := configureGitTemplate(templateDir); configErr != nil {
+		return fmt.Errorf("configuring git template: %w", configErr)
 	}
 
 	// Install hook in template directory.

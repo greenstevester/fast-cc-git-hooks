@@ -93,7 +93,7 @@ func Load(path string) (*Config, error) {
 		return Default(), nil
 	}
 
-	file, err := os.Open(path)
+	file, err := os.Open(path) // #nosec G304 - path is validated by caller
 	if err != nil {
 		return nil, fmt.Errorf("opening config file: %w", err)
 	}
@@ -128,11 +128,11 @@ func (c *Config) Save(path string) error {
 
 	// Create directory if it doesn't exist.
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return fmt.Errorf("creating config directory: %w", err)
 	}
 
-	file, err := os.Create(path)
+	file, err := os.Create(path) // #nosec G304 - path is validated by caller
 	if err != nil {
 		return fmt.Errorf("creating config file: %w", err)
 	}

@@ -61,8 +61,8 @@ func main() {
 	}
 
 	// Add all changes.
-	if err := addAllChanges(); err != nil {
-		log.Fatalf("Failed to add changes: %v", err)
+	if addErr := addAllChanges(); addErr != nil {
+		log.Fatalf("Failed to add changes: %v", addErr)
 	}
 
 	// Get staged diff.
@@ -449,7 +449,7 @@ func executeCommit(message string) error {
 		args = append(args, "--no-verify")
 	}
 
-	cmd := exec.Command("git", args...)
+	cmd := exec.Command("git", args...) // #nosec G204 - args are validated git commands
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
