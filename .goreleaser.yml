@@ -1,6 +1,6 @@
 version: 1
 
-project_name: fast-cc-hooks
+project_name: fcgh
 
 before:
   hooks:
@@ -8,9 +8,9 @@ before:
     - go generate ./...
 
 builds:
-  - id: fast-cc-hooks
-    main: ./cmd/fast-cc-hooks
-    binary: fast-cc-hooks
+  - id: fcgh
+    main: ./cmd/fcgh
+    binary: fcgh
     goos:
       - linux
       - darwin
@@ -115,14 +115,14 @@ release:
   prerelease: auto
   mode: replace
   header: |
-    # 🚀 fast-cc-hooks {{.Tag}}
+    # 🚀 fcgh {{.Tag}}
 
     **The easiest way to write better commit messages!**
 
     ## 🆕 What's New in This Release
     
     This release includes **two powerful tools**:
-    - **`fast-cc-hooks`** - Git hook for enforcing conventional commits
+    - **`fcgh`** - Fast Conventional Git Hooks for enforcing conventional commits
     - **`cc`** - Helper utility for generating commit messages automatically
 
     ## ⚡️ Super Quick Setup (2 steps!)
@@ -132,42 +132,42 @@ release:
     **🐧 Linux:**
     ```bash
     # Most common (AMD64)
-    curl -L -o fast-cc-hooks.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_linux_amd64.tar.gz
-    tar -xzf fast-cc-hooks.tar.gz
-    chmod +x fast-cc-hooks cc
-    sudo mv fast-cc-hooks cc /usr/local/bin/
+    curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/download/{{.Tag}}/fcgh_{{.Tag}}_linux_amd64.tar.gz
+    tar -xzf fcgh.tar.gz
+    chmod +x fcgh cc
+    sudo mv fcgh cc /usr/local/bin/
 
     # ARM64 (Raspberry Pi, etc.)
-    curl -L -o fast-cc-hooks.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_linux_arm64.tar.gz
-    tar -xzf fast-cc-hooks.tar.gz
-    chmod +x fast-cc-hooks cc
-    sudo mv fast-cc-hooks cc /usr/local/bin/
+    curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/download/{{.Tag}}/fcgh_{{.Tag}}_linux_arm64.tar.gz
+    tar -xzf fcgh.tar.gz
+    chmod +x fcgh cc
+    sudo mv fcgh cc /usr/local/bin/
     ```
 
     **🍎 macOS:**
     ```bash
     # Intel Macs
-    curl -L -o fast-cc-hooks.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_darwin_amd64.tar.gz
-    tar -xzf fast-cc-hooks.tar.gz
-    chmod +x fast-cc-hooks cc
-    sudo mv fast-cc-hooks cc /usr/local/bin/
+    curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/download/{{.Tag}}/fcgh_{{.Tag}}_darwin_amd64.tar.gz
+    tar -xzf fcgh.tar.gz
+    chmod +x fcgh cc
+    sudo mv fcgh cc /usr/local/bin/
 
     # Apple Silicon (M1/M2/M3)
-    curl -L -o fast-cc-hooks.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_darwin_arm64.tar.gz
-    tar -xzf fast-cc-hooks.tar.gz
-    chmod +x fast-cc-hooks cc
-    sudo mv fast-cc-hooks cc /usr/local/bin/
+    curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/download/{{.Tag}}/fcgh_{{.Tag}}_darwin_arm64.tar.gz
+    tar -xzf fcgh.tar.gz
+    chmod +x fcgh cc
+    sudo mv fcgh cc /usr/local/bin/
     ```
 
     **🪟 Windows:**
     ```powershell
-    # Download and extract fast-cc-hooks_{{.Tag}}_windows_amd64.zip
-    # Add both fast-cc-hooks.exe and cc.exe to your PATH
+    # Download and extract fcgh_{{.Tag}}_windows_amd64.zip
+    # Add both fcgh.exe and cc.exe to your PATH
     ```
 
     ### Step 2: Set it up (takes 5 seconds!)
     ```bash
-    fast-cc-hooks setup
+    fcgh setup
     ```
 
     **That's it!** 🎉 Now every time you make a commit, it will automatically check that your message is good!
@@ -184,19 +184,19 @@ release:
   footer: |
     ## 🐳 Docker (Advanced Users)
     ```bash
-    docker pull ghcr.io/greenstevester/fast-cc-hooks:{{.Tag}}
+    docker pull ghcr.io/greenstevester/fcgh:{{.Tag}}
     ```
 
     ## 📦 Package Managers
-    - **Ubuntu/Debian:** Download `.deb` file and run `sudo dpkg -i fast-cc-hooks_{{.Tag}}_linux_amd64.deb`
-    - **RHEL/CentOS:** Download `.rpm` file and run `sudo rpm -i fast-cc-hooks_{{.Tag}}_linux_amd64.rpm`
+    - **Ubuntu/Debian:** Download `.deb` file and run `sudo dpkg -i fcgh_{{.Tag}}_linux_amd64.deb`
+    - **RHEL/CentOS:** Download `.rpm` file and run `sudo rpm -i fcgh_{{.Tag}}_linux_amd64.rpm`
     
     ## 🍺 Coming Soon
-    - **Homebrew:** `brew install greenstevester/tap/fast-cc-hooks`
-    - **Windows Scoop:** `scoop install fast-cc-hooks`
+    - **Homebrew:** `brew install greenstevester/tap/fcgh`
+    - **Windows Scoop:** `scoop install fcgh`
 
     ---
-    💡 **Need help?** Run `fast-cc-hooks -h` for super friendly help!
+    💡 **Need help?** Run `fcgh -h` for super friendly help!
 
 # Homebrew formula - disabled until repository is created
 # brews:
@@ -253,7 +253,7 @@ release:
 # Linux packages via nFPM
 nfpms:
   - id: packages
-    package_name: fast-cc-hooks
+    package_name: fcgh
     file_name_template: "{{ .ConventionalFileName }}"
     vendor: Steven Greensill
     homepage: https://github.com/greenstevester/fast-cc-git-hooks

@@ -1,4 +1,4 @@
-// fast-cc-hooks is a fast conventional commits git hook system.
+// fcgh is a fast conventional commits git hook system.
 package main
 
 import (
@@ -57,7 +57,7 @@ func main() {
 	flag.BoolVar(&verbose, "v", false, "verbose output")
 	flag.StringVar(&configFile, "config", "", "path to config file")
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "🚀 fast-cc-hooks - Make your commit messages awesome!\n\n")
+		fmt.Fprintf(os.Stderr, "🚀 fcgh - Fast Conventional Git Hooks - Make your commit messages awesome!\n\n")
 		fmt.Fprintf(os.Stderr, "📋 Super Easy Setup (just 2 steps!):\n")
 		fmt.Fprintf(os.Stderr, "   1️⃣  %s setup     ← Start here! This sets everything up\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "   2️⃣  git commit -m \"feat: your message\"  ← Write better commits!\n\n")
@@ -264,7 +264,7 @@ func versionCommand() *Command {
 		Description: "ℹ️  Show version info",
 		Flags:       fs,
 		Run: func(_ context.Context, _ []string) error {
-			fmt.Printf("fast-cc-hooks version %s\n", version)
+			fmt.Printf("fcgh version %s\n", version)
 			fmt.Printf("Go version: %s\n", runtime.Version())
 			fmt.Printf("OS/Arch: %s/%s\n", runtime.GOOS, runtime.GOARCH)
 			return nil
@@ -282,7 +282,7 @@ func setupCommand() *Command {
 		Description: "🚀 Easy setup - install git hooks (global by default, local overrides global)",
 		Flags:       fs,
 		Run: func(ctx context.Context, _ []string) error {
-			fmt.Println("🚀 Setting up fast-cc-hooks...")
+			fmt.Println("🚀 Setting up fcgh (Fast Conventional Git Hooks)...")
 			fmt.Println("   This will help you write better commit messages!")
 			fmt.Println("")
 
@@ -345,7 +345,7 @@ func setupEnterpriseCommand() *Command {
 		Description: "🏢 Enterprise setup - with JIRA validation (global by default, local overrides global)",
 		Flags:       fs,
 		Run: func(ctx context.Context, _ []string) error {
-			fmt.Println("🏢 Setting up fast-cc-hooks for Enterprise...")
+			fmt.Println("🏢 Setting up fcgh for Enterprise...")
 			fmt.Println("   This includes JIRA ticket validation and enterprise-ready rules!")
 			fmt.Println("")
 
@@ -490,7 +490,7 @@ func copyEnterpriseConfig(destPath string) error {
 
 // createBasicEnterpriseConfig creates a basic enterprise config if template is not found.
 func createBasicEnterpriseConfig(destPath string) error {
-	enterpriseConfig := `# fast-cc-hooks enterprise configuration
+	enterpriseConfig := `# fcgh enterprise configuration
 
 # Allowed commit types
 types:
@@ -643,7 +643,7 @@ func hasGlobalInstallation() (bool, error) {
 		if readErr != nil {
 			return false, readErr
 		}
-		return strings.Contains(string(content), "# fast-cc-hooks"), nil
+		return strings.Contains(string(content), "# fcgh"), nil
 	}
 	return false, nil
 }
@@ -716,7 +716,7 @@ func removeCommand() *Command {
 		Description: "🗑️  Easy removal - uninstall git hooks",
 		Flags:       fs,
 		Run: func(ctx context.Context, _ []string) error {
-			fmt.Println("🗑️  Removing fast-cc-hooks...")
+			fmt.Println("🗑️  Removing fcgh...")
 			fmt.Println("   (Don't worry, your code stays safe!)")
 			fmt.Println("")
 
@@ -733,7 +733,7 @@ func removeCommand() *Command {
 
 			// If no installations found
 			if !hasLocal && !hasGlobal {
-				fmt.Println("ℹ️  No fast-cc-hooks installations found.")
+				fmt.Println("ℹ️  No fcgh installations found.")
 				return nil
 			}
 
@@ -801,11 +801,11 @@ func removeCommand() *Command {
 			// Success message
 			fmt.Println("")
 			if len(removed) > 0 {
-				fmt.Printf("✅ Removed %s installation(s)! fast-cc-hooks is no longer checking your commits\n", strings.Join(removed, " and "))
+				fmt.Printf("✅ Removed %s installation(s)! fcgh is no longer checking your commits\n", strings.Join(removed, " and "))
 			} else {
 				fmt.Println("ℹ️  Nothing to remove (installation not found)")
 			}
-			fmt.Println("💭 Thanks for using fast-cc-hooks!")
+			fmt.Println("💭 Thanks for using fcgh!")
 			return nil
 		},
 	}

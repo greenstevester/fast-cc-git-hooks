@@ -31,7 +31,7 @@ jobs:
       run: go mod verify
 
     - name: Build
-      run: go build -v ./cmd/fast-cc-hooks
+      run: go build -v ./cmd/fcgh
 
     - name: Run tests
       run: go test -race -coverprofile=coverage.out -covermode=atomic -v ./...
@@ -109,15 +109,15 @@ jobs:
     - name: Build for multiple platforms
       run: |
         # Linux
-        GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o build/fast-cc-hooks-linux-amd64 ./cmd/fast-cc-hooks
-        GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o build/fast-cc-hooks-linux-arm64 ./cmd/fast-cc-hooks
+        GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o build/fcgh-linux-amd64 ./cmd/fcgh
+        GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o build/fcgh-linux-arm64 ./cmd/fcgh
         
         # macOS
-        GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o build/fast-cc-hooks-darwin-amd64 ./cmd/fast-cc-hooks
-        GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o build/fast-cc-hooks-darwin-arm64 ./cmd/fast-cc-hooks
+        GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o build/fcgh-darwin-amd64 ./cmd/fcgh
+        GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o build/fcgh-darwin-arm64 ./cmd/fcgh
         
         # Windows
-        GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o build/fast-cc-hooks-windows-amd64.exe ./cmd/fast-cc-hooks
+        GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o build/fcgh-windows-amd64.exe ./cmd/fcgh
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
@@ -185,13 +185,13 @@ jobs:
         go-version: ${{ env.GO_VERSION }}
         cache: true
 
-    - name: Build fast-cc-hooks
-      run: go build -o fast-cc-hooks ./cmd/fast-cc-hooks
+    - name: Build fcgh
+      run: go build -o fcgh ./cmd/fcgh
 
     - name: Validate commit messages
       run: |
         # Get all commits in this PR
         git log --format="%s" origin/${{ github.base_ref }}..HEAD | while read -r commit_msg; do
           echo "Validating: $commit_msg"
-          ./fast-cc-hooks validate "$commit_msg" || exit 1
+          ./fcgh validate "$commit_msg" || exit 1
         done

@@ -1,4 +1,4 @@
-# 🚀 fast-cc-hooks
+# 🚀 fcgh - Fast Conventional Git Hooks
 
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/greenstevester/fast-cc-git-hooks?style=for-the-badge&logo=github)](https://github.com/greenstevester/fast-cc-git-hooks/releases/latest)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/greenstevester/fast-cc-git-hooks?style=for-the-badge&logo=go)](https://golang.org/)
@@ -9,38 +9,40 @@
 [![Architecture](https://img.shields.io/badge/arch-amd64%20%7C%20arm64-lightgrey?style=for-the-badge)](https://github.com/greenstevester/fast-cc-git-hooks/releases/latest)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg?style=for-the-badge)](https://conventionalcommits.org)
 
+## WHAT IS THIS?
+
 **The fastest way for YOU, to write [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) messages for ALL your git commits!** 
 
-Why Use Conventional Commits? Because when you use them, there's tooling (listed later in this page) that can:
-- auto-generate CHANGELOG's AND even determine semantic version bumps 
-- make it dead simple for YOU and the community of coders to contribute to projects *without crappy commit messages*.
+## WHY CONVENTIONAL COMMITS? 
+- 
+- Because when you use them, there's tooling (listed below) to save you more time, while giving your code repo that professional touch, and can:
+- generate CHANGELOG's
+- employ semantic versioning easily
+
+It all stems from something simple, but usually this means more discipline AND (worst of all) strict adherence to a specific workflow. Most people automate this via their bash shell, but bash only goes so far - ergo this tool. 
+This alone is enough to scare away most coders, who just want to build without the added "admin" tasks and accounting and audits while they're in flow.
+It also makes it dead simple for YOU and the wider community of coders, to contribute *absent of crappy commit messages* polluting an otherwise great repo.
+
+## WHY WOULD I USE THIS?
  
-## Value Prop: This **performance obsessed** "git companion" toolkit, provides tools that do the heavy lifting:
+## It's ms fast "git add-on," that gives you ROI from your CPU, does the work (you simply don't have time to do):
 - **`fast-cc-hooks`** - installs a git-hook (locally or globally with local install always taking precedence), that checks your commit messages, ensuring they comply to conventional commit format.
 - **`cc`** - preview generated conventional commit messages, based on your changes
 - **`ccc`** - generate conventional commit messages AND commit (3 c's for "Create Conventional Commit") (most popular)
 
- 🎯 Key Benefits:
+## FEATURES PLEASE?
  - Flexibility: easily choose between system-wide or project-specific hook installation
  - Team collaboration: Local installation perfect for team projects with specific requirements
  - Personal workflow: Global installation ideal for individual developers wanting consistent validation
  
- - 🚀 Enhanced User Experience:
-- Smart Detection: Automatically detects both local and global installations
-- Interactive Prompts: User-friendly menu when both installations exist
-- Precise Control: --local and --global flags for specific removal
-
 🎯 Real-World Scenarios Handled:
 - Team Developer: Can remove only local hooks while keeping global ones
 - Personal Setup: Can remove global hooks without affecting project-specific local ones
-- Clean Slate: Can remove both installations when switching tools
-- Accidental Installs: Can target specific installation types
 
 
+## 🔄 Using Tools Together or separately - your choice!
 
-## 🔄 Perfect Workflow: Using ALL Tools Together
-
-The tools are **completely independent** but work beautifully together:
+The tools are **independent**, you can happily use one without the other but work beautifully together:
 
 ### Option 1: You write your own commit messages (with fast-cc-hooks installed)
 ```bash
@@ -66,7 +68,8 @@ ccc
 
 **Pro tip**: Start with `ccc` to see what good commit messages look like, then graduate to writing your own!
 
-## ⚡️ Quick Setup (In 3 steps!)
+
+## ⚡️ Quick Setup / a.k.a. "Take my money! (except its free)"
 
 ### Step 1: Install the tools
 
@@ -136,8 +139,7 @@ fast-cc-hooks setup-ent --local  # Enterprise setup for current repository only
 
 #### What the Setup Commands Do
 
-- **User-friendly**: Includes helpful messages, emoji, and step-by-step feedback
-- **Comprehensive**: Does TWO things automatically:
+- **Automatically**: 
   - Creates/checks configuration: Ensures a config file exists (creates default if needed)
   - Installs hooks: Then installs the git hooks
 - **Guided experience**: Shows exactly what it's doing with clear output
@@ -154,18 +156,7 @@ When you have both local and global installations:
 Local Repository Hook  ➤  ALWAYS WINS  ⚡
 Global Git Hook        ➤  Ignored when local exists
 ```
-
-**Real-World Example:**
-- **Global setup**: Enforces standard conventional commits for all your projects
-- **Local setup**: Project has specific JIRA validation rules
-- **Result**: The local JIRA rules apply, global rules are ignored
-
-This design lets you have:
-- **Personal defaults** (global) for your general workflow
-- **Project-specific overrides** (local) for team requirements
-
-**That's it!** 🎉 Now every time you make a commit, compliant conventional commit messages will be your default.
-
+## Every time you make a commit, compliant conventional commit messages will be your default 
 
 ## ✨ How to write good commit messages
 

@@ -1,11 +1,11 @@
 .PHONY: all build test bench clean install uninstall fmt lint coverage release help
 
 # Variables
-BINARY_NAME := fast-cc-hooks
+BINARY_NAME := fcgh
 CC_BINARY_NAME := cc
 CCC_BINARY_NAME := ccc
 BUILD_DIR := build
-CMD_DIR := cmd/fast-cc-hooks
+CMD_DIR := cmd/fcgh
 CC_CMD_DIR := cmd/cc
 CCC_CMD_DIR := cmd/ccc
 VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
