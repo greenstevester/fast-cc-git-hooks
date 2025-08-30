@@ -31,7 +31,7 @@ Inspired by **_Boo_**, after seeing lots of great work being committed all with 
 ## WHY WOULD I USE THIS?
  
 ## It's ms fast "git add-on," that gives you ROI from your CPU, does the work (you simply don't have time to do):
-- **`fast-cc-hooks`** - installs a git-hook (locally or globally with local install always taking precedence), that checks your commit messages, ensuring they comply to conventional commit format.
+- **`fcgh`** - installs a git-hook (locally or globally with local install always taking precedence), that checks your commit messages, ensuring they comply to conventional commit format.
 - **`cc`** - preview generated conventional commit messages, based on your changes
 - **`ccc`** - generate conventional commit messages AND commit (3 c's for "Create Conventional Commit") (most popular)
 
@@ -49,24 +49,24 @@ Inspired by **_Boo_**, after seeing lots of great work being committed all with 
 
 The tools are **independent**, you can happily use one without the other but work beautifully together:
 
-### Option 1: You write your own commit messages (with fast-cc-hooks installed)
+### Option 1: You write your own commit messages (with fcgh installed)
 ```bash
 # Write your commit message manually
 git commit -m "feat: CGC-1245 Added login authentication"
-# ↳ The fast-cc-hooks hook, automatically validates your message ✅
+# ↳ The fcgh hook, automatically validates your message ✅
 ```
 
-### Option 2: Commit messages are generated based on your changes (using ccc) and validated by the fast-cc-hooks hook
+### Option 2: Commit messages are generated based on your changes (using ccc) and validated by the fcgh hook
 ```bash
 # Let ccc generate the conventional commit message and execute it for you
 ccc
 # ↳ ccc analyzes your git changes and creates a conventional commit message
-# ↳ When git commit runs, the git hook (installed via fast-cc-hooks) validates the generated message ✅
+# ↳ When git commit runs, the git hook (installed via fcgh) validates the generated message ✅
 # ↳ which means: compliant conventional commits, every time! 
 ```
 
 ### You can mix and match:
-- **Use fast-cc-hooks alone**: Ensures your manual commit messages get automatic validation
+- **Use fcgh alone**: Ensures your manual commit messages get automatic validation
 - **Use cc alone**: Preview generated conventional commit messages, based on your changes, but you do the commit yourself
 - **Use ccc alone**: Generated compliant conventional commits, without validation (but why would you?)
 - **Use both**: Generated conventional commits PLUS BONUS validation, talk about the perfect combo! 🎯
@@ -84,44 +84,44 @@ Each release includes **both tools** - you get everything in one download!
 
 *** Windows:**
 1. Go to [Releases Page](https://github.com/greenstevester/fast-cc-git-hooks/releases/latest)
-2. Download `fast-cc-hooks_windows_amd64.zip`
-3. Extract and add both `fast-cc-hooks.exe` and `cc.exe` to a directory on your PATH
+2. Download `fast-cc-git-hooks_windows_amd64.zip`
+3. Extract and add both `fcgh.exe` and `cc.exe` to a directory on your PATH
 NOTE: In windows, there's an option to change only your environment variables - use that as a preference, or just add both to your PATH.
 
 **🐧 Linux:**
 ```bash
 # Most common (AMD64)
-curl -L -o fast-cc-hooks.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fast-cc-hooks_linux_amd64.tar.gz
-tar -xzf fast-cc-hooks.tar.gz
-chmod +x fast-cc-hooks cc
-sudo mv fast-cc-hooks cc /usr/local/bin/
+curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fcgh_linux_amd64.tar.gz
+tar -xzf fcgh.tar.gz
+chmod +x fcgh cc
+sudo mv fcgh cc /usr/local/bin/
 
 # ARM64 (Raspberry Pi, etc.)
-curl -L -o fast-cc-hooks.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fast-cc-hooks_linux_arm64.tar.gz
-tar -xzf fast-cc-hooks.tar.gz
-chmod +x fast-cc-hooks cc
-sudo mv fast-cc-hooks cc /usr/local/bin/
+curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fcgh_linux_arm64.tar.gz
+tar -xzf fcgh.tar.gz
+chmod +x fcgh cc
+sudo mv fcgh cc /usr/local/bin/
 ```
 
 **🍎 macOS:**
 ```bash
 # Intel Macs
-curl -L -o fast-cc-hooks.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fast-cc-hooks_darwin_amd64.tar.gz
-tar -xzf fast-cc-hooks.tar.gz
-chmod +x fast-cc-hooks cc
-sudo mv fast-cc-hooks cc /usr/local/bin/
+curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fcgh_darwin_amd64.tar.gz
+tar -xzf fcgh.tar.gz
+chmod +x fcgh cc
+sudo mv fcgh cc /usr/local/bin/
 
 # Apple Silicon (M1/M2/M3) - most common now
-curl -L -o fast-cc-hooks.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fast-cc-hooks_darwin_arm64.tar.gz
-tar -xzf fast-cc-hooks.tar.gz
-chmod +x fast-cc-hooks cc
-sudo mv fast-cc-hooks cc /usr/local/bin/
+curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fcgh_darwin_arm64.tar.gz
+tar -xzf fcgh.tar.gz
+chmod +x fcgh cc
+sudo mv fcgh cc /usr/local/bin/
 ```
 
 ### Step 2: Verify tools work on your machine (a.k.a. "Is it installed ...smoke test?")
 
 ```bash
-fast-cc-hooks version  # shows version info
+fcgh version  # shows version info
 cc --verbose           # runs cc in verbose mode
 ccc --verbose           # runs cc in verbose mode
 ```
@@ -132,14 +132,14 @@ If you see version/help info for both, you're good to go! If not, make sure all 
 
 #### Global Installation (Default - Recommended)
 ```bash
-fast-cc-hooks setup      # For standard projects
-fast-cc-hooks setup-ent  # For enterprise projects with JIRA validation
+fcgh setup      # For standard projects
+fcgh setup-ent  # For enterprise projects with JIRA validation
 ```
 
 #### Local Installation (Current Repository Only)
 ```bash
-fast-cc-hooks setup --local      # Install only for current repository
-fast-cc-hooks setup-ent --local  # Enterprise setup for current repository only
+fcgh setup --local      # Install only for current repository
+fcgh setup-ent --local  # Enterprise setup for current repository only
 ```
 
 #### What the Setup Commands Do
@@ -189,18 +189,18 @@ The format is simple: `type: what you did`
 - `chore` - when you do maintenance stuff
 
 
-### Commands (fast-cc-hooks)
+### Commands (fcgh)
 
 ```bash
-fast-cc-hooks setup-ent # Set up everything (start here!)
-fast-cc-hooks remove    # Smart removal - prompts to choose local/global if both exist
-fast-cc-hooks remove --local   # Remove only from current repository
-fast-cc-hooks remove --global  # Remove only from global git configuration
+fcgh setup-ent # Set up everything (start here!)
+fcgh remove    # Smart removal - prompts to choose local/global if both exist
+fcgh remove --local   # Remove only from current repository
+fcgh remove --global  # Remove only from global git configuration
 ```
 
 **Test things:**
 ```bash
-fast-cc-hooks validate "freak: my terrible message"  # Test if a message is bad
+fcgh validate "freak: my terrible message"  # Test if a message is bad
 ```
 
 ### Commit Helper Commands (cc)
@@ -214,7 +214,7 @@ cc --verbose           # Show detailed analysis of your changes
 cc --help              # Show all available options
 ```
 
-**That's it!** Most people only ever need `fast-cc-hooks setup-ent` and `ccc`.
+**That's it!** Most people only ever need `fcgh setup-ent` and `ccc`.
 
 ## 🤔 Common Questions
 
@@ -222,7 +222,7 @@ cc --help              # Show all available options
 A: No! They're completely independent. Install hooks for validation, ccc for generation, or both together.
 
 **Q: What if I want to turn off validation temporarily?**
-A: Just run `fast-cc-hooks remove` and it's gone! Run `fast-cc-hooks setup-ent` to turn it back on.
+A: Just run `fcgh remove` and it's gone! Run `fcgh setup-ent` to turn it back on.
 
 **Q: Will this mess up my code?**
 A: Nope! The hooks only check commit messages, cc only generates them. Your code stays exactly the same.
@@ -231,7 +231,7 @@ A: Nope! The hooks only check commit messages, cc only generates them. Your code
 A: The hook will catch it! That's why they work so well together.
 
 **Q: Can I use this on all my projects?**
-A: Yes! When you run `fast-cc-hooks setup-ent`, it works for ALL your Git projects. cc works in any git repo.
+A: Yes! When you run `fcgh setup-ent`, it works for ALL your Git projects. cc works in any git repo.
 
 **Q: What if I don't like the cc generated message?**
 A: Just use `cc` (without ccc) to preview first, then write your own and let the hook validate it!
@@ -259,7 +259,7 @@ git commit -m "docs: LIND-4777 installation instructions"
 
 But if you want to customize the rules, run:
 ```bash
-fast-cc-hooks init
+fcgh init
 ```
 
 This creates a file called `fast-cc-config.yaml` in your home directory (`~/.fast-cc-git-hooks/`) that you can edit. It has comments explaining everything!
@@ -270,7 +270,7 @@ This creates a file called `fast-cc-config.yaml` in your home directory (`~/.fas
 
 Run this to test your message:
 ```bash
-fast-cc-hooks validate "your message here"
+fcgh validate "your message here"
 ```
 
 It will tell you exactly what's wrong and how to fix it.
@@ -279,17 +279,17 @@ It will tell you exactly what's wrong and how to fix it.
 
 You can't bypass it easily (that's the point!), but you can run:
 ```bash
-fast-cc-hooks remove
+fcgh remove
 git commit -m "your message"  
-fast-cc-hooks setup
+fcgh setup
 ```
 
 **Problem: It's not working at all**
 
 Try setting it up again:
 ```bash
-fast-cc-hooks remove
-fast-cc-hooks setup-ent
+fcgh remove
+fcgh setup-ent
 ```
 
 ## 🏗️ Advanced Examples
@@ -373,7 +373,7 @@ Once you're using conventional commits, you can automatically generate changelog
 3. **For just changelogs**: Use `conventional-changelog` or `git-cliff`
 4. **For monorepos**: Use `versio` or `cocogitto`
 
-All these tools work perfectly with the conventional commit messages that `fast-cc-hooks` enforces! 🎉
+All these tools work perfectly with the conventional commit messages that `fcgh` enforces! 🎉
 
 ## 📝 License
 
@@ -381,4 +381,4 @@ MIT License - do whatever you want with this code!
 
 ---
 
-**That's everything!** Remember: just run `fast-cc-hooks setup` and start writing better commits! 🚀
+**That's everything!** Remember: just run `fcgh setup-ent` and start writing better commits! 🚀
