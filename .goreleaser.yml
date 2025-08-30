@@ -89,7 +89,7 @@ changelog:
 
 release:
   github:
-    owner: stevengreensill
+    owner: greenstevester
     name: fast-cc-git-hooks
   draft: false
   prerelease: auto
@@ -112,13 +112,13 @@ release:
     **🐧 Linux:**
     ```bash
     # Most common (AMD64)
-    curl -L -o fast-cc-hooks.tar.gz https://github.com/stevengreensill/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_linux_amd64.tar.gz
+    curl -L -o fast-cc-hooks.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_linux_amd64.tar.gz
     tar -xzf fast-cc-hooks.tar.gz
     chmod +x fast-cc-hooks gc
     sudo mv fast-cc-hooks gc /usr/local/bin/
 
     # ARM64 (Raspberry Pi, etc.)
-    curl -L -o fast-cc-hooks.tar.gz https://github.com/stevengreensill/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_linux_arm64.tar.gz
+    curl -L -o fast-cc-hooks.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_linux_arm64.tar.gz
     tar -xzf fast-cc-hooks.tar.gz
     chmod +x fast-cc-hooks gc
     sudo mv fast-cc-hooks gc /usr/local/bin/
@@ -127,13 +127,13 @@ release:
     **🍎 macOS:**
     ```bash
     # Intel Macs
-    curl -L -o fast-cc-hooks.tar.gz https://github.com/stevengreensill/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_darwin_amd64.tar.gz
+    curl -L -o fast-cc-hooks.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_darwin_amd64.tar.gz
     tar -xzf fast-cc-hooks.tar.gz
     chmod +x fast-cc-hooks gc
     sudo mv fast-cc-hooks gc /usr/local/bin/
 
     # Apple Silicon (M1/M2/M3)
-    curl -L -o fast-cc-hooks.tar.gz https://github.com/stevengreensill/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_darwin_arm64.tar.gz
+    curl -L -o fast-cc-hooks.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/download/{{.Tag}}/fast-cc-hooks_{{.Tag}}_darwin_arm64.tar.gz
     tar -xzf fast-cc-hooks.tar.gz
     chmod +x fast-cc-hooks gc
     sudo mv fast-cc-hooks gc /usr/local/bin/
@@ -164,7 +164,7 @@ release:
   footer: |
     ## 🐳 Docker (Advanced Users)
     ```bash
-    docker pull ghcr.io/stevengreensill/fast-cc-hooks:{{.Tag}}
+    docker pull ghcr.io/greenstevester/fast-cc-hooks:{{.Tag}}
     ```
 
     ## 📦 Package Managers
@@ -184,7 +184,7 @@ release:
 #       owner: greenstevester
 #       name: homebrew-tap
 #     folder: Formula
-#     homepage: https://github.com/stevengreensill/fast-cc-git-hooks
+#     homepage: https://github.com/greenstevester/fast-cc-git-hooks
 #     description: "Fast conventional commits git hooks"
 #     license: MIT
 #     test: |
@@ -193,17 +193,17 @@ release:
 # Docker images - disabled until Docker setup is fixed
 # dockers:
 #   - image_templates:
-#       - "ghcr.io/stevengreensill/fast-cc-hooks:{{ .Tag }}"
-#       - "ghcr.io/stevengreensill/fast-cc-hooks:v{{ .Major }}"
-#       - "ghcr.io/stevengreensill/fast-cc-hooks:v{{ .Major }}.{{ .Minor }}"
-#       - "ghcr.io/stevengreensill/fast-cc-hooks:latest"
+#       - "ghcr.io/greenstevester/fast-cc-hooks:{{ .Tag }}"
+#       - "ghcr.io/greenstevester/fast-cc-hooks:v{{ .Major }}"
+#       - "ghcr.io/greenstevester/fast-cc-hooks:v{{ .Major }}.{{ .Minor }}"
+#       - "ghcr.io/greenstevester/fast-cc-hooks:latest"
 #     dockerfile: Dockerfile
 #     build_flag_templates:
 #       - --platform=linux/amd64
 #       - --label=org.opencontainers.image.title={{ .ProjectName }}
 #       - --label=org.opencontainers.image.description=Fast conventional commits git hooks
-#       - --label=org.opencontainers.image.url=https://github.com/stevengreensill/fast-cc-git-hooks
-#       - --label=org.opencontainers.image.source=https://github.com/stevengreensill/fast-cc-git-hooks
+#       - --label=org.opencontainers.image.url=https://github.com/greenstevester/fast-cc-git-hooks
+#       - --label=org.opencontainers.image.source=https://github.com/greenstevester/fast-cc-git-hooks
 #       - --label=org.opencontainers.image.version={{ .Version }}
 #       - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
 #       - --label=org.opencontainers.image.revision={{ .FullCommit }}
@@ -226,7 +226,7 @@ release:
 #   - repository:
 #       owner: greenstevester
 #       name: scoop-bucket
-#     homepage: https://github.com/stevengreensill/fast-cc-git-hooks
+#     homepage: https://github.com/greenstevester/fast-cc-git-hooks
 #     description: "Fast conventional commits git hooks"
 #     license: MIT
 
@@ -236,8 +236,8 @@ nfpms:
     package_name: fast-cc-hooks
     file_name_template: "{{ .ConventionalFileName }}"
     vendor: Steven Greensill
-    homepage: https://github.com/stevengreensill/fast-cc-git-hooks
-    maintainer: Steven Greensill <stevengreensill@example.com>
+    homepage: https://github.com/greenstevester/fast-cc-git-hooks
+    maintainer: greenstevester
     description: Fast conventional commits git hooks
     license: MIT
     formats:
