@@ -63,8 +63,8 @@ func main() {
 		fmt.Fprintf(os.Stderr, "   2️⃣  git commit -m \"feat: your message\"  ← Write better commits!\n\n")
 
 		fmt.Fprintf(os.Stderr, "✨ All Commands:\n")
-		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "setup", "🚀 Easy setup - install git hooks everywhere!")
-		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "setup-ent", "🏢 Enterprise setup - with JIRA ticket validation!")
+		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "setup", "🚀 Easy setup - install git hooks (use --local for current repo only)")
+		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "setup-ent", "🏢 Enterprise setup - with JIRA validation (use --local for current repo only)")
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "remove", "🗑️  Easy removal - uninstall git hooks")
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "validate", "🔍 Test a commit message")
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "init", "📝 Create a config file")

@@ -9,16 +9,16 @@
 [![Architecture](https://img.shields.io/badge/arch-amd64%20%7C%20arm64-lightgrey?style=for-the-badge)](https://github.com/greenstevester/fast-cc-git-hooks/releases/latest)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg?style=for-the-badge)](https://conventionalcommits.org)
 
-**The fastest (and laziest) way for YOU, to write [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) messages for ALL your git commits!** 
+**The fastest way for YOU, to write [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) messages for ALL your git commits!** 
 
 Why Use Conventional Commits? Because when you use them, there's tooling (listed later in this page) that can:
 - auto-generate CHANGELOG's AND even determine semantic version bumps 
-- make it dead simple for YOU and the community of coders to contribute to projects *without lazy commit messages*.
+- make it dead simple for YOU and the community of coders to contribute to projects *without crappy commit messages*.
  
-## Value Prop: This **performance focused** "git companion" toolkit, provides two (2) complementary tools that do the heavy lifting:
+## Value Prop: This **performance obsessed** "git companion" toolkit, provides tools that do the heavy lifting:
+- **`fast-cc-hooks`** - installs a git-hook (locally or globally with local install always taking precedence), that checks your commit messages, ensuring they comply to conventional commit format.
 - **`cc`** - preview generated conventional commit messages, based on your changes
 - **`ccc`** - generate conventional commit messages AND commit (3 c's for "Create Conventional Commit") (most popular)
-- **`fast-cc-hooks`** - installer of a git-hook, that checks your commit messages, ensuring they comply to conventional commit format.
 
 Use them together for the perfect commit workflow! 🎯 
 
@@ -106,23 +106,28 @@ If you see version/help info for both, you're good to go! If not, make sure all 
 
 ### 🛠️ Step 3: Setup
 
+#### Global Installation (Default - Recommended)
 ```bash
-fast-cc-hooks setup
-```
-OR (for Enterprise users)
-
-```bash
-fast-cc-hooks setup-ent
+fast-cc-hooks setup      # For standard projects
+fast-cc-hooks setup-ent  # For enterprise projects with JIRA validation
 ```
 
-#### fast-cc-hooks Setup Command 
+#### Local Installation (Current Repository Only)
+```bash
+fast-cc-hooks setup --local      # Install only for current repository
+fast-cc-hooks setup-ent --local  # Enterprise setup for current repository only
+```
 
-- User-friendly: Includes helpful messages, emoji, and step-by-step feedback
-- Comprehensive: Does TWO things automatically:
-  a. Creates/checks configuration: Ensures a config file exists (creates default if needed)
-  b. Installs hooks: Then installs the git hooks
-- Guided experience: Shows exactly what it's doing with clear output
-- Default behavior: Installs globally for all repositories
+#### What the Setup Commands Do
+
+- **User-friendly**: Includes helpful messages, emoji, and step-by-step feedback
+- **Comprehensive**: Does TWO things automatically:
+  - Creates/checks configuration: Ensures a config file exists (creates default if needed)
+  - Installs hooks: Then installs the git hooks
+- **Guided experience**: Shows exactly what it's doing with clear output
+- **Global vs Local**:
+  - **Global (default)**: Installs hooks for ALL git repositories on your system
+  - **Local (--local)**: Installs hooks only for the current repository
 
 **That's it!** 🎉 Now every time you make a commit, compliant conventional commit messages will be your default.
 
