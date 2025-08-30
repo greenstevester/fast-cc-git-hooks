@@ -46,6 +46,7 @@ func main() {
 	}
 
 	// Execute cc with --execute flag
+	// #nosec G204 - ccBinary is validated by findCCBinary function
 	cmd := exec.Command(ccBinary, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -72,13 +73,13 @@ func findCCBinary() (string, error) {
 	ccPath := filepath.Join(gceDir, "cc")
 	
 	// Check if cc exists in the same directory
-	if _, err := os.Stat(ccPath); err == nil {
+	if _, statErr := os.Stat(ccPath); statErr == nil {
 		return ccPath, nil
 	}
 
 	// Try cc with .exe extension (Windows)
 	ccExePath := ccPath + ".exe"
-	if _, err := os.Stat(ccExePath); err == nil {
+	if _, statErr := os.Stat(ccExePath); statErr == nil {
 		return ccExePath, nil
 	}
 

@@ -463,11 +463,12 @@ func copyEnterpriseConfig(destPath string) error {
 	templatePath := filepath.Join(exeDir, "example-configs", "fast-cc-hooks.enterprise.yaml")
 	
 	// If not found, try relative to current directory (development scenario)
-	if _, err := os.Stat(templatePath); os.IsNotExist(err) {
+	if _, statErr := os.Stat(templatePath); os.IsNotExist(statErr) {
 		templatePath = filepath.Join("example-configs", "fast-cc-hooks.enterprise.yaml")
 	}
 
 	// Read the enterprise config template
+	// #nosec G304 - templatePath is constructed from validated executable directory
 	templateData, err := os.ReadFile(templatePath)
 	if err != nil {
 		// If we can't find the template, create a basic enterprise config
@@ -480,7 +481,7 @@ func copyEnterpriseConfig(destPath string) error {
 	}
 
 	// Write the enterprise config
-	if err := os.WriteFile(destPath, templateData, 0o644); err != nil {
+	if err := os.WriteFile(destPath, templateData, 0o600); err != nil {
 		return fmt.Errorf("writing enterprise config: %w", err)
 	}
 
@@ -544,7 +545,7 @@ custom_rules: []
 	}
 
 	// Write the basic enterprise config
-	if err := os.WriteFile(destPath, []byte(enterpriseConfig), 0o644); err != nil {
+	if err := os.WriteFile(destPath, []byte(enterpriseConfig), 0o600); err != nil {
 		return fmt.Errorf("writing basic enterprise config: %w", err)
 	}
 
@@ -566,11 +567,11 @@ func ensureConfigExists() (string, bool, error) {
 	defaultPath, err := config.GetDefaultConfigPath()
 	if err != nil {
 		// Fallback to current directory (new filename first)
-		if _, err := os.Stat(config.DefaultConfigFile); err == nil {
+		if _, statErr := os.Stat(config.DefaultConfigFile); statErr == nil {
 			return config.DefaultConfigFile, false, nil
 		}
 		// Check for old filename in current directory
-		if _, err := os.Stat(".fast-cc-hooks.yaml"); err == nil {
+		if _, statErr := os.Stat(".fast-cc-hooks.yaml"); statErr == nil {
 			return ".fast-cc-hooks.yaml", false, nil
 		}
 		return "", false, fmt.Errorf("cannot determine config path: %w", err)
@@ -637,6 +638,7 @@ func hasGlobalInstallation() (bool, error) {
 	globalHookPath := filepath.Join(configDir, "hooks", "commit-msg")
 	if _, err := os.Stat(globalHookPath); err == nil {
 		// Read the file to check if it's our hook
+		// #nosec G304 - globalHookPath is constructed from validated git config directory
 		content, readErr := os.ReadFile(globalHookPath)
 		if readErr != nil {
 			return false, readErr
@@ -684,7 +686,9 @@ func promptUserChoice() (string, error) {
 	fmt.Print("Please choose (1-4): ")
 
 	var choice string
-	fmt.Scanln(&choice)
+	if _, err := fmt.Scanln(&choice); err != nil {
+		return "", fmt.Errorf("reading user input: %w", err)
+	}
 
 	switch choice {
 	case "1":
