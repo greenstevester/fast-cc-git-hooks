@@ -48,9 +48,9 @@ builds:
     flags:
       - -trimpath
 
-  - id: gce
-    main: ./cmd/gce
-    binary: gce
+  - id: ccc
+    main: ./cmd/ccc
+    binary: ccc
     goos:
       - linux
       - darwin
@@ -177,7 +177,7 @@ release:
     Use the included `cc` helper to automatically generate conventional commit messages:
     ```bash
     cc                    # Preview generated commit message
-    gce                   # Generate and commit automatically
+    ccc                   # Generate and commit automatically
     cc --verbose          # Show detailed analysis
     ```
 

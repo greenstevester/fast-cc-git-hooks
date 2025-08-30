@@ -23,21 +23,21 @@ git commit -m "feat: add login button"
 # ↳ The fast-cc-hooks hook, automatically validates your message ✅
 ```
 
-### Option 2: Commit messages are generated based on your changes (using gce) and validated by the fast-cc-hooks hook
+### Option 2: Commit messages are generated based on your changes (using ccc) and validated by the fast-cc-hooks hook
 ```bash
-# Let gce generate the conventional commit message and execute it for you
-gce
-# ↳ gce analyzes your git changes and creates a conventional commit message
+# Let ccc generate the conventional commit message and execute it for you
+ccc
+# ↳ ccc analyzes your git changes and creates a conventional commit message
 # ↳ When git commit runs, the git hook (installed via fast-cc-hooks) validates the generated message ✅
 # ↳ which means: compliant conventional commits, every time! 
 ```
 
 ### You can mix and match:
 - **Use fast-cc-hooks alone**: Ensures your manual commit messages get automatic validation
-- **Use gce alone**: Generated compliant conventional commits, without validation (but why would you?)
+- **Use ccc alone**: Generated compliant conventional commits, without validation (but why would you?)
 - **Use both**: Generated conventional commits PLUS BONUS validation, talk about the perfect combo! 🎯
 
-**Pro tip**: Start with `gce` to see what good commit messages look like, then graduate to writing your own!
+**Pro tip**: Start with `ccc` to see what good commit messages look like, then graduate to writing your own!
 
 ## ⚡️ Quick Setup (In 3 steps!)
 
@@ -163,12 +163,12 @@ fast-cc-hooks validate "feat: my commit message"  # Test if a message is good
 
 ```bash
 cc                      # Preview generated commit message
-gce                    # Generate perfect commit message and commit
+ccc                    # Generate perfect commit message and commit
 cc --verbose           # Show detailed analysis of your changes
 cc --help             # Show all available options
 ```
 
-**That's it!** Most people only ever need `fast-cc-hooks setup` and `gce`.
+**That's it!** Most people only ever need `fast-cc-hooks setup` and `ccc`.
 
 ## 🤔 Common Questions
 
@@ -188,7 +188,7 @@ A: The hook will catch it! That's why they work so well together. Plus, cc learn
 A: Yes! When you run `fast-cc-hooks setup`, it works for ALL your Git projects. cc works in any git repo.
 
 **Q: What if I don't like the cc generated message?**
-A: Just use `cc` (without gce) to preview first, then write your own and let the hook validate it!
+A: Just use `cc` (without ccc) to preview first, then write your own and let the hook validate it!
 
 ## 🎯 Examples of Good vs Bad Commits
 

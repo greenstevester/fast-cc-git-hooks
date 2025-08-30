@@ -3,11 +3,11 @@
 # Variables
 BINARY_NAME := fast-cc-hooks
 CC_BINARY_NAME := cc
-GCE_BINARY_NAME := gce
+CCC_BINARY_NAME := ccc
 BUILD_DIR := build
 CMD_DIR := cmd/fast-cc-hooks
 CC_CMD_DIR := cmd/cc
-GCE_CMD_DIR := cmd/gce
+CCC_CMD_DIR := cmd/ccc
 VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 BUILD_TIME := $(shell date -u '+%Y-%m-%d_%H:%M:%S')
 COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
@@ -42,15 +42,15 @@ build-cc:
 	@go build $(GOFLAGS) $(LDFLAGS) -o $(BUILD_DIR)/$(CC_BINARY_NAME) ./$(CC_CMD_DIR)
 	@echo "Build complete: $(BUILD_DIR)/$(CC_BINARY_NAME)"
 
-## build-gce: Build the gce helper utility  
-build-gce:
-	@echo "Building $(GCE_BINARY_NAME) $(VERSION)..."
+## build-ccc: Build the ccc helper utility  
+build-ccc:
+	@echo "Building $(CCC_BINARY_NAME) $(VERSION)..."
 	@mkdir -p $(BUILD_DIR)
-	@go build $(GOFLAGS) $(LDFLAGS) -o $(BUILD_DIR)/$(GCE_BINARY_NAME) ./$(GCE_CMD_DIR)
-	@echo "Build complete: $(BUILD_DIR)/$(GCE_BINARY_NAME)"
+	@go build $(GOFLAGS) $(LDFLAGS) -o $(BUILD_DIR)/$(CCC_BINARY_NAME) ./$(CCC_CMD_DIR)
+	@echo "Build complete: $(BUILD_DIR)/$(CCC_BINARY_NAME)"
 
 ## build-all-tools: Build all tools
-build-all-tools: build build-cc build-gce
+build-all-tools: build build-cc build-ccc
 
 ## build-all: Build for multiple platforms
 build-all: clean
