@@ -30,29 +30,29 @@ func TestDefault(t *testing.T) {
 
 func TestConfig_Validate(t *testing.T) {
 	tests := []struct {
-		name    string
 		config  *Config
+		name    string
 		wantErr bool
 	}{
 		{
-			name:    "valid config",
 			config:  Default(),
+			name:    "valid config",
 			wantErr: false,
 		},
 		{
-			name: "no types",
 			config: &Config{
 				Types:            []string{},
 				MaxSubjectLength: 72,
 			},
+			name:    "no types",
 			wantErr: true,
 		},
 		{
-			name: "negative max length",
 			config: &Config{
 				Types:            DefaultTypes(),
 				MaxSubjectLength: -1,
 			},
+			name:    "negative max length",
 			wantErr: true,
 		},
 		{
@@ -116,14 +116,14 @@ func TestConfig_HasType(t *testing.T) {
 
 func TestConfig_HasScope(t *testing.T) {
 	tests := []struct {
-		name   string
 		scopes []string
+		name   string
 		scope  string
 		want   bool
 	}{
 		{
-			name:   "empty scopes allows any",
 			scopes: []string{},
+			name:   "empty scopes allows any",
 			scope:  "anything",
 			want:   true,
 		},
@@ -153,12 +153,18 @@ func TestConfig_HasScope(t *testing.T) {
 
 func TestParse(t *testing.T) {
 	tests := []struct {
+		want    *Config
 		name    string
 		yaml    string
-		want    *Config
 		wantErr bool
 	}{
 		{
+			want: &Config{
+				Types:                []string{"feat", "fix"},
+				MaxSubjectLength:     50,
+				ScopeRequired:        true,
+				AllowBreakingChanges: true, // default
+			},
 			name: "basic config",
 			yaml: `
 types:
@@ -167,12 +173,6 @@ types:
 max_subject_length: 50
 scope_required: true
 `,
-			want: &Config{
-				Types:                []string{"feat", "fix"},
-				MaxSubjectLength:     50,
-				ScopeRequired:        true,
-				AllowBreakingChanges: true, // default
-			},
 		},
 		{
 			name: "config with custom rules",

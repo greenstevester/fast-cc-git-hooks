@@ -20,6 +20,8 @@ const (
 
 // Config represents the complete configuration for fast-cc-hooks.
 type Config struct {
+	// JIRATicketPattern defines a regex pattern for valid JIRA tickets.
+	JIRATicketPattern string `yaml:"jira_ticket_pattern,omitempty"`
 	// Types defines allowed commit types.
 	Types []string `yaml:"types"`
 	// Scopes defines allowed scopes (empty means any scope allowed).
@@ -30,8 +32,6 @@ type Config struct {
 	IgnorePatterns []string `yaml:"ignore_patterns,omitempty"`
 	// JIRAProjects defines allowed JIRA project prefixes.
 	JIRAProjects []string `yaml:"jira_projects,omitempty"`
-	// JIRATicketPattern defines a regex pattern for valid JIRA tickets.
-	JIRATicketPattern string `yaml:"jira_ticket_pattern,omitempty"`
 	// MaxSubjectLength defines maximum subject line length.
 	MaxSubjectLength int `yaml:"max_subject_length"`
 	// ScopeRequired indicates if scope is mandatory.

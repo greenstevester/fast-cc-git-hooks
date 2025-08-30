@@ -7,19 +7,24 @@ import (
 
 func TestParser_Parse(t *testing.T) {
 	tests := []struct {
+		want    *Commit
 		name    string
 		message string
-		want    *Commit
 		wantErr bool
 	}{
 		{
-			name:    "simple commit",
-			message: "feat: add new feature",
 			want: &Commit{
 				Type:        "feat",
+				Scope:       "",
 				Description: "add new feature",
+				Body:        "",
+				Footer:      "",
 				Raw:         "feat: add new feature",
+				TicketRefs:  nil,
+				Breaking:    false,
 			},
+			name:    "simple commit",
+			message: "feat: add new feature",
 		},
 		{
 			name:    "commit with scope",
@@ -135,8 +140,8 @@ func TestParser_Parse(t *testing.T) {
 
 func TestCommit_Format(t *testing.T) {
 	tests := []struct {
-		name   string
 		commit *Commit
+		name   string
 		want   string
 	}{
 		{
@@ -190,8 +195,8 @@ func TestCommit_Format(t *testing.T) {
 
 func TestCommit_Header(t *testing.T) {
 	tests := []struct {
-		name   string
 		commit *Commit
+		name   string
 		want   string
 	}{
 		{
@@ -261,9 +266,9 @@ func BenchmarkCommit_Format(b *testing.B) {
 
 func TestParseTicketRefs(t *testing.T) {
 	tests := []struct {
+		expected []TicketRef
 		name     string
 		message  string
-		expected []TicketRef
 	}{
 		{
 			name:    "JIRA ticket in header",
@@ -364,17 +369,17 @@ Closes #456`,
 
 func TestCommit_HasTicketRefs(t *testing.T) {
 	tests := []struct {
-		name     string
 		commit   *Commit
+		name     string
 		expected bool
 	}{
 		{
-			name: "has tickets",
 			commit: &Commit{
 				TicketRefs: []TicketRef{
 					{Type: "JIRA", ID: "PROJ-123", Raw: "PROJ-123"},
 				},
 			},
+			name:     "has tickets",
 			expected: true,
 		},
 		{
@@ -400,8 +405,8 @@ func TestCommit_HasTicketRefs(t *testing.T) {
 
 func TestCommit_HasJIRATicket(t *testing.T) {
 	tests := []struct {
-		name     string
 		commit   *Commit
+		name     string
 		expected bool
 	}{
 		{
@@ -441,9 +446,9 @@ func TestCommit_HasJIRATicket(t *testing.T) {
 
 func TestCommit_GetJIRATickets(t *testing.T) {
 	tests := []struct {
-		name     string
-		commit   *Commit
 		expected []TicketRef
+		commit   *Commit
+		name     string
 	}{
 		{
 			name: "multiple JIRA tickets",
@@ -484,10 +489,10 @@ func TestParser_ParseWithTickets(t *testing.T) {
 	parser := DefaultParser()
 
 	tests := []struct {
+		check   func(*testing.T, *Commit)
 		name    string
 		message string
 		wantErr bool
-		check   func(*testing.T, *Commit)
 	}{
 		{
 			name:    "conventional commit with JIRA ticket",

@@ -17,13 +17,13 @@ var (
 
 // Commit represents a parsed conventional commit message.
 type Commit struct {
-	TicketRefs  []TicketRef
 	Type        string
 	Scope       string
 	Description string
 	Body        string
 	Footer      string
 	Raw         string
+	TicketRefs  []TicketRef
 	Breaking    bool
 }
 
@@ -101,7 +101,7 @@ func (p *Parser) Parse(message string) (*Commit, error) {
 // parseHeader parses the commit header (first line) and returns a commit struct.
 func (p *Parser) parseHeader(header, fullMessage string) (*Commit, error) {
 	matches := conventionalCommitRegex.FindStringSubmatch(header)
-	
+
 	if matches == nil {
 		if p.StrictMode {
 			return nil, fmt.Errorf("%w: expected 'type(scope): description' format", ErrInvalidFormat)
