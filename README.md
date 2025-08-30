@@ -1,4 +1,4 @@
-# 🚀 fcgh - Fast Conventional Git Hooks
+# 🚀 Fast Conventional Commit Git Hooks
 
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/greenstevester/fast-cc-git-hooks?style=for-the-badge&logo=github)](https://github.com/greenstevester/fast-cc-git-hooks/releases/latest)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/greenstevester/fast-cc-git-hooks?style=for-the-badge&logo=go)](https://golang.org/)
@@ -11,21 +11,22 @@
 
 ## WHAT IS THIS?
 
-**The fastest way for YOU, to write [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) messages for ALL your git commits!** 
+**The fastest way for YOU, to get [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) messages for ALL your git commits!** 
 
 WHY CONVENTIONAL COMMITS? 
 - 
-- Because when you use them, there's tooling (listed below) to save you more time, while giving your code repo that professional touch, and can:
-- generate CHANGELOG's
-- employ semantic versioning easily
+- Because when you use them, it damn makes your repo professional looking and as bonus, can:
+- auto generate CHANGELOG's
+- infer semantic version bumps when required, just from your commit messages.
+- make your commit history data-mine-able, and more importantly, **easier to understand** for other developers.
 
 It all stems from something simple, but usually this means more discipline AND (worst of all) strict adherence to a specific workflow. Most people automate this via their bash shell, but bash only goes so far - ergo this tool. 
 
 Strict adherence to a specific workflow alone, is enough to scare away most coders, who just want to build without the added "admin" overhead / accounting / audits while they're in flow.
 
-Its for YOU and the wider community of coders, to contribute *absent of crappy commit messages* polluting an otherwise great repo.
+Its for YOU and the wider community of coders having an *absent of crappy commit messages* polluting an otherwise great repo.
 
-Inspired by Boo, after seeing lots of great work being committed all with "feat: CGC-0000 added X" messages.
+Inspired by **_Boo_**, after seeing lots of great work being committed all with "feat: CGC-0000 added X" messages.
 
 ## WHY WOULD I USE THIS?
  
