@@ -1,5 +1,14 @@
 # 🚀 fast-cc-hooks
 
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/greenstevester/fast-cc-git-hooks?style=for-the-badge&logo=github)](https://github.com/greenstevester/fast-cc-git-hooks/releases/latest)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/greenstevester/fast-cc-git-hooks?style=for-the-badge&logo=go)](https://golang.org/)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/greenstevester/fast-cc-git-hooks/release.yml?branch=main&style=for-the-badge&logo=github-actions)](https://github.com/greenstevester/fast-cc-git-hooks/actions)
+[![License](https://img.shields.io/github/license/greenstevester/fast-cc-git-hooks?style=for-the-badge)](https://github.com/greenstevester/fast-cc-git-hooks/blob/main/LICENSE)
+
+[![Platform Support](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-blue?style=for-the-badge)](https://github.com/greenstevester/fast-cc-git-hooks/releases/latest)
+[![Architecture](https://img.shields.io/badge/arch-amd64%20%7C%20arm64-lightgrey?style=for-the-badge)](https://github.com/greenstevester/fast-cc-git-hooks/releases/latest)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg?style=for-the-badge)](https://conventionalcommits.org)
+
 **The fastest (and laziest) way for YOU, to write [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) messages for ALL your git commits!** 
 
 Why Use Conventional Commits? Because when you use them, there's tooling (listed later in this page) that can:
