@@ -326,7 +326,7 @@ func (v *Validator) validateScope(commit *conventionalcommit.Commit, result *Val
 func (v *Validator) validateSubjectLength(commit *conventionalcommit.Commit, result *ValidationResult) {
 	header := commit.Header()
 	if len(header) > v.config.MaxSubjectLength {
-		v.addValidationError(result, "subject", 
+		v.addValidationError(result, "subject",
 			fmt.Sprintf("exceeds maximum length of %d characters", v.config.MaxSubjectLength),
 			fmt.Sprintf("%d characters", len(header)))
 	}
