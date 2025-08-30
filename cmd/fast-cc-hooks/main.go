@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
@@ -272,7 +273,12 @@ func initCommand() *Command {
 		Run: func(_ context.Context, _ []string) error {
 			path := configFile
 			if path == "" {
-				path = config.DefaultConfigFile
+				// Use default path in home directory
+				if defaultPath, err := config.GetDefaultConfigPath(); err == nil {
+					path = defaultPath
+				} else {
+					path = config.DefaultConfigFile
+				}
 			}
 
 			// Check if file exists.
@@ -332,6 +338,19 @@ func setupCommand() *Command {
 			fmt.Println("   This will help you write better commit messages!")
 			fmt.Println("")
 
+			// Step 1: Check/create configuration
+			configPath, configCreated, configErr := ensureConfigExists()
+			if configErr != nil {
+				fmt.Printf("⚠️  Warning: Could not create config: %v\n", configErr)
+				fmt.Println("   Hooks will use default settings.")
+			} else if configCreated {
+				fmt.Printf("📝 Created default configuration: %s\n", configPath)
+			} else {
+				fmt.Printf("📝 Using existing configuration: %s\n", configPath)
+			}
+			fmt.Println("")
+
+			// Step 2: Install hooks
 			var err error
 			if localInstall {
 				fmt.Println("📁 Installing hooks for this repository only...")
@@ -358,10 +377,69 @@ func setupCommand() *Command {
 
 			fmt.Println("")
 			fmt.Println("✅ All done! Your commit messages will now be checked automatically!")
+			if configPath != "" {
+				fmt.Printf("⚙️  Configuration stored at: %s\n", configPath)
+				fmt.Println("   Edit this file to customize commit rules.")
+			}
 			fmt.Println("💡 Try making a commit like: git commit -m \"feat: add awesome feature\"")
 			return nil
 		},
 	}
+}
+
+// ensureConfigExists checks for existing config or creates a default one.
+// Returns (configPath, wasCreated, error).
+func ensureConfigExists() (string, bool, error) {
+	// First check if there's already a config file specified
+	if configFile != "" {
+		if _, err := os.Stat(configFile); err == nil {
+			return configFile, false, nil
+		}
+		return "", false, fmt.Errorf("specified config file not found: %s", configFile)
+	}
+
+	// Check for config in the default home directory location
+	defaultPath, err := config.GetDefaultConfigPath()
+	if err != nil {
+		// Fallback to current directory (new filename first)
+		if _, err := os.Stat(config.DefaultConfigFile); err == nil {
+			return config.DefaultConfigFile, false, nil
+		}
+		// Check for old filename in current directory
+		if _, err := os.Stat(".fast-cc-hooks.yaml"); err == nil {
+			return ".fast-cc-hooks.yaml", false, nil
+		}
+		return "", false, fmt.Errorf("cannot determine config path: %w", err)
+	}
+
+	// Check if config already exists in home directory (new filename)
+	if _, err := os.Stat(defaultPath); err == nil {
+		return defaultPath, false, nil
+	}
+
+	// Check for old filename in home directory for backward compatibility
+	oldPath := filepath.Join(filepath.Dir(defaultPath), ".fast-cc-hooks.yaml")
+	if _, err := os.Stat(oldPath); err == nil {
+		return oldPath, false, nil
+	}
+
+	// Check if config exists in current directory (new filename first)
+	if _, err := os.Stat(config.DefaultConfigFile); err == nil {
+		return config.DefaultConfigFile, false, nil
+	}
+
+	// Check for old filename in current directory
+	if _, err := os.Stat(".fast-cc-hooks.yaml"); err == nil {
+		return ".fast-cc-hooks.yaml", false, nil
+	}
+
+	// Create default config in home directory with new filename
+	cfg := config.Default()
+	if err := cfg.Save(defaultPath); err != nil {
+		return "", false, fmt.Errorf("creating default config: %w", err)
+	}
+
+	return defaultPath, true, nil
 }
 
 func removeCommand() *Command {

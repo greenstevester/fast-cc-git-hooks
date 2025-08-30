@@ -13,7 +13,9 @@ import (
 
 const (
 	// DefaultConfigFile is the default configuration filename.
-	DefaultConfigFile = ".fast-cc-hooks.yaml"
+	DefaultConfigFile = "default-config.yaml"
+	// DefaultConfigDir is the default configuration directory.
+	DefaultConfigDir = ".fast-cc-git-hooks"
 	// DefaultMaxSubjectLength is the default maximum subject line length.
 	DefaultMaxSubjectLength = 72
 )
@@ -51,6 +53,24 @@ type CustomRule struct {
 	Message string `yaml:"message"`
 }
 
+// GetDefaultConfigDir returns the default configuration directory path.
+func GetDefaultConfigDir() (string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("getting home directory: %w", err)
+	}
+	return filepath.Join(home, DefaultConfigDir), nil
+}
+
+// GetDefaultConfigPath returns the default configuration file path.
+func GetDefaultConfigPath() (string, error) {
+	configDir, err := GetDefaultConfigDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(configDir, DefaultConfigFile), nil
+}
+
 // DefaultTypes returns the standard conventional commit types.
 func DefaultTypes() []string {
 	return []string{
@@ -84,7 +104,28 @@ func Default() *Config {
 // Load reads configuration from a file.
 func Load(path string) (*Config, error) {
 	if path == "" {
-		path = DefaultConfigFile
+		// Try default path in home directory first
+		if defaultPath, err := GetDefaultConfigPath(); err == nil {
+			if _, err := os.Stat(defaultPath); err == nil {
+				path = defaultPath
+			} else {
+				// Check for old filename in home directory for backward compatibility
+				oldPath := filepath.Join(filepath.Dir(defaultPath), ".fast-cc-hooks.yaml")
+				if _, err := os.Stat(oldPath); err == nil {
+					path = oldPath
+				} else {
+					// Fall back to current directory (new filename first)
+					if _, err := os.Stat(DefaultConfigFile); err == nil {
+						path = DefaultConfigFile
+					} else {
+						// Check for old filename in current directory
+						path = ".fast-cc-hooks.yaml"
+					}
+				}
+			}
+		} else {
+			path = DefaultConfigFile
+		}
 	}
 
 	// Check if file exists.

@@ -67,7 +67,7 @@ make docker-build
 
 ## Configuration
 
-The application uses `.fast-cc-hooks.yaml` for configuration:
+The application uses `default-config.yaml` for configuration (stored in `~/.fast-cc-git-hooks/` by default):
 - **types**: Allowed commit types (feat, fix, docs, etc.)
 - **scopes**: Allowed scopes (optional)
 - **custom_rules**: Regex-based validation patterns

@@ -217,7 +217,7 @@ But if you want to customize the rules, run:
 fast-cc-hooks init
 ```
 
-This creates a file called `.fast-cc-hooks.yaml` that you can edit. It has comments explaining everything!
+This creates a file called `default-config.yaml` in your home directory (`~/.fast-cc-git-hooks/`) that you can edit. It has comments explaining everything!
 
 ## 🚨 Troubleshooting
 
