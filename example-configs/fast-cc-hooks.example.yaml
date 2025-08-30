@@ -1,5 +1,5 @@
 # fast-cc-hooks configuration example
-# Copy this file to .fast-cc-hooks.yaml and customize as needed
+# Copy this file to fast-cc-config.yaml in ~/.fast-cc-git-hooks/ and customize as needed
 
 # Allowed commit types
 types:

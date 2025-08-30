@@ -1,4 +1,5 @@
 # fast-cc-hooks configuration for a large enterprise project
+# Copy this file to fast-cc-config.yaml in ~/.fast-cc-git-hooks/ and customize as needed
 
 # Allowed commit types
 types:
