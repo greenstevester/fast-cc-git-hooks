@@ -43,11 +43,51 @@ cd "$TMP_DIR"
 # Download the release
 DOWNLOAD_URL="https://github.com/greenstevester/fast-cc-git-hooks/releases/download/$VERSION/fcgh_${VERSION}_${BINARY_ARCH}.tar.gz"
 echo -e "${BLUE}⬇️  Downloading fcgh $VERSION for $BINARY_ARCH...${NC}"
-curl -L -o fcgh.tar.gz "$DOWNLOAD_URL"
+
+# Try downloading with error handling
+if ! curl -L -f -o fcgh.tar.gz "$DOWNLOAD_URL"; then
+    echo -e "${RED}❌ Failed to download from releases. Trying alternative URL format...${NC}"
+    
+    # Try alternative URL format (without version prefix)
+    ALT_URL="https://github.com/greenstevester/fast-cc-git-hooks/releases/download/$VERSION/fast-cc-git-hooks_${VERSION}_${BINARY_ARCH}.tar.gz"
+    echo -e "${BLUE}⬇️  Trying alternative URL: fast-cc-git-hooks format...${NC}"
+    
+    if ! curl -L -f -o fcgh.tar.gz "$ALT_URL"; then
+        echo -e "${RED}❌ Release not found. This might mean:${NC}"
+        echo -e "${YELLOW}   1. No release has been published yet${NC}"
+        echo -e "${YELLOW}   2. The release is still being built${NC}"
+        echo -e "${YELLOW}   3. The URL format has changed${NC}"
+        echo ""
+        echo -e "${BLUE}💡 Alternative: Build from source${NC}"
+        echo -e "${YELLOW}   git clone https://github.com/greenstevester/fast-cc-git-hooks.git${NC}"
+        echo -e "${YELLOW}   cd fast-cc-git-hooks${NC}"
+        echo -e "${YELLOW}   make build${NC}"
+        echo -e "${YELLOW}   sudo cp build/fcgh /usr/local/bin/${NC}"
+        echo ""
+        exit 1
+    fi
+fi
+
+# Validate downloaded file
+if [[ ! -f "fcgh.tar.gz" ]] || [[ ! -s "fcgh.tar.gz" ]]; then
+    echo -e "${RED}❌ Downloaded file is empty or missing${NC}"
+    exit 1
+fi
+
+# Check if it's a valid tar.gz file
+if ! file fcgh.tar.gz | grep -q "gzip compressed"; then
+    echo -e "${RED}❌ Downloaded file is not a valid gzip archive${NC}"
+    echo -e "${YELLOW}File contents:${NC}"
+    head -n 5 fcgh.tar.gz
+    exit 1
+fi
 
 # Extract
 echo -e "${BLUE}📂 Extracting files...${NC}"
-tar -xzf fcgh.tar.gz
+if ! tar -xzf fcgh.tar.gz; then
+    echo -e "${RED}❌ Failed to extract archive${NC}"
+    exit 1
+fi
 
 # Make binaries executable
 chmod +x fcgh cc ccc 2>/dev/null || chmod +x fcgh cc  # ccc might not exist in older versions
