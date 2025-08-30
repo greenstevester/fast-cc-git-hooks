@@ -19,13 +19,13 @@ Each release includes **both tools** - you get everything in one download!
 **🐧 Linux:**
 ```bash
 # Most common (AMD64)
-curl -L -o fast-cc-hooks.tar.gz https://github.com/stevengreensill/fast-cc-git-hooks/releases/latest/download/fast-cc-hooks_linux_amd64.tar.gz
+curl -L -o fast-cc-hooks.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fast-cc-hooks_linux_amd64.tar.gz
 tar -xzf fast-cc-hooks.tar.gz
 chmod +x fast-cc-hooks gc
 sudo mv fast-cc-hooks gc /usr/local/bin/
 
 # ARM64 (Raspberry Pi, etc.)
-curl -L -o fast-cc-hooks.tar.gz https://github.com/stevengreensill/fast-cc-git-hooks/releases/latest/download/fast-cc-hooks_linux_arm64.tar.gz
+curl -L -o fast-cc-hooks.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fast-cc-hooks_linux_arm64.tar.gz
 tar -xzf fast-cc-hooks.tar.gz
 chmod +x fast-cc-hooks gc
 sudo mv fast-cc-hooks gc /usr/local/bin/
@@ -34,28 +34,28 @@ sudo mv fast-cc-hooks gc /usr/local/bin/
 **🍎 macOS:**
 ```bash
 # Intel Macs
-curl -L -o fast-cc-hooks.tar.gz https://github.com/stevengreensill/fast-cc-git-hooks/releases/latest/download/fast-cc-hooks_darwin_amd64.tar.gz
+curl -L -o fast-cc-hooks.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fast-cc-hooks_darwin_amd64.tar.gz
 tar -xzf fast-cc-hooks.tar.gz
 chmod +x fast-cc-hooks gc
 sudo mv fast-cc-hooks gc /usr/local/bin/
 
 # Apple Silicon (M1/M2/M3) - most common now
-curl -L -o fast-cc-hooks.tar.gz https://github.com/stevengreensill/fast-cc-git-hooks/releases/latest/download/fast-cc-hooks_darwin_arm64.tar.gz
+curl -L -o fast-cc-hooks.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fast-cc-hooks_darwin_arm64.tar.gz
 tar -xzf fast-cc-hooks.tar.gz
 chmod +x fast-cc-hooks gc
 sudo mv fast-cc-hooks gc /usr/local/bin/
 ```
 
 **🪟 Windows:**
-1. Go to [Releases Page](https://github.com/stevengreensill/fast-cc-git-hooks/releases/latest)
+1. Go to [Releases Page](https://github.com/greenstevester/fast-cc-git-hooks/releases/latest)
 2. Download `fast-cc-hooks_windows_amd64.zip`
 3. Extract and add both `fast-cc-hooks.exe` and `gc.exe` to your PATH
 
 **Option B: Using Go**
 ```bash
 # Install both tools
-go install github.com/stevengreensill/fast-cc-git-hooks/cmd/fast-cc-hooks@latest
-go install github.com/stevengreensill/fast-cc-git-hooks/cmd/gc@latest
+go install github.com/greenstevester/fast-cc-git-hooks/cmd/fast-cc-hooks@latest
+go install github.com/greenstevester/fast-cc-git-hooks/cmd/gc@latest
 ```
 
 **Option C: Using Homebrew** (macOS/Linux - coming soon!)
@@ -67,8 +67,8 @@ brew install greenstevester/tap/fast-cc-hooks
 ### Step 2: Verify both tools work
 
 ```bash
-fast-cc-hooks --version  # Should show version info
-gc --help               # Should show gc helper usage
+fast-cc-hooks version  # Should show version info
+gc help               # Should show gc helper usage
 ```
 
 If you see version/help info for both, you're good to go! If not, make sure `/usr/local/bin` is in your PATH.
@@ -261,7 +261,7 @@ The part in `()` is called a "scope" - it's like a category for your change.
 **Want to help make this tool better?**
 
 ```bash
-git clone https://github.com/stevengreensill/fast-cc-git-hooks.git
+git clone https://github.com/greenstevester/fast-cc-git-hooks.git
 cd fast-cc-git-hooks
 make build
 make test

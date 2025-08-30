@@ -48,5 +48,5 @@ CMD ["--help"]
 # Metadata
 LABEL org.opencontainers.image.title="fast-cc-hooks"
 LABEL org.opencontainers.image.description="Fast conventional commits git hooks"
-LABEL org.opencontainers.image.source="https://github.com/stevengreensill/fast-cc-git-hooks"
+LABEL org.opencontainers.image.source="https://github.com/greenstevester/fast-cc-git-hooks"
 LABEL org.opencontainers.image.licenses="MIT"

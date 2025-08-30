@@ -49,4 +49,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [Semantic Versioning 2.0.0](https://semver.org/)
 - [Keep a Changelog 1.0.0](https://keepachangelog.com/)
 
-[Unreleased]: https://github.com/stevengreensill/fast-cc-git-hooks/compare/v0.0.0...HEAD
+[Unreleased]: https://github.com/greenstevester/fast-cc-git-hooks/compare/v0.0.0...HEAD

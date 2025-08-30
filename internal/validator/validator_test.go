@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stevengreensill/fast-cc-git-hooks/internal/config"
+	"github.com/greenstevester/fast-cc-git-hooks/internal/config"
 )
 
 func TestValidator_Validate(t *testing.T) {

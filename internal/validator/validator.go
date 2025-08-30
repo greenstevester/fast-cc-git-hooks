@@ -9,8 +9,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/stevengreensill/fast-cc-git-hooks/internal/config"
-	"github.com/stevengreensill/fast-cc-git-hooks/pkg/conventionalcommit"
+	"github.com/greenstevester/fast-cc-git-hooks/internal/config"
+	"github.com/greenstevester/fast-cc-git-hooks/pkg/conventionalcommit"
 )
 
 // ValidationError represents a validation failure.

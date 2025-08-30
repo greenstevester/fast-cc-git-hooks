@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/stevengreensill/fast-cc-git-hooks/internal/config"
-	"github.com/stevengreensill/fast-cc-git-hooks/internal/hooks"
-	"github.com/stevengreensill/fast-cc-git-hooks/internal/validator"
+	"github.com/greenstevester/fast-cc-git-hooks/internal/config"
+	"github.com/greenstevester/fast-cc-git-hooks/internal/hooks"
+	"github.com/greenstevester/fast-cc-git-hooks/internal/validator"
 )
 
 const version = "1.0.0"

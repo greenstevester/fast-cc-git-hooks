@@ -394,8 +394,6 @@ func generateCommitMessage(changes []ChangeType) string {
 		}
 	}
 
-	// Add footer.
-	body = append(body, "", "🤖 Generated with [Claude Code](https://claude.ai/code)", "", "Co-Authored-By: Claude <noreply@anthropic.com>")
 
 	if len(body) > 0 {
 		return subject + strings.Join(body, "\n")
