@@ -108,7 +108,7 @@ sudo mv fcgh cc /usr/local/bin/
 **Option A: Easy Installation Script (Recommended)**
 ```bash
 # One-line install - automatically detects your Mac type and handles PATH
-curl -sSL https://raw.githubusercontent.com/greenstevester/fast-cc-git-hooks/main/install-macos.sh | bash
+curl -sSL https://raw.githubusercontent.com/greenstevester/fast-cc-git-hooks/refs/heads/main/install-macos-source.sh | bash
 ```
 
 **Option B: Manual Installation**

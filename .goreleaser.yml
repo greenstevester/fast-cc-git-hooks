@@ -121,9 +121,10 @@ release:
 
     ## 🆕 What's New in This Release
     
-    This release includes **two powerful tools**:
+    This release includes **three powerful tools**:
     - **`fcgh`** - Fast Conventional Git Hooks for enforcing conventional commits
-    - **`cc`** - Helper utility for generating commit messages automatically
+    - **`cc`** - Preview generated commit messages based on your changes
+    - **`ccc`** - Generate and commit automatically (Create Conventional Commit)
 
     ## ⚡️ Super Quick Setup (2 steps!)
 
@@ -134,14 +135,14 @@ release:
     # Most common (AMD64)
     curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/download/{{.Tag}}/fcgh_{{.Tag}}_linux_amd64.tar.gz
     tar -xzf fcgh.tar.gz
-    chmod +x fcgh cc
-    sudo mv fcgh cc /usr/local/bin/
+    chmod +x fcgh cc ccc
+    sudo mv fcgh cc ccc /usr/local/bin/
 
     # ARM64 (Raspberry Pi, etc.)
     curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/download/{{.Tag}}/fcgh_{{.Tag}}_linux_arm64.tar.gz
     tar -xzf fcgh.tar.gz
-    chmod +x fcgh cc
-    sudo mv fcgh cc /usr/local/bin/
+    chmod +x fcgh cc ccc
+    sudo mv fcgh cc ccc /usr/local/bin/
     ```
 
     **🍎 macOS:**
@@ -149,20 +150,20 @@ release:
     # Intel Macs
     curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/download/{{.Tag}}/fcgh_{{.Tag}}_darwin_amd64.tar.gz
     tar -xzf fcgh.tar.gz
-    chmod +x fcgh cc
-    sudo mv fcgh cc /usr/local/bin/
+    chmod +x fcgh cc ccc
+    sudo mv fcgh cc ccc /usr/local/bin/
 
     # Apple Silicon (M1/M2/M3)
     curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/download/{{.Tag}}/fcgh_{{.Tag}}_darwin_arm64.tar.gz
     tar -xzf fcgh.tar.gz
-    chmod +x fcgh cc
-    sudo mv fcgh cc /usr/local/bin/
+    chmod +x fcgh cc ccc
+    sudo mv fcgh cc ccc /usr/local/bin/
     ```
 
     **🪟 Windows:**
     ```powershell
     # Download and extract fcgh_{{.Tag}}_windows_amd64.zip
-    # Add both fcgh.exe and cc.exe to your PATH
+    # Add fcgh.exe, cc.exe and ccc.exe to your PATH
     ```
 
     ### Step 2: Set it up (takes 5 seconds!)
