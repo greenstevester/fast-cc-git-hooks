@@ -102,7 +102,6 @@ resource "oci_core_subnet" "public" {
 
 		ctx := semantic.AnalysisContext{}
 		change, err := plugin.AnalyzeFile(context.Background(), file, ctx)
-
 		if err != nil {
 			t.Fatalf("AnalyzeFile() error = %v", err)
 		}
@@ -195,7 +194,6 @@ resource "oci_core_security_list" "web" {
 
 		ctx := semantic.AnalysisContext{}
 		change, err := plugin.AnalyzeFile(context.Background(), file, ctx)
-
 		if err != nil {
 			t.Fatalf("AnalyzeFile() error = %v", err)
 		}
@@ -231,7 +229,6 @@ resource "oci_database_autonomous_database" "main" {
 
 		ctx := semantic.AnalysisContext{}
 		change, err := plugin.AnalyzeFile(context.Background(), file, ctx)
-
 		if err != nil {
 			t.Fatalf("AnalyzeFile() error = %v", err)
 		}

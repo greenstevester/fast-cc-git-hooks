@@ -50,7 +50,7 @@ func NewManager(repoPath string) *Manager {
 
 	globalConfigDir := filepath.Join(home, ".fast-cc")
 	// Create the global directory if it doesn't exist
-	if err := os.MkdirAll(globalConfigDir, 0750); err != nil {
+	if err := os.MkdirAll(globalConfigDir, 0o750); err != nil {
 		// Fall back to using repo path if we can't create config directory
 		return &Manager{
 			configDir: repoPath,
@@ -239,7 +239,7 @@ func (m *Manager) readJiraRefFile() (string, error) {
 // writeJiraRefFile writes content to the JIRA reference file
 func (m *Manager) writeJiraRefFile(content string) error {
 	filePath := m.getJiraRefFilePath()
-	return os.WriteFile(filePath, []byte(content), 0600)
+	return os.WriteFile(filePath, []byte(content), 0o600)
 }
 
 // createEmptyJiraRefFile creates an empty JIRA reference file
@@ -263,7 +263,7 @@ func (m *Manager) migrateOldJiraFile(repoPath string) {
 			content, readErr := os.ReadFile(oldPath)
 			if readErr == nil {
 				// Write to new location
-				if writeErr := os.WriteFile(newPath, content, 0600); writeErr == nil {
+				if writeErr := os.WriteFile(newPath, content, 0o600); writeErr == nil {
 					// Remove old file after successful migration
 					if err := os.Remove(oldPath); err != nil {
 						// Log but don't fail - migration was successful
