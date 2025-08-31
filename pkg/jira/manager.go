@@ -21,6 +21,13 @@ type Manager struct {
 
 // NewManager creates a new JIRA ticket manager
 func NewManager(repoPath string) *Manager {
+	// For testing, allow overriding the config directory
+	if testDir := os.Getenv("FCGH_TEST_DIR"); testDir != "" {
+		return &Manager{
+			configDir: testDir,
+		}
+	}
+	
 	// First, check if there's a local .fast-cc directory in the repo
 	localConfigDir := filepath.Join(repoPath, ".fast-cc")
 	if info, err := os.Stat(localConfigDir); err == nil && info.IsDir() {

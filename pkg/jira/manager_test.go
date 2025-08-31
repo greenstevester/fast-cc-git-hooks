@@ -1,15 +1,26 @@
 package jira
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 )
 
+// setupTestManager creates a Manager for testing with a temporary directory
+func setupTestManager(t *testing.T) (*Manager, string) {
+	tempDir := t.TempDir()
+	os.Setenv("FCGH_TEST_DIR", tempDir)
+	t.Cleanup(func() {
+		os.Unsetenv("FCGH_TEST_DIR")
+	})
+	return NewManager(tempDir), tempDir
+}
+
 func TestManager_SetAndGetJiraTicket(t *testing.T) {
 	// Create temporary directory for testing
-	tempDir := t.TempDir()
-	manager := NewManager(tempDir)
+	manager, tempDir := setupTestManager(t)
+	_ = tempDir // unused in this test
 
 	tests := []struct {
 		name       string
@@ -76,8 +87,8 @@ func TestManager_SetAndGetJiraTicket(t *testing.T) {
 }
 
 func TestManager_MultipleTicketsCommentOut(t *testing.T) {
-	tempDir := t.TempDir()
-	manager := NewManager(tempDir)
+	manager, tempDir := setupTestManager(t)
+	_ = tempDir // unused in this test
 
 	// Set first ticket
 	err := manager.SetJiraTicket("CGC-1234")
@@ -115,8 +126,8 @@ func TestManager_MultipleTicketsCommentOut(t *testing.T) {
 }
 
 func TestManager_ClearJiraTicket(t *testing.T) {
-	tempDir := t.TempDir()
-	manager := NewManager(tempDir)
+	manager, tempDir := setupTestManager(t)
+	_ = tempDir // unused in this test
 
 	// Set a ticket first
 	err := manager.SetJiraTicket("CGC-1234")
@@ -152,6 +163,8 @@ func TestManager_ClearJiraTicket(t *testing.T) {
 
 func TestManager_GetJiraRefFileInfo(t *testing.T) {
 	tempDir := t.TempDir()
+	os.Setenv("FCGH_TEST_DIR", tempDir)
+	defer os.Unsetenv("FCGH_TEST_DIR")
 	manager := NewManager(tempDir)
 
 	// Initially file shouldn't exist
@@ -188,6 +201,8 @@ func TestManager_GetJiraRefFileInfo(t *testing.T) {
 
 func TestManager_CreateEmptyJiraRefFile(t *testing.T) {
 	tempDir := t.TempDir()
+	os.Setenv("FCGH_TEST_DIR", tempDir)
+	defer os.Unsetenv("FCGH_TEST_DIR")
 	manager := NewManager(tempDir)
 
 	// Try to get ticket when file doesn't exist (should create empty file)
@@ -240,8 +255,8 @@ func TestManager_IsValidJiraFormat(t *testing.T) {
 }
 
 func TestManager_FileContent(t *testing.T) {
-	tempDir := t.TempDir()
-	manager := NewManager(tempDir)
+	manager, tempDir := setupTestManager(t)
+	_ = tempDir // unused in this test
 
 	// Set initial ticket
 	err := manager.SetJiraTicket("CGC-1234")
