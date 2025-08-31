@@ -56,83 +56,93 @@ func New(opts Options) *Generator {
 
 // Generate analyzes the repository and generates a commit message
 func (g *Generator) Generate() (*Result, error) {
+	fmt.Println()
 	if banner.UseASCII() {
-		fmt.Println("[SCAN] Analyzing repository...")
+		fmt.Println("## Analyzing Git Repository")
 	} else {
-		fmt.Println("🔍 Analyzing repository...")
+		fmt.Println("## 🔍 Analyzing Git Repository")
 	}
+	fmt.Println()
 
 	// Check if we're in a git repo
-	fmt.Println("→ Running: git rev-parse --git-dir")
+	fmt.Printf("Running `git rev-parse --git-dir`")
 	if !g.isGitRepo() {
+		fmt.Println(" ❌")
 		return nil, fmt.Errorf("not a git repository")
 	}
+	fmt.Println(" ✅")
 
 	// Get git status
-	fmt.Println("→ Running: git status --porcelain")
+	fmt.Printf("Running `git status --porcelain`")
 	status, err := g.getGitStatus()
 	if err != nil {
+		fmt.Println(" ❌")
 		return nil, fmt.Errorf("failed to get git status: %w", err)
 	}
+	fmt.Println(" ✅")
 
 	if g.options.Verbose {
-		fmt.Println("Git status output:")
-		fmt.Println(status)
-		fmt.Println()
+		fmt.Println("\n**Git status output:**")
+		fmt.Printf("```\n%s```\n", status)
 	}
 
 	// Add all changes
-	fmt.Println("→ Running: git add .")
+	fmt.Printf("Running `git add .`")
 	if err := g.addAllChanges(); err != nil {
+		fmt.Println(" ❌")
 		return nil, fmt.Errorf("failed to add changes: %w", err)
 	}
+	fmt.Println(" ✅")
 
 	// Get staged diff
-	fmt.Println("→ Running: git diff --staged")
+	fmt.Printf("Running `git diff --staged`")
 	diff, err := g.getStagedDiff()
 	if err != nil {
+		fmt.Println(" ❌")
 		return nil, fmt.Errorf("failed to get diff: %w", err)
 	}
+	fmt.Println(" ✅")
 
 	if strings.TrimSpace(diff) == "" {
+		fmt.Println("\n**No changes detected** - nothing to commit")
 		return &Result{HasChanges: false}, nil
 	}
 
+	fmt.Println()
 	// Analyze changes
 	if banner.UseASCII() {
-		fmt.Println("[THINK] Analyzing changes...")
+		fmt.Println("## Analyzing Changes")
 	} else {
-		fmt.Println("🧠 Analyzing changes...")
+		fmt.Println("## 🧠 Analyzing Changes")
 	}
+	fmt.Println()
+
 	changes := g.analyzeDiff(diff)
 
-	if banner.UseASCII() {
-		fmt.Printf("[OK] Found %d change type(s):\n", len(changes))
-	} else {
-		fmt.Printf("✓ Found %d change type(s):\n", len(changes))
-	}
+	fmt.Printf("**Found %d change type(s):**\n\n", len(changes))
 	for i, change := range changes {
-		fmt.Printf("  %d. %s", i+1, change.Type)
+		fmt.Printf("%d. **%s", i+1, change.Type)
 		if change.Scope != "" {
 			fmt.Printf("(%s)", change.Scope)
 		}
-		fmt.Printf(": %s", change.Description)
+		fmt.Printf("**: %s", change.Description)
 		if len(change.Files) > 0 {
-			fmt.Printf(" [%s", change.Files[0])
+			fmt.Printf("\n   - Files: `%s`", change.Files[0])
 			if len(change.Files) > 1 {
-				fmt.Printf(" +%d more", len(change.Files)-1)
+				fmt.Printf(" (+%d more)", len(change.Files)-1)
 			}
-			fmt.Print("]")
 		}
-		fmt.Println()
+		fmt.Printf("\n\n")
 	}
 
 	// Generate commit message
 	if banner.UseASCII() {
-		fmt.Println("[GEN] Generating commit message...")
+		fmt.Println("## Generating Commit Message")
 	} else {
-		fmt.Println("📝 Generating commit message...")
+		fmt.Println("## 📝 Generating Commit Message")
 	}
+	fmt.Println()
+
 	message := g.GenerateCommitMessage(changes)
 
 	// Build git command
@@ -168,33 +178,44 @@ func (g *Generator) CopyToClipboard(gitCommand string) error {
 // PrintResult displays the result to the user
 func (g *Generator) PrintResult(result *Result) {
 	if !result.HasChanges {
-		fmt.Println("No changes to commit")
+		fmt.Println("**No changes to commit**")
 		return
 	}
 
-	fmt.Println("─────────────────────────────────────────")
-	fmt.Println("\n>>> based on your changes, cc created the following git commit message for you:")
-	fmt.Println(result.Message)
+	if banner.UseASCII() {
+		fmt.Println("## Generated Commit Message")
+	} else {
+		fmt.Println("## 🎯 Generated Commit Message")
+	}
+	fmt.Println()
+
+	// Display the commit message in a code block
+	fmt.Printf("```\n%s\n```\n\n", result.Message)
 
 	if g.options.Copy {
+		fmt.Printf("**Clipboard Action:** ")
 		if err := g.CopyToClipboard(result.GitCommand); err != nil {
-			fmt.Printf("Failed to copy to clipboard: %v\n", err)
+			fmt.Printf("❌ Failed to copy to clipboard: %v\n", err)
 		} else {
 			if banner.UseASCII() {
-				fmt.Println("\n[COPY] Git commit command copied to clipboard! Use Ctrl+V to paste.")
+				fmt.Printf("✅ Git commit command copied to clipboard!\n\n")
+				fmt.Printf("**Ready to paste:** `%s`\n\n", result.GitCommand)
+				fmt.Println("Use **Ctrl+V** (or **Cmd+V** on Mac) to paste and execute.")
 			} else {
-				fmt.Println("\n📋 Git commit command copied to clipboard! Use Ctrl+V to paste.")
+				fmt.Printf("✅ Git commit command copied to clipboard!\n\n")
+				fmt.Printf("**Ready to paste:** `%s`\n\n", result.GitCommand)
+				fmt.Println("Use **Ctrl+V** (or **⌘+V** on Mac) to paste and execute.")
 			}
-			fmt.Printf("Command: %s\n", result.GitCommand)
 		}
 	}
 
 	if g.options.Execute {
+		fmt.Printf("**Executing commit:** ")
 		if err := g.ExecuteCommit(result.Message); err != nil {
-			fmt.Printf("Failed to commit: %v\n", err)
+			fmt.Printf("❌ Failed to commit: %v\n", err)
 			return
 		}
-		fmt.Println("Commit created successfully!")
+		fmt.Printf("✅ Commit created successfully!\n")
 	}
 }
 
