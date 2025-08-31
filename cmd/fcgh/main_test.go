@@ -99,8 +99,8 @@ func TestValidateCommand(t *testing.T) {
 
 	// Test with file flag
 	testFile := filepath.Join(t.TempDir(), "test.txt")
-	if err := os.WriteFile(testFile, []byte("feat: test message"), 0600); err != nil {
-		t.Fatalf("Failed to create test file: %v", err)
+	if writeErr := os.WriteFile(testFile, []byte("feat: test message"), 0644); writeErr != nil {
+		t.Fatalf("Failed to create test file: %v", writeErr)
 	}
 
 	validateFile = testFile
@@ -946,11 +946,15 @@ func TestValidateCommandErrorPaths(t *testing.T) {
 
 	// Create a file with read permission denied
 	restrictedFile := filepath.Join(t.TempDir(), "restricted.txt")
-	if err := os.WriteFile(restrictedFile, []byte("test"), 0000); err != nil {
+	if err := os.WriteFile(restrictedFile, []byte("test"), 0644); err != nil {
 		t.Fatalf("Failed to create restricted file: %v", err)
 	}
+	// Change to read-only after creation
+	if err := os.Chmod(restrictedFile, 0000); err != nil {
+		t.Fatalf("Failed to make file read-only: %v", err)
+	}
 	defer func() {
-		if err := os.Chmod(restrictedFile, 0600); err != nil {
+		if err := os.Chmod(restrictedFile, 0644); err != nil {
 			t.Logf("Failed to restore file permissions: %v", err)
 		}
 	}()
