@@ -32,7 +32,10 @@ func enhancedCCCommand(diff string, useSemanticAnalysis bool) {
 	if useSemanticAnalysis {
 		analyzer := semantic.NewCCSemanticAnalyzer()
 		terraformPlugin := plugins.NewTerraformPlugin()
-		analyzer.RegisterPlugins(terraformPlugin)
+		if err := analyzer.RegisterPlugins(terraformPlugin); err != nil {
+			log.Printf("Failed to register plugin: %v", err)
+			return
+		}
 
 		// Analyze diff with semantic understanding
 		semanticChange, err := analyzer.AnalyzeDiff(diff)

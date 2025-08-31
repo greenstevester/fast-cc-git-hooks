@@ -47,7 +47,7 @@ func (m *Manager) SetJiraTicket(ticketID string) error {
 	// Comment out existing entries and add new one
 	var newContent strings.Builder
 	newContent.WriteString(fmt.Sprintf("# JIRA Commit Reference - Updated: %s\n", time.Now().Format("2006-01-02 15:04:05")))
-	newContent.WriteString(fmt.Sprintf("# Current active ticket:\n"))
+	newContent.WriteString("# Current active ticket:\n")
 	newContent.WriteString(fmt.Sprintf("%s\n", ticketID))
 
 	if existingContent != "" {
@@ -77,8 +77,8 @@ func (m *Manager) GetCurrentJiraTicket() (string, error) {
 	if err != nil {
 		// If file doesn't exist, create an empty one
 		if os.IsNotExist(err) {
-			if err := m.createEmptyJiraRefFile(); err != nil {
-				return "", fmt.Errorf("failed to create JIRA reference file: %w", err)
+			if createErr := m.createEmptyJiraRefFile(); createErr != nil {
+				return "", fmt.Errorf("failed to create JIRA reference file: %w", createErr)
 			}
 			return "", nil
 		}
@@ -159,12 +159,30 @@ func (m *Manager) ClearJiraTicket() error {
 
 // getJiraRefFilePath returns the path to the JIRA reference file
 func (m *Manager) getJiraRefFilePath() string {
-	return filepath.Join(m.repoPath, JiraRefFile)
+	// Clean the path to prevent directory traversal attacks
+	cleanRepoPath := filepath.Clean(m.repoPath)
+	return filepath.Join(cleanRepoPath, JiraRefFile)
 }
 
 // readJiraRefFile reads the content of the JIRA reference file
 func (m *Manager) readJiraRefFile() (string, error) {
 	filePath := m.getJiraRefFilePath()
+	
+	// Validate that the file path is within the repository directory
+	absRepoPath, err := filepath.Abs(m.repoPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to resolve repository path: %w", err)
+	}
+	absFilePath, err := filepath.Abs(filePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to resolve file path: %w", err)
+	}
+	
+	// Ensure the file is within the repository directory
+	if !strings.HasPrefix(absFilePath, absRepoPath+string(filepath.Separator)) {
+		return "", fmt.Errorf("file access outside repository directory not allowed")
+	}
+	
 	content, err := os.ReadFile(filePath)
 	if err != nil {
 		return "", err
@@ -175,7 +193,7 @@ func (m *Manager) readJiraRefFile() (string, error) {
 // writeJiraRefFile writes content to the JIRA reference file
 func (m *Manager) writeJiraRefFile(content string) error {
 	filePath := m.getJiraRefFilePath()
-	return os.WriteFile(filePath, []byte(content), 0644)
+	return os.WriteFile(filePath, []byte(content), 0600)
 }
 
 // createEmptyJiraRefFile creates an empty JIRA reference file

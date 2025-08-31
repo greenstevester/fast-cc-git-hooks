@@ -107,7 +107,11 @@ func (r *PluginRegistry) GetPluginForFile(file FileChange) SemanticPlugin {
 	// Try pattern matching
 	for _, plugin := range r.plugins {
 		for _, pattern := range plugin.SupportedFilePatterns() {
-			if matched, _ := filepath.Match(pattern, file.Path); matched {
+			matched, err := filepath.Match(pattern, file.Path)
+			if err != nil {
+				continue // Skip invalid patterns
+			}
+			if matched {
 				return plugin
 			}
 		}
@@ -222,9 +226,10 @@ func (s *SemanticAnalyzer) detectProjectType(files []FileChange) string {
 
 // analyzeProjectLevel performs project-level analysis using plugins
 func (s *SemanticAnalyzer) analyzeProjectLevel(ctx context.Context, context AnalysisContext) []*SemanticChange {
-	var changes []*SemanticChange
+	plugins := s.registry.ListPlugins()
+	changes := make([]*SemanticChange, 0, len(plugins))
 
-	for _, plugin := range s.registry.ListPlugins() {
+	for _, plugin := range plugins {
 		pluginConfig := s.config[plugin.Name()]
 		if pluginConfig == nil {
 			pluginConfig = plugin.DefaultConfig()

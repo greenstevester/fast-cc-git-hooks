@@ -158,7 +158,7 @@ func (t *TerraformPlugin) ValidateConfig(config map[string]string) error {
 }
 
 // analyzeNewFile analyzes a newly added Terraform file
-func (t *TerraformPlugin) analyzeNewFile(file semantic.FileChange, ctx semantic.AnalysisContext) (*semantic.SemanticChange, error) {
+func (t *TerraformPlugin) analyzeNewFile(file semantic.FileChange, _ semantic.AnalysisContext) (*semantic.SemanticChange, error) {
 	content := file.AfterContent
 
 	// Analyze what type of resources are being added
@@ -186,7 +186,7 @@ func (t *TerraformPlugin) analyzeNewFile(file semantic.FileChange, ctx semantic.
 }
 
 // analyzeDeletedFile analyzes a deleted Terraform file
-func (t *TerraformPlugin) analyzeDeletedFile(file semantic.FileChange, ctx semantic.AnalysisContext) (*semantic.SemanticChange, error) {
+func (t *TerraformPlugin) analyzeDeletedFile(file semantic.FileChange, _ semantic.AnalysisContext) (*semantic.SemanticChange, error) {
 	content := file.BeforeContent
 	resourceTypes := t.extractResourceTypes(content)
 	scope := t.determineScope(file.Path, content)
@@ -217,7 +217,7 @@ func (t *TerraformPlugin) analyzeDeletedFile(file semantic.FileChange, ctx seman
 }
 
 // analyzeModifiedFile analyzes a modified Terraform file
-func (t *TerraformPlugin) analyzeModifiedFile(file semantic.FileChange, ctx semantic.AnalysisContext) (*semantic.SemanticChange, error) {
+func (t *TerraformPlugin) analyzeModifiedFile(file semantic.FileChange, _ semantic.AnalysisContext) (*semantic.SemanticChange, error) {
 	beforeResources := t.extractResourceTypes(file.BeforeContent)
 	afterResources := t.extractResourceTypes(file.AfterContent)
 
@@ -478,7 +478,11 @@ func (t *TerraformPlugin) isSecurityImprovement(diff string) bool {
 	}
 
 	for _, pattern := range securityPatterns {
-		if matched, _ := regexp.MatchString(pattern, diff); matched {
+		matched, err := regexp.MatchString(pattern, diff)
+		if err != nil {
+			continue // Skip invalid regex patterns
+		}
+		if matched {
 			return true
 		}
 	}
@@ -496,7 +500,11 @@ func (t *TerraformPlugin) isPerformanceImprovement(diff string) bool {
 	}
 
 	for _, pattern := range perfPatterns {
-		if matched, _ := regexp.MatchString(pattern, diff); matched {
+		matched, err := regexp.MatchString(pattern, diff)
+		if err != nil {
+			continue // Skip invalid regex patterns
+		}
+		if matched {
 			return true
 		}
 	}
@@ -531,14 +539,18 @@ func (t *TerraformPlugin) hasBreakingChanges(diff string) bool {
 	}
 
 	for _, pattern := range breakingPatterns {
-		if matched, _ := regexp.MatchString(pattern, diff); matched {
+		matched, err := regexp.MatchString(pattern, diff)
+		if err != nil {
+			continue // Skip invalid regex patterns
+		}
+		if matched {
 			return true
 		}
 	}
 	return false
 }
 
-func (t *TerraformPlugin) calculateConfidence(added, removed, modified []string, diff string) float64 {
+func (t *TerraformPlugin) calculateConfidence(added, removed, _ []string, diff string) float64 {
 	confidence := 0.7 // base confidence
 
 	// Higher confidence for clear resource changes

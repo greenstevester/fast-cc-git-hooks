@@ -94,9 +94,9 @@ func (g *Generator) Generate() (*Result, error) {
 
 	// Add all changes
 	fmt.Printf("Running `git add .`")
-	if err := g.addAllChanges(); err != nil {
+	if addErr := g.addAllChanges(); addErr != nil {
 		fmt.Println(" ❌")
-		return nil, fmt.Errorf("failed to add changes: %w", err)
+		return nil, fmt.Errorf("failed to add changes: %w", addErr)
 	}
 	fmt.Println(" ✅")
 
