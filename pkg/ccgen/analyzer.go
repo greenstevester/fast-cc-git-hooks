@@ -228,12 +228,27 @@ func (g *Generator) GenerateCommitMessage(changes []ChangeType) string {
 	// Use the highest priority change as primary.
 	primary := changes[0]
 
+	// Get JIRA ticket if available
+	var jiraTicket string
+	if g.options.JiraManager != nil {
+		if ticket, err := g.options.JiraManager.GetCurrentJiraTicket(); err == nil && ticket != "" {
+			jiraTicket = ticket
+		}
+	}
+
 	// Create subject line.
 	subject := primary.Type
 	if primary.Scope != "" {
 		subject += fmt.Sprintf("(%s)", primary.Scope)
 	}
-	subject += fmt.Sprintf(": %s", primary.Description)
+	subject += ": "
+	
+	// Add JIRA ticket if available
+	if jiraTicket != "" {
+		subject += fmt.Sprintf("%s ", jiraTicket)
+	}
+	
+	subject += primary.Description
 
 	// Truncate subject if too long.
 	if utf8.RuneCountInString(subject) > MaxSubjectLength {

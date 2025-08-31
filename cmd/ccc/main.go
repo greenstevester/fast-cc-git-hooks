@@ -8,6 +8,7 @@ import (
 
 	"github.com/greenstevester/fast-cc-git-hooks/internal/banner"
 	"github.com/greenstevester/fast-cc-git-hooks/pkg/ccgen"
+	"github.com/greenstevester/fast-cc-git-hooks/pkg/jira"
 )
 
 var (
@@ -32,12 +33,19 @@ func main() {
 		return
 	}
 
+	// Get current working directory for JIRA manager
+	cwd, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("Failed to get current directory: %v", err)
+	}
+
 	// Create generator with execute option enabled
 	generator := ccgen.New(ccgen.Options{
-		NoVerify: *noVerify,
-		Execute:  true, // ccc always executes
-		Copy:     false,
-		Verbose:  *verbose,
+		NoVerify:    *noVerify,
+		Execute:     true, // ccc always executes
+		Copy:        false,
+		Verbose:     *verbose,
+		JiraManager: jira.NewManager(cwd),
 	})
 
 	// Generate commit message and execute

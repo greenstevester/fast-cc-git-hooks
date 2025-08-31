@@ -4,9 +4,11 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/greenstevester/fast-cc-git-hooks/internal/banner"
 	"github.com/greenstevester/fast-cc-git-hooks/pkg/ccgen"
+	"github.com/greenstevester/fast-cc-git-hooks/pkg/jira"
 )
 
 var (
@@ -28,9 +30,24 @@ func main() {
 
 	flag.Parse()
 
+	// Handle subcommands
+	args := flag.Args()
+	if len(args) > 0 {
+		if err := handleSubcommand(args); err != nil {
+			log.Fatalf("Error: %v", err)
+		}
+		return
+	}
+
 	if *help {
 		showHelp()
 		return
+	}
+
+	// Get current working directory for JIRA manager
+	cwd, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("Failed to get current directory: %v", err)
 	}
 
 	// Create generator with specified options
@@ -39,6 +56,7 @@ func main() {
 		Execute:  *execute,
 		Copy:     !*noCopy, // Copy by default unless --no-copy is specified
 		Verbose:  *verbose,
+		JiraManager: jira.NewManager(cwd),
 	})
 
 	// Generate commit message
@@ -51,13 +69,54 @@ func main() {
 	generator.PrintResult(result)
 }
 
+func handleSubcommand(args []string) error {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("failed to get current directory: %w", err)
+	}
+
+	jiraManager := jira.NewManager(cwd)
+
+	switch args[0] {
+	case "set-jira":
+		if len(args) != 2 {
+			return fmt.Errorf("usage: cc set-jira <JIRA-TICKET>\nExample: cc set-jira CGC-1234")
+		}
+		ticketID := args[1]
+		if err := jiraManager.SetJiraTicket(ticketID); err != nil {
+			return err
+		}
+		fmt.Printf("✅ **JIRA ticket set:** `%s`\n", ticketID)
+		fmt.Println("\nThis ticket will now be automatically included in commit messages.")
+		return nil
+
+	case "clear-jira":
+		if err := jiraManager.ClearJiraTicket(); err != nil {
+			return err
+		}
+		fmt.Println("✅ **JIRA ticket cleared**")
+		fmt.Println("\nNo JIRA ticket will be included in commit messages.")
+		return nil
+
+	case "jira-status":
+		return jiraManager.ShowJiraStatus()
+
+	case "jira-history":
+		return jiraManager.ListJiraHistory()
+
+	default:
+		return fmt.Errorf("unknown subcommand: %s\n\nAvailable subcommands:\n  set-jira <TICKET>   Set current JIRA ticket\n  clear-jira          Clear current JIRA ticket\n  jira-status         Show current JIRA ticket status\n  jira-history        Show JIRA ticket history", args[0])
+	}
+}
+
 func showHelp() {
 	fmt.Printf("cc - Git Commit message generator v%s\n\n", version)
 	fmt.Println("Analyzes staged changes and generates conventional commit messages.")
 	fmt.Println("Automatically copies git commit command to clipboard for easy pasting.")
 	fmt.Println()
 	fmt.Println("Usage:")
-	fmt.Println("  cc [flags]")
+	fmt.Println("  cc [flags]                    # Generate commit message")
+	fmt.Println("  cc <subcommand> [args]        # JIRA ticket management")
 	fmt.Println()
 	fmt.Println("Flags:")
 	fmt.Println("  --execute      Execute the commit after generating message")
@@ -66,12 +125,18 @@ func showHelp() {
 	fmt.Println("  --verbose      Show detailed analysis of changes")
 	fmt.Println("  --help         Show this help message")
 	fmt.Println()
+	fmt.Println("JIRA Commands:")
+	fmt.Println("  set-jira <TICKET>     Set current JIRA ticket (e.g., CGC-1234)")
+	fmt.Println("  clear-jira            Clear current JIRA ticket")
+	fmt.Println("  jira-status           Show current JIRA ticket status")
+	fmt.Println("  jira-history          Show JIRA ticket history")
+	fmt.Println()
 	fmt.Println("Examples:")
 	fmt.Println("  cc                    # Generate and copy git commit command")
-	fmt.Println("  cc --no-copy          # Generate commit message without copying")
 	fmt.Println("  cc --execute          # Generate and commit immediately")
-	fmt.Println("  cc --verbose          # Show detailed analysis")
-	fmt.Println("  cc --execute --no-verify  # Commit without hooks")
+	fmt.Println("  cc set-jira CGC-1234  # Set JIRA ticket for future commits")
+	fmt.Println("  cc jira-status        # Check current JIRA ticket")
+	fmt.Println("  cc clear-jira         # Remove JIRA ticket from commits")
 	fmt.Println()
 	fmt.Printf("Build info: %s (%s)\n", buildTime, commit)
 }

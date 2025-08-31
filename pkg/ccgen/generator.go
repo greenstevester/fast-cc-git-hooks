@@ -26,12 +26,18 @@ type ChangeType struct {
 	Priority    int
 }
 
+// JiraManager interface for JIRA ticket management
+type JiraManager interface {
+	GetCurrentJiraTicket() (string, error)
+}
+
 // Options configures the commit generation behavior
 type Options struct {
-	NoVerify bool
-	Execute  bool
-	Copy     bool
-	Verbose  bool
+	NoVerify    bool
+	Execute     bool
+	Copy        bool
+	Verbose     bool
+	JiraManager JiraManager
 }
 
 // Result contains the generated commit message and any additional information
@@ -142,6 +148,17 @@ func (g *Generator) Generate() (*Result, error) {
 		fmt.Println("## 📝 Generating Commit Message")
 	}
 	fmt.Println()
+
+	// Check for JIRA ticket
+	var jiraTicket string
+	if g.options.JiraManager != nil {
+		if ticket, err := g.options.JiraManager.GetCurrentJiraTicket(); err == nil && ticket != "" {
+			jiraTicket = ticket
+			fmt.Printf("**JIRA Ticket:** `%s` (will be included in commit)\n\n", jiraTicket)
+		} else {
+			fmt.Printf("**JIRA Ticket:** None set (use `cc set-jira CGC-1234` to set one)\n\n")
+		}
+	}
 
 	message := g.GenerateCommitMessage(changes)
 
