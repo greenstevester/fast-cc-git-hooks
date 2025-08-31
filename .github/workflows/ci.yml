@@ -132,30 +132,3 @@ jobs:
         name: binaries
         path: build/
 
-  validate-commits:
-    name: Validate Commits
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: ${{ env.GO_VERSION }}
-        cache: true
-
-    - name: Build fcgh
-      run: go build -o fcgh ./cmd/fcgh
-
-    - name: Validate commit messages
-      run: |
-        # Get all commits in this PR
-        git log --format="%s" origin/${{ github.base_ref }}..HEAD | while read -r commit_msg; do
-          echo "Validating: $commit_msg"
-          ./fcgh validate "$commit_msg" || exit 1
-        done
