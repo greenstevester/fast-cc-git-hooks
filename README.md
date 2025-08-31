@@ -226,8 +226,8 @@ fcgh validate "freak: my terrible message"  # Test if a message is bad
 **Smart commit generation with semantic analysis:**
 
 ```bash
-cc                     # Preview generated commit message with semantic analysis
-cc --copy              # Copy git commit command to clipboard for easy pasting
+cc                     # Generate commit message and copy to clipboard automatically
+cc --no-copy           # Generate commit message without copying to clipboard
 ccc                    # Generate perfect commit message and commit
 cc --verbose           # Show detailed analysis of your changes
 cc --help              # Show all available options
@@ -237,7 +237,7 @@ cc --help              # Show all available options
 The `cc` command now includes intelligent semantic analysis for Terraform files with Oracle OCI awareness. It understands the actual impact of your infrastructure changes and generates contextual commit messages. [See examples →](docs/semantic-analysis-examples.md)
 
 **📋 Clipboard Integration:**
-Use `cc --copy` to automatically copy the generated git commit command to your clipboard. Perfect for quick copy-paste workflows - just run the command and press Ctrl+V in your terminal!
+The `cc` command automatically copies the generated git commit command to your clipboard by default. Perfect for quick copy-paste workflows - just run `cc` and press Ctrl+V in your terminal! Use `--no-copy` to disable this behavior.
 
 **That's it!** Most people only ever need `fcgh setup-ent` and `ccc`.
 

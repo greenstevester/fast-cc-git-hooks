@@ -3,7 +3,12 @@
     "allow": [
       "Bash(make:*)",
       "mcp__reftools__ref_read_url",
-      "mcp__reftools__ref_search_documentation"
+      "mcp__reftools__ref_search_documentation",
+      "Bash(export:*)",
+      "Bash(/opt/homebrew/bin/go test ./...)",
+      "Bash(/opt/homebrew/bin/go test ./cmd/cc ./cmd/ccc ./internal/config ./internal/validator ./pkg/conventionalcommit ./pkg/semantic/plugins -v)",
+      "Bash(/opt/homebrew/bin/go fmt ./...)",
+      "Bash(/opt/homebrew/bin/go vet ./...)"
     ],
     "deny": [],
     "ask": []

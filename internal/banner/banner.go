@@ -12,11 +12,11 @@ import (
 func Print() {
 	if UseASCII() {
 		// Use ASCII art heart for better compatibility
-		const a = ">> Made with <3 for Boo"
+		const a = "Conventional Commit Message Generator >>> Made with <3 for Boo"
 		fmt.Println(a)
 	} else {
 		// Use emoji for terminals that support it
-		fmt.Println(">> Made with ❤️ for Boo")
+		fmt.Println("Conventional Commit Message Generator >>> Made with ❤️ for Boo")
 	}
 }
 
@@ -61,7 +61,7 @@ func UseASCII() bool {
 // GetBannerText returns the appropriate banner text based on terminal capabilities
 func GetBannerText() string {
 	if UseASCII() {
-		return ">> Made with <3 for Boo"
+		return "Conventional Commit Message Generator >>> Made with <3 for Boo"
 	}
-	return ">> Made with ❤️ for Boo"
+	return "Conventional Commit Message Generator >>> Made with ❤️ for Boo"
 }

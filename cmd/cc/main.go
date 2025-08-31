@@ -17,7 +17,7 @@ var (
 	// Command line flags.
 	noVerify = flag.Bool("no-verify", false, "Skip pre-commit hooks")
 	execute  = flag.Bool("execute", false, "Execute the commit after generating message")
-	copyCmd  = flag.Bool("copy", false, "Copy git commit command to clipboard")
+	noCopy   = flag.Bool("no-copy", false, "Disable copying git commit command to clipboard")
 	verbose  = flag.Bool("verbose", false, "Show detailed analysis")
 	help     = flag.Bool("help", false, "Show help")
 )
@@ -37,7 +37,7 @@ func main() {
 	generator := ccgen.New(ccgen.Options{
 		NoVerify: *noVerify,
 		Execute:  *execute,
-		Copy:     *copyCmd,
+		Copy:     !*noCopy, // Copy by default unless --no-copy is specified
 		Verbose:  *verbose,
 	})
 
@@ -54,21 +54,22 @@ func main() {
 func showHelp() {
 	fmt.Printf("cc - Git Commit message generator v%s\n\n", version)
 	fmt.Println("Analyzes staged changes and generates conventional commit messages.")
+	fmt.Println("Automatically copies git commit command to clipboard for easy pasting.")
 	fmt.Println()
 	fmt.Println("Usage:")
 	fmt.Println("  cc [flags]")
 	fmt.Println()
 	fmt.Println("Flags:")
 	fmt.Println("  --execute      Execute the commit after generating message")
-	fmt.Println("  --copy         Copy git commit command to clipboard")
+	fmt.Println("  --no-copy      Disable copying git commit command to clipboard")
 	fmt.Println("  --no-verify    Skip pre-commit hooks when committing")
 	fmt.Println("  --verbose      Show detailed analysis of changes")
 	fmt.Println("  --help         Show this help message")
 	fmt.Println()
 	fmt.Println("Examples:")
-	fmt.Println("  cc                    # Generate commit message only")
-	fmt.Println("  cc --copy             # Copy git commit command to clipboard")
-	fmt.Println("  cc --execute          # Generate and commit")
+	fmt.Println("  cc                    # Generate and copy git commit command")
+	fmt.Println("  cc --no-copy          # Generate commit message without copying")
+	fmt.Println("  cc --execute          # Generate and commit immediately")
 	fmt.Println("  cc --verbose          # Show detailed analysis")
 	fmt.Println("  cc --execute --no-verify  # Commit without hooks")
 	fmt.Println()
