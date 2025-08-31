@@ -89,7 +89,7 @@ Each release includes *both tools* - you get everything in one download!
 ** Windows:*
 1. Go to https://github.com/greenstevester/fast-cc-git-hooks/releases/latest[Releases Page]
 2. Download `fast-cc-git-hooks_windows_amd64.zip`
-3. Extract and add both `fcgh.exe` and `cc.exe` to a directory on your PATH
+3. Extract and add `fcgh.exe` and `cc.exe` and `ccc.exe` to a directory on your PATH
 NOTE: In windows, there's an option to change only your environment variables - use that as a preference, or just add both to your PATH.
 
 *🐧 Linux:*
@@ -126,14 +126,14 @@ curl -sSL https://raw.githubusercontent.com/greenstevester/fast-cc-git-hooks/ref
 # Intel Macs
 curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fcgh_darwin_amd64.tar.gz
 tar -xzf fcgh.tar.gz
-chmod +x fcgh cc
-sudo mv fcgh cc /usr/local/bin/
+chmod +x fcgh cc ccc
+sudo mv fcgh cc ccc /usr/local/bin/
 
 # Apple Silicon (M1/M2/M3) - most common now
 curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fcgh_darwin_arm64.tar.gz
 tar -xzf fcgh.tar.gz
-chmod +x fcgh cc
-sudo mv fcgh cc /usr/local/bin/
+chmod +x fcgh cc ccc
+sudo mv fcgh cc ccc /usr/local/bin/
 ----
 
 *📱 For macOS Security (Both Options):*
@@ -164,17 +164,6 @@ fcgh setup --local      # Install only for current repository
 fcgh setup-ent --local  # Enterprise setup for current repository only
 ----
 
-==== What the Setup Commands Do
-
-* *Automatically*:
-* Creates/checks configuration: Ensures a config file exists (creates default if needed)
-* Installs hooks: Then installs the git hooks
-* *Guided experience*: Shows exactly what it's doing with clear output
-* *Global vs Local Installation*:
-* *Global (default)*: Installs hooks for ALL git repositories on your system
-* *Local (–local)*: Installs hooks only for the current repository
-* *⚡ Precedence Rule*: When both exist, *local always takes precedence* over global configuration
-
 ==== 🏆 Configuration Precedence (Important!)
 
 When you have both local and global installations:
@@ -184,48 +173,17 @@ Local Repository Hook  ➤  ALWAYS WINS  ⚡
 Global Git Hook        ➤  Ignored when local exists
 ----
 
-== Every time you make a commit, compliant conventional commit messages will be your default
-
-== ✨ How to write good commit messages
-
-Instead of writing messy commits like:
-
-[source,bash]
-----
-git commit -m "fixed stuff"
-git commit -m "update"
-git commit -m "CGC-0000 blah blah blah"
-----
-
-Write clear commits like:
-
-[source,bash]
-----
-git commit -m "feat: add login button"
-git commit -m "fix: CGC-4561 Resolved login bug"  
-git commit -m "docs: update README"
-----
-
-The format is simple: `type: what you did`
-
-*Common types:*
-- `feat` - when you add something new
-- `fix` - when you fix a bug
-- `docs` - when you update documentation
-- `test` - when you add tests
-- `chore` - when you do maintenance stuff
-
 === Commands (fcgh)
 
 [source,bash]
 ----
-fcgh setup-ent # Set up everything (start here!)
+fcgh setup-ent # Set up everything (This creates a file called `fast-cc-config.yaml` in your home directory (`~/.fast-cc/`) that you can edit. )
 fcgh remove    # Smart removal - prompts to choose local/global if both exist
 fcgh remove --local   # Remove only from current repository
 fcgh remove --global  # Remove only from global git configuration
 ----
 
-*Test things:*
+*Testing fcgh:*
 
 [source,bash]
 ----
@@ -240,18 +198,21 @@ fcgh validate "freak: my terrible message"  # Test if a message is bad
 ----
 cc                     # Generate commit message and copy to clipboard automatically
 cc --no-copy           # Generate commit message without copying to clipboard
-ccc                    # Generate perfect commit message and commit
+ccc                    # Generate commit message and commit
 cc --verbose           # Show detailed analysis of your changes
 cc --help              # Show all available options
 ----
 
 *🧠 Semantic Analysis for Infrastructure Code:*
-The `cc` command now includes intelligent semantic analysis for Terraform files with Oracle OCI awareness. It understands the actual impact of your infrastructure changes and generates contextual commit messages. link:docs/semantic-analysis-examples.md[See examples →]
+The `cc` command includes semantic analysis for Terraform files with Oracle OCI awareness. 
+It understands the infrastructure changes and generates contextual commit messages. link:docs/semantic-analysis-examples.md[See examples →]
 
 *📋 Clipboard Integration:*
-The `cc` command automatically copies the generated git commit command to your clipboard by default. Perfect for quick copy-paste workflows - just run `cc` and press Ctrl+V in your terminal! Use `--no-copy` to disable this behavior.
+The `cc` command automatically copies the generated git commit command to your clipboard by default. 
+Perfect for quick copy-paste workflows - just run `cc` and press Ctrl+V in your terminal! Use `--no-copy` to disable this behavior.
 
 *That's it!* Most people only ever need `fcgh setup-ent` and `ccc`.
+
 
 == 🤔 Common Questions
 
@@ -305,7 +266,7 @@ But if you want to customize the rules, run:
 fcgh init
 ----
 
-This creates a file called `fast-cc-config.yaml` in your home directory (`~/.fast-cc-git-hooks/`) that you can edit. It has comments explaining everything!
+This creates a file called `fast-cc-config.yaml` in your home directory (`~/.fast-cc/`) that you can edit. 
 
 == 🚨 Troubleshooting
 
