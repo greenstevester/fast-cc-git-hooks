@@ -1,0 +1,40 @@
+# GitHub Action Docker image for conventional commit validation
+FROM golang:1.25-alpine AS builder
+
+# Install git (needed for GitHub Actions)
+RUN apk add --no-cache git ca-certificates
+
+WORKDIR /src
+
+# Copy go mod files
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download && go mod verify
+
+# Copy source code
+COPY . .
+
+# Build the fcgh binary
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+    -ldflags='-w -s -extldflags "-static"' \
+    -o /app/fcgh \
+    ./cmd/fcgh
+
+# Final stage - GitHub Action runtime
+FROM alpine:latest
+
+# Install git for GitHub Actions
+RUN apk add --no-cache git bash
+
+# Copy the binary
+COPY --from=builder /app/fcgh /usr/local/bin/fcgh
+
+# Copy entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# GitHub Actions runs as root
+USER root
+
+ENTRYPOINT ["/entrypoint.sh"]

@@ -1,0 +1,37 @@
+name: 'Conventional Commits Check'
+description: 'GitHub Action to validate conventional commit messages in pull requests'
+author: 'greenstevester'
+
+branding:
+  icon: 'check-circle'
+  color: 'green'
+
+inputs:
+  config-file:
+    description: 'Path to the configuration file'
+    required: false
+    default: '.fast-cc-git-hooks/config.yaml'
+  
+  base-branch:
+    description: 'Base branch to compare against (defaults to PR base branch)'
+    required: false
+    default: ${{ github.base_ref }}
+  
+  fail-on-error:
+    description: 'Whether to fail the action if commits are invalid'
+    required: false
+    default: 'true'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile.action'
+  args:
+    - ${{ inputs.config-file }}
+    - ${{ inputs.base-branch }}
+    - ${{ inputs.fail-on-error }}
+
+outputs:
+  valid:
+    description: 'Whether all commits are valid (true/false)'
+  invalid-commits:
+    description: 'List of invalid commit messages found'

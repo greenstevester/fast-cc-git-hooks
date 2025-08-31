@@ -1,0 +1,43 @@
+name: PR Commit Validation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  validate-commits:
+    name: Validate Conventional Commits
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch all history for commit validation
+    
+    - name: Validate Commit Messages
+      uses: greenstevester/fast-cc-git-hooks@main
+      with:
+        fail-on-error: 'true'
+    
+    - name: Comment on PR if validation fails
+      if: failure()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `## ❌ Commit Message Validation Failed
+            
+            Some commits in this PR do not follow the [Conventional Commits](https://www.conventionalcommits.org/) format.
+            
+            **Expected format:** \`<type>(<scope>): <subject>\`
+            
+            **Valid types:** feat, fix, docs, style, refactor, perf, test, build, ci, chore
+            
+            **Example:** \`feat(api): add user authentication endpoint\`
+            
+            Please update your commit messages using \`git rebase -i\` or squash commits with proper messages.`
+          })
