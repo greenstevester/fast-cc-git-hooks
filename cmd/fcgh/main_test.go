@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -528,12 +529,21 @@ func TestEnsureConfigExistsEdgeCases(t *testing.T) {
 
 	// Create a directory with restrictive permissions to test error handling
 	restrictedDir := filepath.Join(t.TempDir(), "restricted")
-	if err := os.MkdirAll(restrictedDir, 0o000); err != nil {
-		t.Fatalf("Failed to create restricted directory: %v", err)
+	if runtime.GOOS == "windows" {
+		// On Windows, create a normal directory as Windows permissions work differently
+		if err := os.MkdirAll(restrictedDir, 0o750); err != nil {
+			t.Fatalf("Failed to create restricted directory: %v", err)
+		}
+	} else {
+		if err := os.MkdirAll(restrictedDir, 0o000); err != nil {
+			t.Fatalf("Failed to create restricted directory: %v", err)
+		}
 	}
 	defer func() {
-		if err := os.Chmod(restrictedDir, 0o600); err != nil {
-			t.Logf("Failed to restore permissions: %v", err)
+		if runtime.GOOS != "windows" {
+			if err := os.Chmod(restrictedDir, 0o755); err != nil {
+				t.Logf("Failed to restore permissions: %v", err)
+			}
 		}
 	}()
 
@@ -966,13 +976,21 @@ func TestValidateCommandErrorPaths(t *testing.T) {
 	if err := os.WriteFile(restrictedFile, []byte("test"), 0o600); err != nil {
 		t.Fatalf("Failed to create restricted file: %v", err)
 	}
-	// Change to read-only after creation
-	if err := os.Chmod(restrictedFile, 0o000); err != nil {
-		t.Fatalf("Failed to make file read-only: %v", err)
+	
+	if runtime.GOOS == "windows" {
+		// On Windows, skip the permission test as Windows handles permissions differently
+		t.Skip("Skipping file permission test on Windows due to different permission model")
+	} else {
+		// Change to read-only after creation
+		if err := os.Chmod(restrictedFile, 0o000); err != nil {
+			t.Fatalf("Failed to make file read-only: %v", err)
+		}
 	}
 	defer func() {
-		if err := os.Chmod(restrictedFile, 0o600); err != nil {
-			t.Logf("Failed to restore file permissions: %v", err)
+		if runtime.GOOS != "windows" {
+			if err := os.Chmod(restrictedFile, 0o644); err != nil {
+				t.Logf("Failed to restore file permissions: %v", err)
+			}
 		}
 	}()
 
@@ -1281,9 +1299,19 @@ func TestInitCommandMoreErrorPaths(t *testing.T) {
 	// Test with read-only directory
 	tempDir := t.TempDir()
 	readOnlyDir := filepath.Join(tempDir, "readonly")
-	err := os.Mkdir(readOnlyDir, 0o500) // Read-only directory
-	if err != nil {
-		t.Fatalf("Failed to create read-only directory: %v", err)
+	
+	if runtime.GOOS == "windows" {
+		// On Windows, create a normal directory and skip this test
+		err := os.Mkdir(readOnlyDir, 0o750)
+		if err != nil {
+			t.Fatalf("Failed to create directory: %v", err)
+		}
+		t.Skip("Skipping read-only directory test on Windows due to permission model differences")
+	} else {
+		err := os.Mkdir(readOnlyDir, 0o500) // Read-only directory
+		if err != nil {
+			t.Fatalf("Failed to create read-only directory: %v", err)
+		}
 	}
 
 	// Change to read-only directory
@@ -1298,8 +1326,10 @@ func TestInitCommandMoreErrorPaths(t *testing.T) {
 		if chErr := os.Chdir(originalDir); chErr != nil {
 			t.Errorf("Failed to restore directory: %v", chErr)
 		}
-		if chErr := os.Chmod(readOnlyDir, 0o600); chErr != nil {
-			t.Logf("Failed to restore directory permissions: %v", chErr)
+		if runtime.GOOS != "windows" {
+			if chErr := os.Chmod(readOnlyDir, 0o755); chErr != nil {
+				t.Logf("Failed to restore directory permissions: %v", chErr)
+			}
 		}
 	}()
 
@@ -1394,13 +1424,24 @@ func TestSetupEnterpriseCommandMoreErrorPaths(t *testing.T) {
 
 	// Create a read-only .fast-cc directory to trigger permission errors
 	fastCCDir := filepath.Join(tempDir, ".fast-cc")
-	err = os.Mkdir(fastCCDir, 0o500)
-	if err != nil {
-		t.Fatalf("Failed to create read-only .fast-cc directory: %v", err)
+	if runtime.GOOS == "windows" {
+		// On Windows, create a normal directory and skip permission test
+		err = os.Mkdir(fastCCDir, 0o750)
+		if err != nil {
+			t.Fatalf("Failed to create .fast-cc directory: %v", err)
+		}
+		t.Skip("Skipping read-only .fast-cc directory test on Windows due to permission model differences")
+	} else {
+		err = os.Mkdir(fastCCDir, 0o500)
+		if err != nil {
+			t.Fatalf("Failed to create read-only .fast-cc directory: %v", err)
+		}
 	}
 	defer func() {
-		if chErr := os.Chmod(fastCCDir, 0o600); chErr != nil {
-			t.Logf("Failed to restore directory permissions: %v", chErr)
+		if runtime.GOOS != "windows" {
+			if chErr := os.Chmod(fastCCDir, 0o755); chErr != nil {
+				t.Logf("Failed to restore directory permissions: %v", chErr)
+			}
 		}
 	}() // Make writable for cleanup
 
@@ -1425,20 +1466,31 @@ func TestCopyEnterpriseConfigPermissionError(t *testing.T) {
 
 	// Create read-only directory
 	readOnlyDir := filepath.Join(tempDir, "readonly")
-	err := os.Mkdir(readOnlyDir, 0o500)
-	if err != nil {
-		t.Fatalf("Failed to create read-only directory: %v", err)
+	if runtime.GOOS == "windows" {
+		// On Windows, create a normal directory and skip permission test
+		err := os.Mkdir(readOnlyDir, 0o750)
+		if err != nil {
+			t.Fatalf("Failed to create directory: %v", err)
+		}
+		t.Skip("Skipping read-only directory test on Windows due to permission model differences")
+	} else {
+		err := os.Mkdir(readOnlyDir, 0o500)
+		if err != nil {
+			t.Fatalf("Failed to create read-only directory: %v", err)
+		}
 	}
 	defer func() {
-		if chErr := os.Chmod(readOnlyDir, 0o600); chErr != nil {
-			t.Logf("Failed to restore directory permissions: %v", chErr)
+		if runtime.GOOS != "windows" {
+			if chErr := os.Chmod(readOnlyDir, 0o755); chErr != nil {
+				t.Logf("Failed to restore directory permissions: %v", chErr)
+			}
 		}
 	}() // Make writable for cleanup
 
 	// Try to copy to read-only directory
 	destPath := filepath.Join(readOnlyDir, "enterprise.yaml")
-	err = copyEnterpriseConfig(destPath)
-	if err == nil {
+	err := copyEnterpriseConfig(destPath)
+	if runtime.GOOS != "windows" && err == nil {
 		t.Error("Expected permission error when copying to read-only directory")
 	}
 }
@@ -1453,12 +1505,22 @@ func TestEnsureConfigExistsMoreErrors(t *testing.T) {
 	// Set configFile to a path that will cause write errors (read-only directory)
 	tempDir := t.TempDir()
 	readOnlyDir := filepath.Join(tempDir, "readonly")
-	if err := os.Mkdir(readOnlyDir, 0o500); err != nil {
-		t.Fatalf("Failed to create read-only directory: %v", err)
+	if runtime.GOOS == "windows" {
+		// On Windows, create a normal directory and skip this test
+		if err := os.Mkdir(readOnlyDir, 0o750); err != nil {
+			t.Fatalf("Failed to create directory: %v", err)
+		}
+		t.Skip("Skipping read-only directory test on Windows due to permission model differences")
+	} else {
+		if err := os.Mkdir(readOnlyDir, 0o500); err != nil {
+			t.Fatalf("Failed to create read-only directory: %v", err)
+		}
 	}
 	defer func() {
-		if err := os.Chmod(readOnlyDir, 0o600); err != nil {
-			t.Logf("Failed to restore directory permissions: %v", err)
+		if runtime.GOOS != "windows" {
+			if err := os.Chmod(readOnlyDir, 0o755); err != nil {
+				t.Logf("Failed to restore directory permissions: %v", err)
+			}
 		}
 	}()
 
@@ -1480,12 +1542,22 @@ func TestEnsureEnterpriseConfigExistsMoreErrors(t *testing.T) {
 	// Set configFile to a path that will cause write errors (read-only directory)
 	tempDir := t.TempDir()
 	readOnlyDir := filepath.Join(tempDir, "readonly")
-	if err := os.Mkdir(readOnlyDir, 0o500); err != nil {
-		t.Fatalf("Failed to create read-only directory: %v", err)
+	if runtime.GOOS == "windows" {
+		// On Windows, create a normal directory and skip this test
+		if err := os.Mkdir(readOnlyDir, 0o750); err != nil {
+			t.Fatalf("Failed to create directory: %v", err)
+		}
+		t.Skip("Skipping read-only directory test on Windows due to permission model differences")
+	} else {
+		if err := os.Mkdir(readOnlyDir, 0o500); err != nil {
+			t.Fatalf("Failed to create read-only directory: %v", err)
+		}
 	}
 	defer func() {
-		if err := os.Chmod(readOnlyDir, 0o600); err != nil {
-			t.Logf("Failed to restore directory permissions: %v", err)
+		if runtime.GOOS != "windows" {
+			if err := os.Chmod(readOnlyDir, 0o755); err != nil {
+				t.Logf("Failed to restore directory permissions: %v", err)
+			}
 		}
 	}()
 
