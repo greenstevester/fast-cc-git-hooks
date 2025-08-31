@@ -12,7 +12,8 @@ import (
 func Print() {
 	if UseASCII() {
 		// Use ASCII art heart for better compatibility
-		fmt.Println(">> Made with <3 for Boo")
+		const a = ">> Made with <3 for Boo"
+		fmt.Println(a)
 	} else {
 		// Use emoji for terminals that support it
 		fmt.Println(">> Made with ❤️ for Boo")
@@ -26,19 +27,19 @@ func UseASCII() bool {
 	msystem := os.Getenv("MSYSTEM") // MinGW/MSYS2
 	termProgram := os.Getenv("TERM_PROGRAM")
 	wtSession := os.Getenv("WT_SESSION") // Windows Terminal
-	
+
 	// Check if we're in Git Bash, MinGW, or similar
 	if msystem != "" {
 		return true // MinGW/MSYS2/Git Bash
 	}
-	
+
 	// Check for specific terminal programs that don't handle emojis well
 	if strings.Contains(strings.ToLower(term), "mingw") ||
-	   strings.Contains(strings.ToLower(term), "cygwin") ||
-	   strings.Contains(strings.ToLower(term), "msys") {
+		strings.Contains(strings.ToLower(term), "cygwin") ||
+		strings.Contains(strings.ToLower(term), "msys") {
 		return true
 	}
-	
+
 	// Windows Command Prompt doesn't support emojis well
 	if runtime.GOOS == "windows" {
 		// Windows Terminal (newer) supports emojis
@@ -52,7 +53,7 @@ func UseASCII() bool {
 		// Default to ASCII on Windows unless we know the terminal supports emojis
 		return true
 	}
-	
+
 	// Most modern Linux/Mac terminals support emojis
 	return false
 }

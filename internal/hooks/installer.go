@@ -273,7 +273,7 @@ func findGitDir() (string, error) {
 }
 
 // GlobalInstall installs hooks globally for all repositories.
-// Note: Git's precedence rules ensure that local repository hooks (installed via Install()) 
+// Note: Git's precedence rules ensure that local repository hooks (installed via Install())
 // will always take precedence over global template hooks when both exist.
 func GlobalInstall(ctx context.Context, logger *slog.Logger) error {
 	// Get git config directory.

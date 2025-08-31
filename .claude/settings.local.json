@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(make:*)"
+      "Bash(make:*)",
+      "mcp__reftools__ref_read_url",
+      "mcp__reftools__ref_search_documentation"
     ],
     "deny": [],
     "ask": []

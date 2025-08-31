@@ -1,16 +1,22 @@
 package main
 
 import (
-	"strings"
 	"testing"
+
+	"github.com/greenstevester/fast-cc-git-hooks/pkg/ccgen"
 )
 
-func TestFindCCBinary(t *testing.T) {
-	// Test that findCCBinary doesn't panic
-	_, err := findCCBinary()
-	// It's okay if cc is not found in test environment
-	if err != nil && !strings.Contains(err.Error(), "cc binary not found") {
-		t.Errorf("Unexpected error from findCCBinary: %v", err)
+func TestCCCUsesSharedPackage(t *testing.T) {
+	// Test that we can create a generator (main functionality of ccc)
+	generator := ccgen.New(ccgen.Options{
+		NoVerify: false,
+		Execute:  true, // ccc always executes
+		Copy:     false,
+		Verbose:  false,
+	})
+
+	if generator == nil {
+		t.Error("Expected generator to be created successfully")
 	}
 }
 
@@ -21,7 +27,7 @@ func TestShowHelp(t *testing.T) {
 			t.Errorf("showHelp panicked: %v", r)
 		}
 	}()
-	
+
 	// We can't easily test the output without capturing stdout,
 	// but we can ensure it doesn't panic
 	// showHelp() // This would print to stdout

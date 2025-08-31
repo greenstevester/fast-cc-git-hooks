@@ -13,14 +13,14 @@ import (
 func enhancedCCCommand(diff string, useSemanticAnalysis bool) {
 	// Use ASCII heart for better terminal compatibility
 	fmt.Println(">> Made with <3 for Boo")
-	
+
 	var commitMessage string
 	var confidence float64
-	
+
 	if useSemanticAnalysis {
 		// Initialize semantic analyzer
 		analyzer := semantic.NewCCSemanticAnalyzer()
-		
+
 		// Register plugins
 		terraformPlugin := plugins.NewTerraformPlugin()
 		if err := analyzer.RegisterPlugins(terraformPlugin); err != nil {
@@ -28,12 +28,12 @@ func enhancedCCCommand(diff string, useSemanticAnalysis bool) {
 			useSemanticAnalysis = false
 		}
 	}
-	
+
 	if useSemanticAnalysis {
 		analyzer := semantic.NewCCSemanticAnalyzer()
 		terraformPlugin := plugins.NewTerraformPlugin()
 		analyzer.RegisterPlugins(terraformPlugin)
-		
+
 		// Analyze diff with semantic understanding
 		semanticChange, err := analyzer.AnalyzeDiff(diff)
 		if err != nil {
@@ -45,7 +45,7 @@ func enhancedCCCommand(diff string, useSemanticAnalysis bool) {
 			// Use semantic analysis result
 			commitMessage = formatSemanticCommitMessage(semanticChange)
 			confidence = semanticChange.Confidence
-			
+
 			fmt.Println("🧠 Semantic Analysis Results:")
 			fmt.Printf("   Type: %s\n", semanticChange.Type)
 			fmt.Printf("   Scope: %s\n", semanticChange.Scope)
@@ -65,7 +65,7 @@ func enhancedCCCommand(diff string, useSemanticAnalysis bool) {
 		commitMessage = generateRuleBasedCommitMessage(diff)
 		confidence = 0.6
 	}
-	
+
 	// Display results
 	fmt.Println("─────────────────────────────────────────")
 	fmt.Printf("\n>>> based on your changes, cc created the following git commit message for you (confidence: %.1f%%):\n", confidence*100)
@@ -79,7 +79,7 @@ func formatSemanticCommitMessage(change *semantic.SemanticChange) string {
 		subject += fmt.Sprintf("(%s)", change.Scope)
 	}
 	subject += fmt.Sprintf(": %s", change.Description)
-	
+
 	// Add breaking change indicator
 	if change.BreakingChange {
 		if change.Scope != "" {
@@ -88,7 +88,7 @@ func formatSemanticCommitMessage(change *semantic.SemanticChange) string {
 			subject = fmt.Sprintf("%s!: %s", change.Type, change.Description)
 		}
 	}
-	
+
 	// Build body
 	var body string
 	if change.Intent != "" || change.Impact != "" {
@@ -100,13 +100,13 @@ func formatSemanticCommitMessage(change *semantic.SemanticChange) string {
 			body += fmt.Sprintf("\nImpact: %s", change.Impact)
 		}
 	}
-	
+
 	// Add breaking change footer if needed
 	var footer string
 	if change.BreakingChange {
 		footer = "\nBREAKING CHANGE: Infrastructure changes may affect existing resources"
 	}
-	
+
 	return subject + body + footer
 }
 
@@ -118,8 +118,8 @@ func generateRuleBasedCommitMessage(diff string) string {
 
 // Example usage scenarios
 func demonstrateSemanticAnalysis() {
-	fmt.Println("🧪 Semantic Analysis Plugin Architecture Demo\n")
-	
+	fmt.Println("🧪 Semantic Analysis Plugin Architecture Demo")
+
 	// Example 1: Terraform Infrastructure
 	terraformDiff := `
 diff --git a/infrastructure/vcn.tf b/infrastructure/vcn.tf
@@ -145,12 +145,12 @@ index 0000000..abc123
 +  display_name   = "main-igw"
 +}
 `
-	
-	fmt.Println("Example 1: New OCI Infrastructure") 
+
+	fmt.Println("Example 1: New OCI Infrastructure")
 	fmt.Println("Input diff: OCI VCN and internet gateway creation")
 	enhancedCCCommand(terraformDiff, true)
 	fmt.Println()
-	
+
 	// Example 2: Security Improvement
 	securityDiff := `
 diff --git a/security.tf b/security.tf
@@ -166,12 +166,12 @@ index def456..ghi789 100644
    }
  }
 `
-	
+
 	fmt.Println("Example 2: Security Improvement")
 	fmt.Println("Input diff: restricting security list access")
 	enhancedCCCommand(securityDiff, true)
 	fmt.Println()
-	
+
 	// Example 3: Non-Terraform file (fallback)
 	goDiff := `
 diff --git a/main.go b/main.go
@@ -183,7 +183,7 @@ index 123..456 100644
 +	fmt.Println("Added logging")
  }
 `
-	
+
 	fmt.Println("Example 3: Non-OCI Change (Rule-based fallback)")
 	fmt.Println("Input diff: Go code changes")
 	enhancedCCCommand(goDiff, true)

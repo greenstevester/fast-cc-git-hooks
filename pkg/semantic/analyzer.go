@@ -17,7 +17,7 @@ type CCSemanticAnalyzer struct {
 func NewCCSemanticAnalyzer() *CCSemanticAnalyzer {
 	registry := NewPluginRegistry()
 	analyzer := NewSemanticAnalyzer(registry)
-	
+
 	return &CCSemanticAnalyzer{
 		analyzer: analyzer,
 		enabled:  true, // Can be configured
@@ -39,22 +39,22 @@ func (c *CCSemanticAnalyzer) AnalyzeDiff(diff string) (*SemanticChange, error) {
 	if !c.enabled {
 		return nil, nil
 	}
-	
+
 	files := c.parseDiffToFileChanges(diff)
 	if len(files) == 0 {
 		return nil, nil
 	}
-	
+
 	ctx := context.Background()
 	changes, err := c.analyzer.AnalyzeChanges(ctx, files)
 	if err != nil {
 		return nil, fmt.Errorf("semantic analysis failed: %w", err)
 	}
-	
+
 	if len(changes) == 0 {
 		return nil, nil
 	}
-	
+
 	// Return the highest confidence change
 	return c.selectPrimaryChange(changes), nil
 }
@@ -62,21 +62,21 @@ func (c *CCSemanticAnalyzer) AnalyzeDiff(diff string) (*SemanticChange, error) {
 // parseDiffToFileChanges converts a git diff string to FileChange objects
 func (c *CCSemanticAnalyzer) parseDiffToFileChanges(diff string) []FileChange {
 	var files []FileChange
-	
+
 	// Split diff by files
 	fileSections := strings.Split(diff, "diff --git")
-	
+
 	for _, section := range fileSections {
 		if strings.TrimSpace(section) == "" {
 			continue
 		}
-		
+
 		file := c.parseFileSection(section)
 		if file != nil {
 			files = append(files, *file)
 		}
 	}
-	
+
 	return files
 }
 
@@ -86,7 +86,7 @@ func (c *CCSemanticAnalyzer) parseFileSection(section string) *FileChange {
 	if len(lines) < 2 {
 		return nil
 	}
-	
+
 	// Extract file path from the first line
 	// Format: " a/path/to/file b/path/to/file"
 	var filePath string
@@ -98,11 +98,11 @@ func (c *CCSemanticAnalyzer) parseFileSection(section string) *FileChange {
 			filePath = strings.TrimPrefix(parts[0], "a/")
 		}
 	}
-	
+
 	if filePath == "" {
 		return nil
 	}
-	
+
 	// Determine change type
 	changeType := "modified"
 	if strings.Contains(section, "new file mode") {
@@ -110,11 +110,11 @@ func (c *CCSemanticAnalyzer) parseFileSection(section string) *FileChange {
 	} else if strings.Contains(section, "deleted file mode") {
 		changeType = "deleted"
 	}
-	
+
 	// Extract content changes
 	var beforeContent, afterContent strings.Builder
 	diffContent := section
-	
+
 	// Parse diff lines
 	for _, line := range lines {
 		if strings.HasPrefix(line, "-") && !strings.HasPrefix(line, "---") {
@@ -123,7 +123,7 @@ func (c *CCSemanticAnalyzer) parseFileSection(section string) *FileChange {
 			afterContent.WriteString(strings.TrimPrefix(line, "+") + "\n")
 		}
 	}
-	
+
 	return &FileChange{
 		Path:          filePath,
 		Language:      c.detectLanguageFromPath(filePath),
@@ -165,11 +165,11 @@ func (c *CCSemanticAnalyzer) selectPrimaryChange(changes []*SemanticChange) *Sem
 	if len(changes) == 0 {
 		return nil
 	}
-	
+
 	if len(changes) == 1 {
 		return changes[0]
 	}
-	
+
 	// Priority: breaking changes > feat > fix > perf > refactor > others
 	priority := map[string]int{
 		"feat":     1,
@@ -182,31 +182,31 @@ func (c *CCSemanticAnalyzer) selectPrimaryChange(changes []*SemanticChange) *Sem
 		"ci":       8,
 		"chore":    9,
 	}
-	
+
 	var best *SemanticChange
 	bestScore := 999
-	
+
 	for _, change := range changes {
 		score := priority[change.Type]
 		if score == 0 {
 			score = 10 // unknown types get lowest priority
 		}
-		
+
 		// Breaking changes get higher priority
 		if change.BreakingChange {
 			score -= 5
 		}
-		
+
 		// Higher confidence gets priority
 		confidenceBonus := int((1.0 - change.Confidence) * 3)
 		score += confidenceBonus
-		
+
 		if score < bestScore {
 			bestScore = score
 			best = change
 		}
 	}
-	
+
 	return best
 }
 

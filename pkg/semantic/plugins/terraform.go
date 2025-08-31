@@ -41,7 +41,7 @@ func (t *TerraformPlugin) SupportedExtensions() []string {
 func (t *TerraformPlugin) SupportedFilePatterns() []string {
 	return []string{
 		"*.tf",
-		"*.tfvars", 
+		"*.tfvars",
 		"*.tfvars.json",
 		"terraform/*",
 		"infra/*",
@@ -57,13 +57,13 @@ func (t *TerraformPlugin) CanAnalyze(file semantic.FileChange) bool {
 			return true
 		}
 	}
-	
+
 	// Check content for Terraform syntax
 	content := file.AfterContent
 	if content == "" {
 		content = file.BeforeContent
 	}
-	
+
 	terraformKeywords := []string{
 		"resource \"",
 		"data \"",
@@ -73,13 +73,13 @@ func (t *TerraformPlugin) CanAnalyze(file semantic.FileChange) bool {
 		"terraform {",
 		"module \"",
 	}
-	
+
 	for _, keyword := range terraformKeywords {
 		if strings.Contains(content, keyword) {
 			return true
 		}
 	}
-	
+
 	return false
 }
 
@@ -106,20 +106,20 @@ func (t *TerraformPlugin) AnalyzeProject(ctx context.Context, context semantic.A
 			terraformFiles = append(terraformFiles, file)
 		}
 	}
-	
+
 	if len(terraformFiles) == 0 {
 		return nil, nil
 	}
-	
+
 	// Analyze project-level patterns
 	if change := t.analyzeProviderChanges(terraformFiles); change != nil {
 		return change, nil
 	}
-	
+
 	if change := t.analyzeModuleStructureChanges(terraformFiles); change != nil {
 		return change, nil
 	}
-	
+
 	return nil, nil
 }
 
@@ -141,31 +141,31 @@ func (t *TerraformPlugin) ValidateConfig(config map[string]string) error {
 		"check_best_practices":    true,
 		"provider_sensitivity":    true,
 	}
-	
+
 	for key := range config {
 		if !validKeys[key] {
 			return fmt.Errorf("unknown config key: %s", key)
 		}
 	}
-	
+
 	if sensitivity, ok := config["provider_sensitivity"]; ok {
 		if sensitivity != "high" && sensitivity != "medium" && sensitivity != "low" {
 			return fmt.Errorf("invalid provider_sensitivity: %s (must be high, medium, or low)", sensitivity)
 		}
 	}
-	
+
 	return nil
 }
 
 // analyzeNewFile analyzes a newly added Terraform file
 func (t *TerraformPlugin) analyzeNewFile(file semantic.FileChange, ctx semantic.AnalysisContext) (*semantic.SemanticChange, error) {
 	content := file.AfterContent
-	
+
 	// Analyze what type of resources are being added
 	resourceTypes := t.extractResourceTypes(content)
-	
+
 	scope := t.determineScope(file.Path, content)
-	
+
 	if len(resourceTypes) == 0 {
 		return &semantic.SemanticChange{
 			Type:        "feat",
@@ -179,7 +179,7 @@ func (t *TerraformPlugin) analyzeNewFile(file semantic.FileChange, ctx semantic.
 			Metadata:    map[string]string{"file_type": "terraform"},
 		}, nil
 	}
-	
+
 	// Analyze specific resource types
 	change := t.analyzeResourceTypes(resourceTypes, file, scope)
 	return change, nil
@@ -190,15 +190,15 @@ func (t *TerraformPlugin) analyzeDeletedFile(file semantic.FileChange, ctx seman
 	content := file.BeforeContent
 	resourceTypes := t.extractResourceTypes(content)
 	scope := t.determineScope(file.Path, content)
-	
+
 	// Check if this is a breaking change
 	breaking := t.isDeletionBreaking(resourceTypes)
-	
+
 	changeType := "refactor"
 	if breaking {
 		changeType = "feat" // Breaking changes are typically features
 	}
-	
+
 	return &semantic.SemanticChange{
 		Type:           changeType,
 		Scope:          scope,
@@ -220,17 +220,17 @@ func (t *TerraformPlugin) analyzeDeletedFile(file semantic.FileChange, ctx seman
 func (t *TerraformPlugin) analyzeModifiedFile(file semantic.FileChange, ctx semantic.AnalysisContext) (*semantic.SemanticChange, error) {
 	beforeResources := t.extractResourceTypes(file.BeforeContent)
 	afterResources := t.extractResourceTypes(file.AfterContent)
-	
+
 	added, removed, modified := t.compareResources(beforeResources, afterResources)
-	
+
 	scope := t.determineScope(file.Path, file.AfterContent)
-	
+
 	// Determine change type based on modifications
 	changeType := "refactor" // default
 	description := "update Terraform configuration"
 	intent := "Infrastructure modification"
 	breaking := false
-	
+
 	if len(added) > 0 && len(removed) == 0 {
 		changeType = "feat"
 		if len(added) == 1 {
@@ -267,13 +267,13 @@ func (t *TerraformPlugin) analyzeModifiedFile(file semantic.FileChange, ctx sema
 			description = "refactor infrastructure configuration"
 			intent = "Configuration improvement"
 		}
-		
+
 		// Check for breaking changes
 		breaking = t.hasBreakingChanges(file.DiffContent)
 	}
-	
+
 	confidence := t.calculateConfidence(added, removed, modified, file.DiffContent)
-	
+
 	return &semantic.SemanticChange{
 		Type:           changeType,
 		Scope:          scope,
@@ -296,10 +296,10 @@ func (t *TerraformPlugin) analyzeModifiedFile(file semantic.FileChange, ctx sema
 func (t *TerraformPlugin) extractResourceTypes(content string) []string {
 	resourcePattern := regexp.MustCompile(`resource\s+"([^"]+)"\s+"([^"]+)"`)
 	matches := resourcePattern.FindAllStringSubmatch(content, -1)
-	
+
 	var resources []string
 	seen := make(map[string]bool)
-	
+
 	for _, match := range matches {
 		if len(match) >= 2 {
 			resourceType := match[1]
@@ -309,7 +309,7 @@ func (t *TerraformPlugin) extractResourceTypes(content string) []string {
 			}
 		}
 	}
-	
+
 	return resources
 }
 
@@ -317,13 +317,13 @@ func (t *TerraformPlugin) extractResourceTypes(content string) []string {
 func (t *TerraformPlugin) determineScope(filePath, content string) string {
 	// Path-based scoping
 	pathParts := strings.Split(strings.ToLower(filePath), "/")
-	
+
 	for _, part := range pathParts {
 		switch part {
 		case "network", "networking", "vcn":
 			return "network"
 		case "security", "iam", "auth":
-			return "security" 
+			return "security"
 		case "storage", "objectstorage", "database", "db":
 			return "storage"
 		case "compute", "instances":
@@ -334,7 +334,7 @@ func (t *TerraformPlugin) determineScope(filePath, content string) string {
 			return "dns"
 		}
 	}
-	
+
 	// Content-based scoping for OCI resources
 	if strings.Contains(content, "oci_core_vcn") || strings.Contains(content, "oci_core_subnet") || strings.Contains(content, "oci_load_balancer") {
 		return "network"
@@ -348,7 +348,7 @@ func (t *TerraformPlugin) determineScope(filePath, content string) string {
 	if strings.Contains(content, "oci_core_instance") || strings.Contains(content, "oci_containerengine") {
 		return "compute"
 	}
-	
+
 	return "infra"
 }
 
@@ -357,10 +357,10 @@ func (t *TerraformPlugin) analyzeResourceTypes(resourceTypes []string, file sema
 	// Categorize resources by impact
 	criticalResources := []string{"oci_core_vcn", "oci_database_autonomous_database", "oci_database_db_system", "oci_mysql_mysql_db_system"}
 	securityResources := []string{"oci_identity_policy", "oci_core_security_list", "oci_identity_user", "oci_identity_group"}
-	
+
 	critical := false
 	security := false
-	
+
 	for _, resource := range resourceTypes {
 		for _, cr := range criticalResources {
 			if resource == cr {
@@ -375,11 +375,11 @@ func (t *TerraformPlugin) analyzeResourceTypes(resourceTypes []string, file sema
 			}
 		}
 	}
-	
+
 	changeType := "feat"
 	description := fmt.Sprintf("add %s infrastructure", scope)
 	impact := "New infrastructure components"
-	
+
 	if critical {
 		description = fmt.Sprintf("add critical %s infrastructure", scope)
 		impact = "Critical infrastructure components added"
@@ -387,7 +387,7 @@ func (t *TerraformPlugin) analyzeResourceTypes(resourceTypes []string, file sema
 		description = fmt.Sprintf("add %s security configuration", scope)
 		impact = "Security infrastructure components added"
 	}
-	
+
 	return &semantic.SemanticChange{
 		Type:        changeType,
 		Scope:       scope,
@@ -409,35 +409,35 @@ func (t *TerraformPlugin) analyzeResourceTypes(resourceTypes []string, file sema
 func (t *TerraformPlugin) compareResources(before, after []string) (added, removed, modified []string) {
 	beforeMap := make(map[string]bool)
 	afterMap := make(map[string]bool)
-	
+
 	for _, r := range before {
 		beforeMap[r] = true
 	}
 	for _, r := range after {
 		afterMap[r] = true
 	}
-	
+
 	// Find added resources
 	for _, r := range after {
 		if !beforeMap[r] {
 			added = append(added, r)
 		}
 	}
-	
+
 	// Find removed resources
 	for _, r := range before {
 		if !afterMap[r] {
 			removed = append(removed, r)
 		}
 	}
-	
+
 	// Modified are resources present in both (we assume they're modified if file changed)
 	for _, r := range after {
 		if beforeMap[r] {
 			modified = append(modified, r)
 		}
 	}
-	
+
 	return added, removed, modified
 }
 
@@ -446,7 +446,7 @@ func (t *TerraformPlugin) isDeletionBreaking(resourceTypes []string) bool {
 		"oci_core_vcn", "oci_database_autonomous_database", "oci_database_db_system",
 		"oci_objectstorage_bucket", "oci_containerengine_cluster", "oci_mysql_mysql_db_system",
 	}
-	
+
 	for _, resource := range resourceTypes {
 		for _, breaking := range breakingResources {
 			if resource == breaking {
@@ -468,12 +468,15 @@ func (t *TerraformPlugin) isSecurityImprovement(diff string) bool {
 		"+.*iam_policy",
 		"+.*identity_policy",
 		"+.*https",
+		"+.*443", // HTTPS port
 		"+.*network_security_group",
 		"-.*public_read",
-		"-.*\"0.0.0.0/0\"", // removing open CIDR access
+		"-.*\"0.0.0.0/0\"",  // removing open CIDR access
 		"+.*compartment_id", // proper compartment isolation
+		"\\+.*min.*443",     // OCI security list HTTPS port
+		"\\+.*max.*443",     // OCI security list HTTPS port
 	}
-	
+
 	for _, pattern := range securityPatterns {
 		if matched, _ := regexp.MatchString(pattern, diff); matched {
 			return true
@@ -491,7 +494,7 @@ func (t *TerraformPlugin) isPerformanceImprovement(diff string) bool {
 		"+.*backup_policy",
 		"+.*high_availability",
 	}
-	
+
 	for _, pattern := range perfPatterns {
 		if matched, _ := regexp.MatchString(pattern, diff); matched {
 			return true
@@ -507,7 +510,7 @@ func (t *TerraformPlugin) isBugFix(diff string) bool {
 		"+.*latest",
 		"correction", "correct",
 	}
-	
+
 	for _, pattern := range bugFixPatterns {
 		if strings.Contains(diff, pattern) {
 			return true
@@ -520,13 +523,13 @@ func (t *TerraformPlugin) hasBreakingChanges(diff string) bool {
 	breakingPatterns := []string{
 		"-.*force_destroy.*false",
 		"+.*force_destroy.*true",
-		"-.*shape", // changing compute shape
+		"-.*shape",          // changing compute shape
 		"-.*compartment_id", // changing compartment
 		"-.*vcn_id",
 		"-.*subnet_id",
 		"-.*availability_domain",
 	}
-	
+
 	for _, pattern := range breakingPatterns {
 		if matched, _ := regexp.MatchString(pattern, diff); matched {
 			return true
@@ -537,27 +540,27 @@ func (t *TerraformPlugin) hasBreakingChanges(diff string) bool {
 
 func (t *TerraformPlugin) calculateConfidence(added, removed, modified []string, diff string) float64 {
 	confidence := 0.7 // base confidence
-	
+
 	// Higher confidence for clear resource changes
 	if len(added) > 0 || len(removed) > 0 {
 		confidence += 0.2
 	}
-	
+
 	// Higher confidence for well-structured diffs
 	if strings.Contains(diff, "resource \"") {
 		confidence += 0.1
 	}
-	
+
 	if confidence > 1.0 {
 		confidence = 1.0
 	}
-	
+
 	return confidence
 }
 
 func (t *TerraformPlugin) assessImpact(added, removed, modified []string) string {
 	impacts := []string{}
-	
+
 	if len(added) > 0 {
 		impacts = append(impacts, fmt.Sprintf("%d resources will be created", len(added)))
 	}
@@ -567,17 +570,17 @@ func (t *TerraformPlugin) assessImpact(added, removed, modified []string) string
 	if len(modified) > 0 {
 		impacts = append(impacts, fmt.Sprintf("%d resources will be modified", len(modified)))
 	}
-	
+
 	if len(impacts) == 0 {
 		return "Infrastructure configuration updated"
 	}
-	
+
 	return strings.Join(impacts, "; ")
 }
 
 func (t *TerraformPlugin) generateReasoning(added, removed, modified []string) string {
 	parts := []string{}
-	
+
 	if len(added) > 0 {
 		parts = append(parts, fmt.Sprintf("Added resources: %s", strings.Join(added, ", ")))
 	}
@@ -587,11 +590,11 @@ func (t *TerraformPlugin) generateReasoning(added, removed, modified []string) s
 	if len(modified) > 0 {
 		parts = append(parts, fmt.Sprintf("Modified resources: %s", strings.Join(modified, ", ")))
 	}
-	
+
 	if len(parts) == 0 {
 		return "Terraform configuration changes detected"
 	}
-	
+
 	return strings.Join(parts, "; ")
 }
 
@@ -622,17 +625,17 @@ func (t *TerraformPlugin) analyzeProviderChanges(files []semantic.FileChange) *s
 func (t *TerraformPlugin) analyzeModuleStructureChanges(files []semantic.FileChange) *semantic.SemanticChange {
 	moduleChanges := 0
 	var moduleFiles []string
-	
+
 	for _, file := range files {
 		if strings.Contains(file.DiffContent, "module \"") {
 			moduleChanges++
 			moduleFiles = append(moduleFiles, file.Path)
 		}
 	}
-	
+
 	if moduleChanges > 0 {
 		return &semantic.SemanticChange{
-			Type:        "refactor", 
+			Type:        "refactor",
 			Scope:       "infra",
 			Description: "restructure Terraform modules",
 			Intent:      "Infrastructure organization",
@@ -642,6 +645,6 @@ func (t *TerraformPlugin) analyzeModuleStructureChanges(files []semantic.FileCha
 			Reasoning:   fmt.Sprintf("Terraform module changes detected in %d files", moduleChanges),
 		}
 	}
-	
+
 	return nil
 }

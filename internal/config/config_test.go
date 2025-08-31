@@ -300,7 +300,7 @@ func TestLoad_NonExistentFile(t *testing.T) {
 func TestLoad_EnterpriseConfig(t *testing.T) {
 	// Test loading the enterprise configuration example
 	enterpriseConfigPath := filepath.Join("..", "..", "example-configs", "fast-cc-hooks.enterprise.yaml")
-	
+
 	cfg, err := Load(enterpriseConfigPath)
 	if err != nil {
 		t.Fatalf("Failed to load enterprise config: %v", err)

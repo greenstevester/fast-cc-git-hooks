@@ -83,17 +83,19 @@ func TestTerraformPlugin(t *testing.T) {
 			Path:       "vpc.tf",
 			ChangeType: "added",
 			AfterContent: `
-resource "aws_vpc" "main" {
-  cidr_block = "10.0.0.0/16"
+resource "oci_core_vcn" "main" {
+  cidr_block     = "10.0.0.0/16"
+  compartment_id = var.compartment_id
   
-  tags = {
-    Name = "main-vpc"
+  freeform_tags = {
+    Name = "main-vcn"
   }
 }
 
-resource "aws_subnet" "public" {
-  vpc_id     = aws_vpc.main.id
-  cidr_block = "10.0.1.0/24"
+resource "oci_core_subnet" "public" {
+  vcn_id         = oci_core_vcn.main.id
+  cidr_block     = "10.0.1.0/24"
+  compartment_id = var.compartment_id
 }
 `,
 		}
@@ -131,46 +133,63 @@ resource "aws_subnet" "public" {
 			Path:       "security.tf",
 			ChangeType: "modified",
 			BeforeContent: `
-resource "aws_security_group" "web" {
-  name = "web-sg"
+resource "oci_core_security_list" "web" {
+  compartment_id = var.compartment_id
+  vcn_id         = oci_core_vcn.main.id
+  display_name   = "web-security-list"
   
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+  ingress_security_rules {
+    protocol = "6"
+    source   = "0.0.0.0/0"
+    
+    tcp_options {
+      min = 80
+      max = 80
+    }
   }
 }
 `,
 			AfterContent: `
-resource "aws_security_group" "web" {
-  name = "web-sg"
+resource "oci_core_security_list" "web" {
+  compartment_id = var.compartment_id
+  vcn_id         = oci_core_vcn.main.id
+  display_name   = "web-security-list"
   
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+  ingress_security_rules {
+    protocol = "6"
+    source   = "0.0.0.0/0"
+    
+    tcp_options {
+      min = 443
+      max = 443
+    }
   }
   
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/8"]
+  ingress_security_rules {
+    protocol = "6"
+    source   = "10.0.0.0/8"
+    
+    tcp_options {
+      min = 80
+      max = 80
+    }
   }
 }
 `,
 			DiffContent: `
--    from_port   = 80
-+    from_port   = 443
+-      min = 80
+-      max = 80
++      min = 443
++      max = 443
 +  }
 +  
-+  ingress {
-+    from_port   = 80
-+    to_port     = 80
-+    protocol    = "tcp"
-+    cidr_blocks = ["10.0.0.0/8"]
++  ingress_security_rules {
++    protocol = "6"
++    source   = "10.0.0.0/8"
++    
++    tcp_options {
++      min = 80
++      max = 80
 `,
 		}
 
@@ -200,10 +219,12 @@ resource "aws_security_group" "web" {
 			Path:       "database.tf",
 			ChangeType: "deleted",
 			BeforeContent: `
-resource "aws_rds_instance" "main" {
-  identifier     = "main-database"
-  engine         = "postgres"
-  instance_class = "db.t3.micro"
+resource "oci_database_autonomous_database" "main" {
+  compartment_id           = var.compartment_id
+  cpu_core_count          = 1
+  data_storage_size_in_tbs = 1
+  db_name                 = "maindb"
+  admin_password          = var.admin_password
 }
 `,
 		}
@@ -231,22 +252,22 @@ resource "aws_rds_instance" "main" {
 
 	t.Run("extract resource types", func(t *testing.T) {
 		content := `
-resource "aws_vpc" "main" {
+resource "oci_core_vcn" "main" {
   cidr_block = "10.0.0.0/16"
 }
 
-resource "aws_subnet" "public" {
-  vpc_id = aws_vpc.main.id
+resource "oci_core_subnet" "public" {
+  vcn_id = oci_core_vcn.main.id
 }
 
-resource "aws_vpc" "secondary" {
+resource "oci_core_vcn" "secondary" {
   cidr_block = "172.16.0.0/16"
 }
 `
 		plugin := &TerraformPlugin{}
 		resources := plugin.extractResourceTypes(content)
 
-		expected := []string{"aws_vpc", "aws_subnet"}
+		expected := []string{"oci_core_vcn", "oci_core_subnet"}
 		if len(resources) != len(expected) {
 			t.Errorf("expected %d resources, got %d", len(expected), len(resources))
 		}
@@ -278,17 +299,17 @@ resource "aws_vpc" "secondary" {
 			},
 			{
 				path:     "main.tf",
-				content:  `resource "aws_s3_bucket" "main" {}`,
+				content:  `resource "oci_objectstorage_bucket" "main" {}`,
 				expected: "storage",
 			},
 			{
 				path:     "compute.tf",
-				content:  `resource "aws_instance" "web" {}`,
+				content:  `resource "oci_core_instance" "web" {}`,
 				expected: "compute",
 			},
 			{
 				path:     "unknown.tf",
-				content:  `resource "aws_unknown" "test" {}`,
+				content:  `resource "oci_unknown" "test" {}`,
 				expected: "infra",
 			},
 		}
