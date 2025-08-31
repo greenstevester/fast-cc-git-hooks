@@ -183,7 +183,12 @@ func (m *Manager) readJiraRefFile() (string, error) {
 		return "", fmt.Errorf("file access outside repository directory not allowed")
 	}
 	
-	content, err := os.ReadFile(filePath)
+	// Additional validation: ensure we're only reading the specific JIRA reference file
+	if filepath.Base(absFilePath) != JiraRefFile {
+		return "", fmt.Errorf("unauthorized file access: only %s is allowed", JiraRefFile)
+	}
+	
+	content, err := os.ReadFile(absFilePath) // Use validated absolute path
 	if err != nil {
 		return "", err
 	}
@@ -208,7 +213,10 @@ func (m *Manager) createEmptyJiraRefFile() error {
 func (m *Manager) isValidJiraFormat(ticketID string) bool {
 	// Pattern: 2-10 uppercase letters, hyphen, 1-5 digits
 	pattern := `^[A-Z]{2,10}-\d{1,5}$`
-	matched, _ := regexp.MatchString(pattern, strings.ToUpper(ticketID))
+	matched, err := regexp.MatchString(pattern, strings.ToUpper(ticketID))
+	if err != nil {
+		return false // Invalid regex pattern
+	}
 	return matched
 }
 
