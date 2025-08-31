@@ -10,13 +10,30 @@ import (
 
 // Print displays the banner with appropriate formatting for the terminal
 func Print() {
+	PrintWithVersion("dev", "unknown")
+}
+
+// PrintWithVersion displays the banner with version and commit information
+func PrintWithVersion(version, commit string) {
+	var versionSuffix string
+	if version != "dev" && version != "unknown" && version != "" {
+		if commit != "unknown" && commit != "" && len(commit) >= 7 {
+			// Use short commit hash (first 7 characters)
+			versionSuffix = fmt.Sprintf(" / version %s (%s)", version, commit[:7])
+		} else {
+			versionSuffix = fmt.Sprintf(" / version %s", version)
+		}
+	} else if commit != "unknown" && commit != "" && len(commit) >= 7 {
+		// Just show commit if version is not available
+		versionSuffix = fmt.Sprintf(" / %s", commit[:7])
+	}
+
 	if UseASCII() {
 		// Use ASCII art heart for better compatibility
-		const a = "Conventional Commit Message Generator >>> Made with <3 for Boo"
-		fmt.Println(a)
+		fmt.Printf("Conventional Commit Message Generator >>> Made with <3 for Boo%s\n", versionSuffix)
 	} else {
 		// Use emoji for terminals that support it
-		fmt.Println("Conventional Commit Message Generator >>> Made with ❤️ for Boo")
+		fmt.Printf("Conventional Commit Message Generator >>> Made with ❤️ for Boo%s\n", versionSuffix)
 	}
 }
 
@@ -60,8 +77,26 @@ func UseASCII() bool {
 
 // GetBannerText returns the appropriate banner text based on terminal capabilities
 func GetBannerText() string {
-	if UseASCII() {
-		return "Conventional Commit Message Generator >>> Made with <3 for Boo"
+	return GetBannerTextWithVersion("dev", "unknown")
+}
+
+// GetBannerTextWithVersion returns banner text with version and commit information
+func GetBannerTextWithVersion(version, commit string) string {
+	var versionSuffix string
+	if version != "dev" && version != "unknown" && version != "" {
+		if commit != "unknown" && commit != "" && len(commit) >= 7 {
+			// Use short commit hash (first 7 characters)
+			versionSuffix = fmt.Sprintf(" / version %s (%s)", version, commit[:7])
+		} else {
+			versionSuffix = fmt.Sprintf(" / version %s", version)
+		}
+	} else if commit != "unknown" && commit != "" && len(commit) >= 7 {
+		// Just show commit if version is not available
+		versionSuffix = fmt.Sprintf(" / %s", commit[:7])
 	}
-	return "Conventional Commit Message Generator >>> Made with ❤️ for Boo"
+
+	if UseASCII() {
+		return fmt.Sprintf("Conventional Commit Message Generator >>> Made with <3 for Boo%s", versionSuffix)
+	}
+	return fmt.Sprintf("Conventional Commit Message Generator >>> Made with ❤️ for Boo%s", versionSuffix)
 }

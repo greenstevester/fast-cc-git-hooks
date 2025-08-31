@@ -23,8 +23,8 @@ var (
 )
 
 func main() {
-	// Print banner with terminal-appropriate formatting
-	banner.Print()
+	// Print banner with version and commit information
+	banner.PrintWithVersion(version, commit)
 
 	flag.Parse()
 
