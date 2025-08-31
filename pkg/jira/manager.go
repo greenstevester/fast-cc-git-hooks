@@ -50,7 +50,7 @@ func NewManager(repoPath string) *Manager {
 
 	globalConfigDir := filepath.Join(home, ".fast-cc")
 	// Create the global directory if it doesn't exist
-	if err := os.MkdirAll(globalConfigDir, 0755); err != nil {
+	if err := os.MkdirAll(globalConfigDir, 0750); err != nil {
 		// Fall back to using repo path if we can't create config directory
 		return &Manager{
 			configDir: repoPath,
@@ -259,12 +259,16 @@ func (m *Manager) migrateOldJiraFile(repoPath string) {
 	if _, err := os.Stat(oldPath); err == nil {
 		if _, err := os.Stat(newPath); os.IsNotExist(err) {
 			// Read old file
+			// #nosec G304 -- oldPath is constructed from validated repoPath and constant filename
 			content, readErr := os.ReadFile(oldPath)
 			if readErr == nil {
 				// Write to new location
 				if writeErr := os.WriteFile(newPath, content, 0600); writeErr == nil {
 					// Remove old file after successful migration
-					os.Remove(oldPath)
+					if err := os.Remove(oldPath); err != nil {
+						// Log but don't fail - migration was successful
+						_ = err
+					}
 				}
 			}
 		}

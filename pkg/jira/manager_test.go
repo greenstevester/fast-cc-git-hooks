@@ -8,19 +8,20 @@ import (
 )
 
 // setupTestManager creates a Manager for testing with a temporary directory
-func setupTestManager(t *testing.T) (*Manager, string) {
+func setupTestManager(t *testing.T) *Manager {
 	tempDir := t.TempDir()
-	os.Setenv("FCGH_TEST_DIR", tempDir)
+	if err := os.Setenv("FCGH_TEST_DIR", tempDir); err != nil {
+		t.Fatalf("Failed to set test environment: %v", err)
+	}
 	t.Cleanup(func() {
 		os.Unsetenv("FCGH_TEST_DIR")
 	})
-	return NewManager(tempDir), tempDir
+	return NewManager(tempDir)
 }
 
 func TestManager_SetAndGetJiraTicket(t *testing.T) {
 	// Create temporary directory for testing
-	manager, tempDir := setupTestManager(t)
-	_ = tempDir // unused in this test
+	manager := setupTestManager(t)
 
 	tests := []struct {
 		name       string
@@ -87,8 +88,7 @@ func TestManager_SetAndGetJiraTicket(t *testing.T) {
 }
 
 func TestManager_MultipleTicketsCommentOut(t *testing.T) {
-	manager, tempDir := setupTestManager(t)
-	_ = tempDir // unused in this test
+	manager := setupTestManager(t)
 
 	// Set first ticket
 	err := manager.SetJiraTicket("CGC-1234")
@@ -126,8 +126,7 @@ func TestManager_MultipleTicketsCommentOut(t *testing.T) {
 }
 
 func TestManager_ClearJiraTicket(t *testing.T) {
-	manager, tempDir := setupTestManager(t)
-	_ = tempDir // unused in this test
+	manager := setupTestManager(t)
 
 	// Set a ticket first
 	err := manager.SetJiraTicket("CGC-1234")
@@ -163,7 +162,9 @@ func TestManager_ClearJiraTicket(t *testing.T) {
 
 func TestManager_GetJiraRefFileInfo(t *testing.T) {
 	tempDir := t.TempDir()
-	os.Setenv("FCGH_TEST_DIR", tempDir)
+	if err := os.Setenv("FCGH_TEST_DIR", tempDir); err != nil {
+		t.Fatalf("Failed to set test environment: %v", err)
+	}
 	defer os.Unsetenv("FCGH_TEST_DIR")
 	manager := NewManager(tempDir)
 
@@ -201,7 +202,9 @@ func TestManager_GetJiraRefFileInfo(t *testing.T) {
 
 func TestManager_CreateEmptyJiraRefFile(t *testing.T) {
 	tempDir := t.TempDir()
-	os.Setenv("FCGH_TEST_DIR", tempDir)
+	if err := os.Setenv("FCGH_TEST_DIR", tempDir); err != nil {
+		t.Fatalf("Failed to set test environment: %v", err)
+	}
 	defer os.Unsetenv("FCGH_TEST_DIR")
 	manager := NewManager(tempDir)
 
@@ -255,8 +258,7 @@ func TestManager_IsValidJiraFormat(t *testing.T) {
 }
 
 func TestManager_FileContent(t *testing.T) {
-	manager, tempDir := setupTestManager(t)
-	_ = tempDir // unused in this test
+	manager := setupTestManager(t)
 
 	// Set initial ticket
 	err := manager.SetJiraTicket("CGC-1234")

@@ -15,10 +15,15 @@ func setupTestContext(t *testing.T) (context.Context, func()) {
 	tempDir := t.TempDir()
 
 	// Store original working directory
-	origWD, _ := os.Getwd()
+	origWD, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Failed to get working directory: %v", err)
+	}
 
 	// Change to temp directory
-	os.Chdir(tempDir)
+	if err := os.Chdir(tempDir); err != nil {
+		t.Fatalf("Failed to change directory: %v", err)
+	}
 
 	// Store original environment variables
 	origHome := os.Getenv("HOME")
@@ -32,7 +37,9 @@ func setupTestContext(t *testing.T) (context.Context, func()) {
 
 	cleanup := func() {
 		cancel()
-		os.Chdir(origWD)
+		if err := os.Chdir(origWD); err != nil {
+			t.Errorf("Failed to restore working directory: %v", err)
+		}
 		os.Setenv("HOME", origHome)
 		os.Setenv("USER", origUser)
 	}
@@ -92,7 +99,9 @@ func TestValidateCommand(t *testing.T) {
 
 	// Test with file flag
 	testFile := filepath.Join(t.TempDir(), "test.txt")
-	os.WriteFile(testFile, []byte("feat: test message"), 0644)
+	if err := os.WriteFile(testFile, []byte("feat: test message"), 0600); err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
 
 	validateFile = testFile
 	defer func() { validateFile = "" }()
@@ -147,7 +156,9 @@ func TestSetupCommand(t *testing.T) {
 	defer cleanup()
 
 	// Initialize a git repository for testing
-	os.MkdirAll(".git", 0755)
+	if err := os.MkdirAll(".git", 0750); err != nil {
+		t.Fatalf("Failed to create .git directory: %v", err)
+	}
 
 	// Test global setup
 	localInstall = false
@@ -174,7 +185,9 @@ func TestSetupEnterpriseCommand(t *testing.T) {
 	defer cleanup()
 
 	// Initialize a git repository for testing
-	os.MkdirAll(".git", 0755)
+	if err := os.MkdirAll(".git", 0750); err != nil {
+		t.Fatalf("Failed to create .git directory: %v", err)
+	}
 
 	err := cmd.Run(ctx, []string{})
 	_ = err // Allow error for now since it requires git configuration
@@ -258,7 +271,7 @@ func TestCopyEnterpriseConfig(t *testing.T) {
 	}
 
 	// Check if file was created
-	if _, err := os.Stat(destPath); os.IsNotExist(err) {
+	if _, statErr := os.Stat(destPath); os.IsNotExist(statErr) {
 		t.Error("Enterprise config file should be created")
 	}
 
@@ -284,7 +297,7 @@ func TestCreateBasicEnterpriseConfig(t *testing.T) {
 	}
 
 	// Check if file was created
-	if _, err := os.Stat(destPath); os.IsNotExist(err) {
+	if _, statErr := os.Stat(destPath); os.IsNotExist(statErr) {
 		t.Error("Basic enterprise config file should be created")
 	}
 
@@ -358,7 +371,9 @@ func TestRemoveGlobalInstallation(t *testing.T) {
 	// This will likely fail since no global installation exists in test
 	err := removeGlobalInstallation()
 	// Allow error since no global installation exists in test environment
-	_ = err
+	if err != nil {
+		t.Logf("Expected error in test environment: %v", err)
+	}
 }
 
 // Test command creation functions
@@ -411,7 +426,9 @@ func TestValidateCommandWithFileFlag(t *testing.T) {
 
 	// Create test file with invalid content
 	testFile := filepath.Join(t.TempDir(), "invalid.txt")
-	os.WriteFile(testFile, []byte("invalid commit message"), 0644)
+	if err := os.WriteFile(testFile, []byte("invalid commit message"), 0600); err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
 
 	validateFile = testFile
 	defer func() { validateFile = "" }()
@@ -480,7 +497,7 @@ func TestConfigFileOperations(t *testing.T) {
 	}
 
 	// Verify file exists
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+	if _, statErr := os.Stat(configPath); os.IsNotExist(statErr) {
 		t.Error("Config file should exist after ensureConfigExists")
 	}
 
@@ -504,8 +521,14 @@ func TestEnsureConfigExistsEdgeCases(t *testing.T) {
 
 	// Create a directory with restrictive permissions to test error handling
 	restrictedDir := filepath.Join(t.TempDir(), "restricted")
-	os.MkdirAll(restrictedDir, 0000)    // No permissions
-	defer os.Chmod(restrictedDir, 0755) // Restore permissions for cleanup
+	if err := os.MkdirAll(restrictedDir, 0000); err != nil {
+		t.Fatalf("Failed to create restricted directory: %v", err)
+	}
+	defer func() {
+		if err := os.Chmod(restrictedDir, 0750); err != nil {
+			t.Logf("Failed to restore permissions: %v", err)
+		}
+	}()
 
 	// Test with existing old-style config file
 	tempHome := t.TempDir()
@@ -514,11 +537,15 @@ func TestEnsureConfigExistsEdgeCases(t *testing.T) {
 
 	// Create .fast-cc directory
 	configDir := filepath.Join(tempHome, ".fast-cc")
-	os.MkdirAll(configDir, 0755)
+	if err := os.MkdirAll(configDir, 0750); err != nil {
+		t.Fatalf("Failed to create config directory: %v", err)
+	}
 
 	// Create old-style config file
 	oldConfigPath := filepath.Join(configDir, ".fast-cc-hooks.yaml")
-	os.WriteFile(oldConfigPath, []byte("types:\n  - feat\n  - fix"), 0644)
+	if err := os.WriteFile(oldConfigPath, []byte("types:\n  - feat\n  - fix"), 0600); err != nil {
+		t.Fatalf("Failed to create old config file: %v", err)
+	}
 
 	configPath, isNew, err := ensureConfigExists()
 	if err != nil {
@@ -543,11 +570,15 @@ func TestEnsureEnterpriseConfigExistsEdgeCases(t *testing.T) {
 
 	// Create .fast-cc directory
 	configDir := filepath.Join(tempHome, ".fast-cc")
-	os.MkdirAll(configDir, 0755)
+	if err := os.MkdirAll(configDir, 0750); err != nil {
+		t.Fatalf("Failed to create config directory: %v", err)
+	}
 
 	// Create existing config
 	configPath := filepath.Join(configDir, "fast-cc-config.yaml")
-	os.WriteFile(configPath, []byte("# existing config\ntypes:\n  - feat"), 0644)
+	if err := os.WriteFile(configPath, []byte("# existing config\ntypes:\n  - feat"), 0600); err != nil {
+		t.Fatalf("Failed to write config file: %v", err)
+	}
 
 	_, isNew, err := ensureEnterpriseConfigExists()
 	if err != nil {
@@ -628,7 +659,9 @@ func TestRemoveGlobalInstallationEdgeCases(t *testing.T) {
 	// In test environment, it should handle the case where git config fails
 	err := removeGlobalInstallation()
 	// Allow any error - in test environment git config might not be available
-	_ = err
+	if err != nil {
+		t.Logf("Expected error in test environment: %v", err)
+	}
 
 	// The function should not panic
 	// If it returns an error, that's acceptable in test environment
@@ -641,7 +674,9 @@ func TestCheckInstallationsEdgeCases(t *testing.T) {
 	_ = ctx
 
 	// Create a fake .git directory to make it look like a git repo
-	os.MkdirAll(".git/hooks", 0755)
+	if err := os.MkdirAll(".git/hooks", 0750); err != nil {
+		t.Fatalf("Failed to create git hooks directory: %v", err)
+	}
 
 	hasGlobal, hasLocal, err := checkInstallations()
 	// In test environment, global might fail due to git config
@@ -658,7 +693,9 @@ func TestSetupCommandEdgeCases(t *testing.T) {
 	defer cleanup()
 
 	// Create .git directory
-	os.MkdirAll(".git", 0755)
+	if err := os.MkdirAll(".git", 0750); err != nil {
+		t.Fatalf("Failed to create .git directory: %v", err)
+	}
 
 	// Test with force flag
 	forceInstall = true
@@ -674,7 +711,9 @@ func TestSetupEnterpriseCommandEdgeCases(t *testing.T) {
 	defer cleanup()
 
 	// Create .git directory
-	os.MkdirAll(".git", 0755)
+	if err := os.MkdirAll(".git", 0750); err != nil {
+		t.Fatalf("Failed to create .git directory: %v", err)
+	}
 
 	// Test with force flag
 	forceInstall = true
@@ -777,7 +816,9 @@ func TestEnsureConfigExistsComprehensive(t *testing.T) {
 	_ = ctx
 
 	// Test with .fast-cc-hooks.yaml in current directory
-	os.WriteFile(".fast-cc-hooks.yaml", []byte("types:\n  - feat\n  - fix"), 0644)
+	if err := os.WriteFile(".fast-cc-hooks.yaml", []byte("types:\n  - feat\n  - fix"), 0600); err != nil {
+		t.Fatalf("Failed to write config file: %v", err)
+	}
 	defer os.Remove(".fast-cc-hooks.yaml")
 
 	configPath, isNew, err := ensureConfigExists()
@@ -802,7 +843,9 @@ func TestEnsureEnterpriseConfigExistsComprehensive(t *testing.T) {
 	_ = ctx
 
 	// Test with .fast-cc-hooks.yaml in current directory for enterprise
-	os.WriteFile(".fast-cc-hooks.yaml", []byte("types:\n  - feat\n  - fix"), 0644)
+	if err := os.WriteFile(".fast-cc-hooks.yaml", []byte("types:\n  - feat\n  - fix"), 0600); err != nil {
+		t.Fatalf("Failed to write config file: %v", err)
+	}
 	defer os.Remove(".fast-cc-hooks.yaml")
 
 	configPath, isNew, err := ensureEnterpriseConfigExists()
@@ -820,8 +863,12 @@ func TestRemoveCommandComprehensive(t *testing.T) {
 	defer cleanup()
 
 	// Create mock git directory and hooks
-	os.MkdirAll(".git/hooks", 0755)
-	os.WriteFile(".git/hooks/commit-msg", []byte("#!/bin/sh\necho test"), 0755)
+	if err := os.MkdirAll(".git/hooks", 0750); err != nil {
+		t.Fatalf("Failed to create git hooks directory: %v", err)
+	}
+	if err := os.WriteFile(".git/hooks/commit-msg", []byte("#!/bin/sh\necho test"), 0750); err != nil {
+		t.Fatalf("Failed to write hook file: %v", err)
+	}
 
 	// Test removing local installation
 	localInstall = true
@@ -842,8 +889,12 @@ func TestGetGitConfigDirEdgeCases(t *testing.T) {
 
 	configDir, err := getGitConfigDir()
 	// This might fail, but shouldn't panic
-	_ = configDir
-	_ = err
+	if err != nil {
+		t.Logf("Expected error with invalid HOME: %v", err)
+	}
+	if configDir == "" && err == nil {
+		t.Error("Should return either valid config dir or error")
+	}
 }
 
 // Test hasGlobalInstallation edge cases
@@ -851,8 +902,11 @@ func TestHasGlobalInstallationComprehensive(t *testing.T) {
 	// This function depends on git config which might not be available
 	// in test environment, but we can still test it doesn't panic
 	hasGlobal, err := hasGlobalInstallation()
-	_ = hasGlobal
-	_ = err // Allow any result
+	if err != nil {
+		t.Logf("Expected error in test environment: %v", err)
+	}
+	// hasGlobal can be true or false - both are valid in test environment
+	_ = hasGlobal // Allow any result
 }
 
 // Test flag parsing edge cases
@@ -892,8 +946,14 @@ func TestValidateCommandErrorPaths(t *testing.T) {
 
 	// Create a file with read permission denied
 	restrictedFile := filepath.Join(t.TempDir(), "restricted.txt")
-	os.WriteFile(restrictedFile, []byte("test"), 0000) // No read permission
-	defer os.Chmod(restrictedFile, 0644)               // Restore for cleanup
+	if err := os.WriteFile(restrictedFile, []byte("test"), 0000); err != nil {
+		t.Fatalf("Failed to create restricted file: %v", err)
+	}
+	defer func() {
+		if err := os.Chmod(restrictedFile, 0600); err != nil {
+			t.Logf("Failed to restore file permissions: %v", err)
+		}
+	}()
 
 	validateFile = restrictedFile
 	defer func() { validateFile = "" }()
@@ -981,7 +1041,7 @@ func TestRemoveCommandErrorPaths(t *testing.T) {
 		t.Error("Should return error for conflicting flags")
 		return
 	}
-	
+
 	// Check error message if error exists
 	if err != nil && !strings.Contains(err.Error(), "cannot specify both") {
 		t.Logf("Got error (which is expected): %v", err)
@@ -996,15 +1056,24 @@ func TestRemoveCommandInstallationScenarios(t *testing.T) {
 	// Create a git repository for testing local installations
 	gitDir := filepath.Join(tempDir, ".git")
 	hooksDir := filepath.Join(gitDir, "hooks")
-	err := os.MkdirAll(hooksDir, 0755)
+	err := os.MkdirAll(hooksDir, 0750)
 	if err != nil {
 		t.Fatalf("Failed to create git hooks directory: %v", err)
 	}
 
 	// Change to the temp directory
-	originalDir, _ := os.Getwd()
-	os.Chdir(tempDir)
-	defer os.Chdir(originalDir)
+	originalDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Failed to get working directory: %v", err)
+	}
+	if err := os.Chdir(tempDir); err != nil {
+		t.Fatalf("Failed to change directory: %v", err)
+	}
+	defer func() {
+		if err := os.Chdir(originalDir); err != nil {
+			t.Errorf("Failed to restore directory: %v", err)
+		}
+	}()
 
 	tests := []struct {
 		name          string
@@ -1052,21 +1121,33 @@ func TestRemoveCommandInstallationScenarios(t *testing.T) {
 			globalHookPath := filepath.Join(globalConfigDir, "commit-msg")
 
 			// Clean up from previous test
-			os.Remove(localHookPath)
-			os.RemoveAll(filepath.Join(tempDir, ".config"))
+			_ = os.Remove(localHookPath) // Ignore error - file may not exist
+			_ = os.RemoveAll(filepath.Join(tempDir, ".config")) // Ignore error - dir may not exist
 
 			if tt.hasLocalHook {
-				os.WriteFile(localHookPath, []byte("#!/bin/sh\necho local hook"), 0755)
+				if err := os.WriteFile(localHookPath, []byte("#!/bin/sh\necho local hook"), 0750); err != nil {
+					t.Fatalf("Failed to write local hook: %v", err)
+				}
 			}
 			if tt.hasGlobalHook {
-				os.MkdirAll(globalConfigDir, 0755)
-				os.WriteFile(globalHookPath, []byte("#!/bin/sh\necho global hook"), 0755)
+				if err := os.MkdirAll(globalConfigDir, 0750); err != nil {
+					t.Fatalf("Failed to create global config dir: %v", err)
+				}
+				if err := os.WriteFile(globalHookPath, []byte("#!/bin/sh\necho global hook"), 0750); err != nil {
+					t.Fatalf("Failed to write global hook: %v", err)
+				}
 			}
 
 			// Set HOME to tempDir for this test
 			originalHome := os.Getenv("HOME")
-			os.Setenv("HOME", tempDir)
-			defer os.Setenv("HOME", originalHome)
+			if err := os.Setenv("HOME", tempDir); err != nil {
+				t.Fatalf("Failed to set HOME: %v", err)
+			}
+			defer func() {
+				if err := os.Setenv("HOME", originalHome); err != nil {
+					t.Logf("Failed to restore HOME: %v", err)
+				}
+			}()
 
 			ctx := context.Background()
 			cmd := removeCommand()
@@ -1140,7 +1221,7 @@ func TestValidateCommandMoreErrorPaths(t *testing.T) {
 			var filePath string
 			if tt.setupFile {
 				filePath = filepath.Join(tempDir, tt.fileName)
-				err := os.WriteFile(filePath, []byte(tt.fileContent), 0644)
+				err := os.WriteFile(filePath, []byte(tt.fileContent), 0600)
 				if err != nil {
 					t.Fatalf("Failed to create test file: %v", err)
 				}
@@ -1151,7 +1232,7 @@ func TestValidateCommandMoreErrorPaths(t *testing.T) {
 			// Reset global validateFile and parse flags
 			originalValidateFile := validateFile
 			defer func() { validateFile = originalValidateFile }()
-			
+
 			args := []string{"-file", filePath}
 			err := cmd.Flags.Parse(args)
 			if err != nil {
@@ -1179,17 +1260,22 @@ func TestInitCommandMoreErrorPaths(t *testing.T) {
 	// Test with read-only directory
 	tempDir := t.TempDir()
 	readOnlyDir := filepath.Join(tempDir, "readonly")
-	err := os.Mkdir(readOnlyDir, 0555) // Read-only directory
+	err := os.Mkdir(readOnlyDir, 0500) // Read-only directory
 	if err != nil {
 		t.Fatalf("Failed to create read-only directory: %v", err)
 	}
 
 	// Change to read-only directory
-	originalDir, _ := os.Getwd()
+	originalDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Failed to get working directory: %v", err)
+	}
 	os.Chdir(readOnlyDir)
 	defer func() {
 		os.Chdir(originalDir)
-		os.Chmod(readOnlyDir, 0755) // Make it writable again for cleanup
+		if err := os.Chmod(readOnlyDir, 0750); err != nil {
+			t.Logf("Failed to restore directory permissions: %v", err)
+		}
 	}()
 
 	// Try to initialize in read-only directory
@@ -1198,7 +1284,7 @@ func TestInitCommandMoreErrorPaths(t *testing.T) {
 	// Test with configFile global variable pointing to read-only location
 	originalConfigFile := configFile
 	defer func() { configFile = originalConfigFile }()
-	
+
 	readOnlyFile := filepath.Join(readOnlyDir, "config.yaml")
 	configFile = readOnlyFile
 
@@ -1263,11 +1349,15 @@ func TestSetupEnterpriseCommandMoreErrorPaths(t *testing.T) {
 
 	// Create a read-only .fast-cc directory to trigger permission errors
 	fastCCDir := filepath.Join(tempDir, ".fast-cc")
-	err := os.Mkdir(fastCCDir, 0555)
+	err := os.Mkdir(fastCCDir, 0500)
 	if err != nil {
 		t.Fatalf("Failed to create read-only .fast-cc directory: %v", err)
 	}
-	defer os.Chmod(fastCCDir, 0755) // Make writable for cleanup
+	defer func() {
+		if err := os.Chmod(fastCCDir, 0750); err != nil {
+			t.Logf("Failed to restore directory permissions: %v", err)
+		}
+	}() // Make writable for cleanup
 
 	cmd := setupEnterpriseCommand()
 
@@ -1290,11 +1380,15 @@ func TestCopyEnterpriseConfigPermissionError(t *testing.T) {
 
 	// Create read-only directory
 	readOnlyDir := filepath.Join(tempDir, "readonly")
-	err := os.Mkdir(readOnlyDir, 0555)
+	err := os.Mkdir(readOnlyDir, 0500)
 	if err != nil {
 		t.Fatalf("Failed to create read-only directory: %v", err)
 	}
-	defer os.Chmod(readOnlyDir, 0755) // Make writable for cleanup
+	defer func() {
+		if err := os.Chmod(readOnlyDir, 0750); err != nil {
+			t.Logf("Failed to restore directory permissions: %v", err)
+		}
+	}() // Make writable for cleanup
 
 	// Try to copy to read-only directory
 	destPath := filepath.Join(readOnlyDir, "enterprise.yaml")
@@ -1306,53 +1400,55 @@ func TestCopyEnterpriseConfigPermissionError(t *testing.T) {
 
 // Test ensureConfigExists with more error paths
 func TestEnsureConfigExistsMoreErrors(t *testing.T) {
+	// This test verifies error handling when config creation fails
+	// Create a scenario where the global configFile is set to an invalid path
+	originalConfigFile := configFile
+	defer func() { configFile = originalConfigFile }()
+	
+	// Set configFile to a path that will cause write errors (read-only directory)
 	tempDir := t.TempDir()
-
-	// Create file where directory should be
-	badPath := filepath.Join(tempDir, "badfile")
-	err := os.WriteFile(badPath, []byte("blocking"), 0644)
-	if err != nil {
-		t.Fatalf("Failed to create blocking file: %v", err)
+	readOnlyDir := filepath.Join(tempDir, "readonly")
+	if err := os.Mkdir(readOnlyDir, 0500); err != nil {
+		t.Fatalf("Failed to create read-only directory: %v", err)
 	}
-
-	// Change working directory to the bad path (this will fail)
-	originalDir, _ := os.Getwd()
-	defer os.Chdir(originalDir)
+	defer func() {
+		if err := os.Chmod(readOnlyDir, 0750); err != nil {
+			t.Logf("Failed to restore directory permissions: %v", err)
+		}
+	}()
 	
-	// This will fail because badPath is not a directory
-	os.Chdir(badPath)
-	_, _, err = ensureConfigExists()
-	// Change back before checking error
-	os.Chdir(originalDir)
+	configFile = filepath.Join(readOnlyDir, "config.yaml")
 	
+	_, _, err := ensureConfigExists()
 	if err == nil {
-		t.Error("Expected error when config path is blocked by file")
+		t.Error("Expected error when config path is not writable")
 	}
 }
 
 // Test ensureEnterpriseConfigExists with more error paths
 func TestEnsureEnterpriseConfigExistsMoreErrors(t *testing.T) {
+	// This test verifies error handling when enterprise config creation fails
+	// Create a scenario where the global configFile is set to an invalid path
+	originalConfigFile := configFile
+	defer func() { configFile = originalConfigFile }()
+	
+	// Set configFile to a path that will cause write errors (read-only directory)
 	tempDir := t.TempDir()
-
-	// Create file where directory should be
-	badPath := filepath.Join(tempDir, "badfile")
-	err := os.WriteFile(badPath, []byte("blocking"), 0644)
-	if err != nil {
-		t.Fatalf("Failed to create blocking file: %v", err)
+	readOnlyDir := filepath.Join(tempDir, "readonly")
+	if err := os.Mkdir(readOnlyDir, 0500); err != nil {
+		t.Fatalf("Failed to create read-only directory: %v", err)
 	}
-
-	// Change working directory to the bad path (this will fail)
-	originalDir, _ := os.Getwd()
-	defer os.Chdir(originalDir)
+	defer func() {
+		if err := os.Chmod(readOnlyDir, 0750); err != nil {
+			t.Logf("Failed to restore directory permissions: %v", err)
+		}
+	}()
 	
-	// This will fail because badPath is not a directory
-	os.Chdir(badPath)
-	_, _, err = ensureEnterpriseConfigExists()
-	// Change back before checking error
-	os.Chdir(originalDir)
+	configFile = filepath.Join(readOnlyDir, "config.yaml")
 	
+	_, _, err := ensureEnterpriseConfigExists()
 	if err == nil {
-		t.Error("Expected error when enterprise config path is blocked by file")
+		t.Error("Expected error when enterprise config path is not writable")
 	}
 }
 
