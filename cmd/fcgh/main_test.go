@@ -541,7 +541,7 @@ func TestEnsureConfigExistsEdgeCases(t *testing.T) {
 	}
 	defer func() {
 		if runtime.GOOS != "windows" {
-			if err := os.Chmod(restrictedDir, 0o755); err != nil {
+			if err := os.Chmod(restrictedDir, 0o600); err != nil {
 				t.Logf("Failed to restore permissions: %v", err)
 			}
 		}
@@ -988,7 +988,7 @@ func TestValidateCommandErrorPaths(t *testing.T) {
 	}
 	defer func() {
 		if runtime.GOOS != "windows" {
-			if err := os.Chmod(restrictedFile, 0o644); err != nil {
+			if err := os.Chmod(restrictedFile, 0o600); err != nil {
 				t.Logf("Failed to restore file permissions: %v", err)
 			}
 		}
@@ -1327,7 +1327,7 @@ func TestInitCommandMoreErrorPaths(t *testing.T) {
 			t.Errorf("Failed to restore directory: %v", chErr)
 		}
 		if runtime.GOOS != "windows" {
-			if chErr := os.Chmod(readOnlyDir, 0o755); chErr != nil {
+			if chErr := os.Chmod(readOnlyDir, 0o600); chErr != nil {
 				t.Logf("Failed to restore directory permissions: %v", chErr)
 			}
 		}
@@ -1439,7 +1439,7 @@ func TestSetupEnterpriseCommandMoreErrorPaths(t *testing.T) {
 	}
 	defer func() {
 		if runtime.GOOS != "windows" {
-			if chErr := os.Chmod(fastCCDir, 0o755); chErr != nil {
+			if chErr := os.Chmod(fastCCDir, 0o600); chErr != nil {
 				t.Logf("Failed to restore directory permissions: %v", chErr)
 			}
 		}
@@ -1481,7 +1481,7 @@ func TestCopyEnterpriseConfigPermissionError(t *testing.T) {
 	}
 	defer func() {
 		if runtime.GOOS != "windows" {
-			if chErr := os.Chmod(readOnlyDir, 0o755); chErr != nil {
+			if chErr := os.Chmod(readOnlyDir, 0o600); chErr != nil {
 				t.Logf("Failed to restore directory permissions: %v", chErr)
 			}
 		}
@@ -1518,7 +1518,7 @@ func TestEnsureConfigExistsMoreErrors(t *testing.T) {
 	}
 	defer func() {
 		if runtime.GOOS != "windows" {
-			if err := os.Chmod(readOnlyDir, 0o755); err != nil {
+			if err := os.Chmod(readOnlyDir, 0o600); err != nil {
 				t.Logf("Failed to restore directory permissions: %v", err)
 			}
 		}
@@ -1555,7 +1555,7 @@ func TestEnsureEnterpriseConfigExistsMoreErrors(t *testing.T) {
 	}
 	defer func() {
 		if runtime.GOOS != "windows" {
-			if err := os.Chmod(readOnlyDir, 0o755); err != nil {
+			if err := os.Chmod(readOnlyDir, 0o600); err != nil {
 				t.Logf("Failed to restore directory permissions: %v", err)
 			}
 		}
