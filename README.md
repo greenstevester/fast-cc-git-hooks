@@ -223,14 +223,17 @@ fcgh validate "freak: my terrible message"  # Test if a message is bad
 
 ### Commit Helper Commands (cc)
 
-**Smart commit generation:**
+**Smart commit generation with semantic analysis:**
 
 ```bash
-cc                     # Preview generated commit message
+cc                     # Preview generated commit message with semantic analysis
 ccc                    # Generate perfect commit message and commit
 cc --verbose           # Show detailed analysis of your changes
 cc --help              # Show all available options
 ```
+
+**🧠 Semantic Analysis for Infrastructure Code:**
+The `cc` command now includes intelligent semantic analysis for Terraform files with Oracle OCI awareness. It understands the actual impact of your infrastructure changes and generates contextual commit messages. [See examples →](docs/semantic-analysis-examples.md)
 
 **That's it!** Most people only ever need `fcgh setup-ent` and `ccc`.
 
@@ -392,6 +395,12 @@ Once you're using conventional commits, you can automatically generate changelog
 4. **For monorepos**: Use `versio` or `cocogitto`
 
 All these tools work perfectly with the conventional commit messages that `fcgh` enforces! 🎉
+
+## 📚 Documentation
+
+- [Semantic Analysis Examples](docs/semantic-analysis-examples.md) - See how the intelligent commit message generation works with real-world infrastructure code examples
+- [CLAUDE.md](CLAUDE.md) - Project development guide for Claude Code
+- [Example Integration](example_semantic_integration.go) - Sample code showing semantic analysis integration
 
 ## 📝 License
 
