@@ -9,6 +9,8 @@ import (
 	"sort"
 	"strings"
 	"unicode/utf8"
+	
+	"github.com/greenstevester/fast-cc-git-hooks/internal/banner"
 )
 
 const (
@@ -37,8 +39,8 @@ var (
 )
 
 func main() {
-	// Print banner
-	fmt.Println(">> Made with ❤️ for Boo")
+	// Print banner with terminal-appropriate formatting
+	banner.Print()
 	
 	flag.Parse()
 

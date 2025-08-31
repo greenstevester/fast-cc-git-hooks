@@ -11,7 +11,8 @@ import (
 
 // Enhanced CC command with semantic analysis
 func enhancedCCCommand(diff string, useSemanticAnalysis bool) {
-	fmt.Println(">> Made with ❤️ for Boo")
+	// Use ASCII heart for better terminal compatibility
+	fmt.Println(">> Made with <3 for Boo")
 	
 	var commitMessage string
 	var confidence float64

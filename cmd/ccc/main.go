@@ -21,8 +21,6 @@ var (
 )
 
 func main() {
-	// Print banner
-	fmt.Println(">> Made with ❤️ for Boo")
 	
 	flag.Parse()
 

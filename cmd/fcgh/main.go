@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/greenstevester/fast-cc-git-hooks/internal/banner"
 	"github.com/greenstevester/fast-cc-git-hooks/internal/config"
 	"github.com/greenstevester/fast-cc-git-hooks/internal/hooks"
 	"github.com/greenstevester/fast-cc-git-hooks/internal/validator"
@@ -41,8 +42,8 @@ var (
 )
 
 func main() {
-	// Print banner
-	fmt.Println(">> Made with ❤️ for Boo")
+	// Print banner with terminal-appropriate formatting
+	banner.Print()
 
 	// Setup base logger.
 	setupLogger(false)
