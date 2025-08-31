@@ -56,29 +56,39 @@ func New(opts Options) *Generator {
 
 // Generate analyzes the repository and generates a commit message
 func (g *Generator) Generate() (*Result, error) {
+	if banner.UseASCII() {
+		fmt.Println("[SCAN] Analyzing repository...")
+	} else {
+		fmt.Println("🔍 Analyzing repository...")
+	}
+
 	// Check if we're in a git repo
+	fmt.Println("→ Running: git rev-parse --git-dir")
 	if !g.isGitRepo() {
 		return nil, fmt.Errorf("not a git repository")
 	}
 
 	// Get git status
+	fmt.Println("→ Running: git status --porcelain")
 	status, err := g.getGitStatus()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get git status: %w", err)
 	}
 
 	if g.options.Verbose {
-		fmt.Println("Git status:")
+		fmt.Println("Git status output:")
 		fmt.Println(status)
 		fmt.Println()
 	}
 
 	// Add all changes
+	fmt.Println("→ Running: git add .")
 	if err := g.addAllChanges(); err != nil {
 		return nil, fmt.Errorf("failed to add changes: %w", err)
 	}
 
 	// Get staged diff
+	fmt.Println("→ Running: git diff --staged")
 	diff, err := g.getStagedDiff()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get diff: %w", err)
@@ -89,18 +99,40 @@ func (g *Generator) Generate() (*Result, error) {
 	}
 
 	// Analyze changes
+	if banner.UseASCII() {
+		fmt.Println("[THINK] Analyzing changes...")
+	} else {
+		fmt.Println("🧠 Analyzing changes...")
+	}
 	changes := g.analyzeDiff(diff)
 
-	if g.options.Verbose {
-		fmt.Println("Detected changes:")
-		for _, change := range changes {
-			fmt.Printf("- %s(%s): %s (files: %v)\n",
-				change.Type, change.Scope, change.Description, change.Files)
+	if banner.UseASCII() {
+		fmt.Printf("[OK] Found %d change type(s):\n", len(changes))
+	} else {
+		fmt.Printf("✓ Found %d change type(s):\n", len(changes))
+	}
+	for i, change := range changes {
+		fmt.Printf("  %d. %s", i+1, change.Type)
+		if change.Scope != "" {
+			fmt.Printf("(%s)", change.Scope)
+		}
+		fmt.Printf(": %s", change.Description)
+		if len(change.Files) > 0 {
+			fmt.Printf(" [%s", change.Files[0])
+			if len(change.Files) > 1 {
+				fmt.Printf(" +%d more", len(change.Files)-1)
+			}
+			fmt.Print("]")
 		}
 		fmt.Println()
 	}
 
 	// Generate commit message
+	if banner.UseASCII() {
+		fmt.Println("[GEN] Generating commit message...")
+	} else {
+		fmt.Println("📝 Generating commit message...")
+	}
 	message := g.GenerateCommitMessage(changes)
 
 	// Build git command

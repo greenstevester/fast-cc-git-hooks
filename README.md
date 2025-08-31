@@ -404,7 +404,6 @@ All these tools work perfectly with the conventional commit messages that `fcgh`
 
 - [Semantic Analysis Examples](docs/semantic-analysis-examples.md) - See how the intelligent commit message generation works with real-world infrastructure code examples
 - [CLAUDE.md](CLAUDE.md) - Project development guide for Claude Code
-- [Example Integration](example_semantic_integration.go) - Sample code showing semantic analysis integration
 
 ## 📝 License
 
