@@ -242,12 +242,12 @@ func (g *Generator) GenerateCommitMessage(changes []ChangeType) string {
 		subject += fmt.Sprintf("(%s)", primary.Scope)
 	}
 	subject += ": "
-	
+
 	// Add JIRA ticket if available
 	if jiraTicket != "" {
 		subject += fmt.Sprintf("%s ", jiraTicket)
 	}
-	
+
 	subject += primary.Description
 
 	// Truncate subject if too long.

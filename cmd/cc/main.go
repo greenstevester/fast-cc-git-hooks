@@ -52,10 +52,10 @@ func main() {
 
 	// Create generator with specified options
 	generator := ccgen.New(ccgen.Options{
-		NoVerify: *noVerify,
-		Execute:  *execute,
-		Copy:     !*noCopy, // Copy by default unless --no-copy is specified
-		Verbose:  *verbose,
+		NoVerify:    *noVerify,
+		Execute:     *execute,
+		Copy:        !*noCopy, // Copy by default unless --no-copy is specified
+		Verbose:     *verbose,
 		JiraManager: jira.NewManager(cwd),
 	})
 
