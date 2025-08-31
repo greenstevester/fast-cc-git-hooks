@@ -188,7 +188,9 @@ func (m *Manager) readJiraRefFile() (string, error) {
 		return "", fmt.Errorf("unauthorized file access: only %s is allowed", JiraRefFile)
 	}
 	
-	content, err := os.ReadFile(absFilePath) // Use validated absolute path
+	// Construct safe path directly from validated repository path
+	safePath := filepath.Join(absRepoPath, JiraRefFile)
+	content, err := os.ReadFile(safePath)
 	if err != nil {
 		return "", err
 	}
