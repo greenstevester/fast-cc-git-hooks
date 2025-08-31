@@ -101,7 +101,7 @@ func TestValidateCommand(t *testing.T) {
 	}
 
 	// Test with invalid message
-	err = cmd.Run(ctx, []string{"invalid message"})
+	err = cmd.Run(ctx, []string{"badtype: invalid commit type"})
 	if err == nil {
 		t.Error("Invalid message should return error")
 	}
@@ -434,7 +434,7 @@ func TestValidateCommandWithFileFlag(t *testing.T) {
 
 	// Create test file with invalid content
 	testFile := filepath.Join(t.TempDir(), "invalid.txt")
-	if err := os.WriteFile(testFile, []byte("invalid commit message"), 0o600); err != nil {
+	if err := os.WriteFile(testFile, []byte("badtype: invalid commit type"), 0o600); err != nil {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
 
@@ -976,7 +976,7 @@ func TestValidateCommandErrorPaths(t *testing.T) {
 	if err := os.WriteFile(restrictedFile, []byte("test"), 0o600); err != nil {
 		t.Fatalf("Failed to create restricted file: %v", err)
 	}
-	
+
 	if runtime.GOOS == "windows" {
 		// On Windows, skip the permission test as Windows handles permissions differently
 		t.Skip("Skipping file permission test on Windows due to different permission model")
@@ -1299,7 +1299,7 @@ func TestInitCommandMoreErrorPaths(t *testing.T) {
 	// Test with read-only directory
 	tempDir := t.TempDir()
 	readOnlyDir := filepath.Join(tempDir, "readonly")
-	
+
 	if runtime.GOOS == "windows" {
 		// On Windows, create a normal directory and skip this test
 		err := os.Mkdir(readOnlyDir, 0o750)

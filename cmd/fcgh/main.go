@@ -656,7 +656,19 @@ func getGitConfigDir() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("getting home directory: %w", err)
 	}
-	return filepath.Join(home, ".git"), nil
+
+	// Check XDG_CONFIG_HOME first
+	if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
+		return filepath.Join(xdg, "git"), nil
+	}
+
+	// Default to ~/.config/git on Unix-like systems, AppData on Windows
+	switch runtime.GOOS {
+	case "windows":
+		return filepath.Join(home, "AppData", "Roaming", "Git"), nil
+	default:
+		return filepath.Join(home, ".config", "git"), nil
+	}
 }
 
 // removeGlobalInstallation removes global git hooks
