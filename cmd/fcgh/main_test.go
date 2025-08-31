@@ -30,8 +30,12 @@ func setupTestContext(t *testing.T) (context.Context, func()) {
 	origUser := os.Getenv("USER")
 
 	// Set test environment
-	os.Setenv("HOME", tempDir)
-	os.Setenv("USER", "testuser")
+	if err := os.Setenv("HOME", tempDir); err != nil {
+		t.Fatalf("Failed to set HOME: %v", err)
+	}
+	if err := os.Setenv("USER", "testuser"); err != nil {
+		t.Fatalf("Failed to set USER: %v", err)
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 
@@ -40,8 +44,12 @@ func setupTestContext(t *testing.T) (context.Context, func()) {
 		if err := os.Chdir(origWD); err != nil {
 			t.Errorf("Failed to restore working directory: %v", err)
 		}
-		os.Setenv("HOME", origHome)
-		os.Setenv("USER", origUser)
+		if err := os.Setenv("HOME", origHome); err != nil {
+			t.Errorf("Failed to restore HOME: %v", err)
+		}
+		if err := os.Setenv("USER", origUser); err != nil {
+			t.Errorf("Failed to restore USER: %v", err)
+		}
 	}
 
 	return ctx, cleanup
@@ -99,7 +107,7 @@ func TestValidateCommand(t *testing.T) {
 
 	// Test with file flag
 	testFile := filepath.Join(t.TempDir(), "test.txt")
-	if writeErr := os.WriteFile(testFile, []byte("feat: test message"), 0644); writeErr != nil {
+	if writeErr := os.WriteFile(testFile, []byte("feat: test message"), 0600); writeErr != nil {
 		t.Fatalf("Failed to create test file: %v", writeErr)
 	}
 
@@ -276,7 +284,7 @@ func TestCopyEnterpriseConfig(t *testing.T) {
 	}
 
 	// Check file content
-	content, err := os.ReadFile(destPath)
+	content, err := os.ReadFile(destPath) // #nosec G304 -- This is a test file path
 	if err != nil {
 		t.Errorf("Should be able to read created config file: %v", err)
 	}
@@ -302,7 +310,7 @@ func TestCreateBasicEnterpriseConfig(t *testing.T) {
 	}
 
 	// Check file content
-	content, err := os.ReadFile(destPath)
+	content, err := os.ReadFile(destPath) // #nosec G304 -- This is a test file path
 	if err != nil {
 		t.Errorf("Should be able to read created basic config file: %v", err)
 	}
@@ -525,14 +533,16 @@ func TestEnsureConfigExistsEdgeCases(t *testing.T) {
 		t.Fatalf("Failed to create restricted directory: %v", err)
 	}
 	defer func() {
-		if err := os.Chmod(restrictedDir, 0750); err != nil {
+		if err := os.Chmod(restrictedDir, 0600); err != nil {
 			t.Logf("Failed to restore permissions: %v", err)
 		}
 	}()
 
 	// Test with existing old-style config file
 	tempHome := t.TempDir()
-	os.Setenv("HOME", tempHome)
+	if err := os.Setenv("HOME", tempHome); err != nil {
+		t.Fatalf("Failed to set HOME: %v", err)
+	}
 	defer cleanup()
 
 	// Create .fast-cc directory
@@ -565,7 +575,9 @@ func TestEnsureEnterpriseConfigExistsEdgeCases(t *testing.T) {
 
 	// Test when home directory config already exists as different type
 	tempHome := t.TempDir()
-	os.Setenv("HOME", tempHome)
+	if err := os.Setenv("HOME", tempHome); err != nil {
+		t.Fatalf("Failed to set HOME: %v", err)
+	}
 	defer cleanup()
 
 	// Create .fast-cc directory
@@ -866,7 +878,7 @@ func TestRemoveCommandComprehensive(t *testing.T) {
 	if err := os.MkdirAll(".git/hooks", 0750); err != nil {
 		t.Fatalf("Failed to create git hooks directory: %v", err)
 	}
-	if err := os.WriteFile(".git/hooks/commit-msg", []byte("#!/bin/sh\necho test"), 0750); err != nil {
+	if err := os.WriteFile(".git/hooks/commit-msg", []byte("#!/bin/sh\necho test"), 0600); err != nil {
 		t.Fatalf("Failed to write hook file: %v", err)
 	}
 
@@ -882,10 +894,16 @@ func TestRemoveCommandComprehensive(t *testing.T) {
 func TestGetGitConfigDirEdgeCases(t *testing.T) {
 	// Store original HOME
 	origHome := os.Getenv("HOME")
-	defer os.Setenv("HOME", origHome)
+	defer func() {
+		if err := os.Setenv("HOME", origHome); err != nil {
+			t.Logf("Failed to restore HOME: %v", err)
+		}
+	}()
 
 	// Test with invalid HOME
-	os.Setenv("HOME", "/invalid/nonexistent/path")
+	if err := os.Setenv("HOME", "/invalid/nonexistent/path"); err != nil {
+		t.Fatalf("Failed to set HOME: %v", err)
+	}
 
 	configDir, err := getGitConfigDir()
 	// This might fail, but shouldn't panic
@@ -946,7 +964,7 @@ func TestValidateCommandErrorPaths(t *testing.T) {
 
 	// Create a file with read permission denied
 	restrictedFile := filepath.Join(t.TempDir(), "restricted.txt")
-	if err := os.WriteFile(restrictedFile, []byte("test"), 0644); err != nil {
+	if err := os.WriteFile(restrictedFile, []byte("test"), 0600); err != nil {
 		t.Fatalf("Failed to create restricted file: %v", err)
 	}
 	// Change to read-only after creation
@@ -954,7 +972,7 @@ func TestValidateCommandErrorPaths(t *testing.T) {
 		t.Fatalf("Failed to make file read-only: %v", err)
 	}
 	defer func() {
-		if err := os.Chmod(restrictedFile, 0644); err != nil {
+		if err := os.Chmod(restrictedFile, 0600); err != nil {
 			t.Logf("Failed to restore file permissions: %v", err)
 		}
 	}()
@@ -1016,7 +1034,7 @@ func TestConfigCreationEdgeCases(t *testing.T) {
 	}
 
 	// Verify content
-	content, err := os.ReadFile(configPath)
+	content, err := os.ReadFile(configPath) // #nosec G304 -- This is a test file path
 	if err != nil {
 		t.Errorf("Should be able to read created file: %v", err)
 	}
@@ -1129,7 +1147,7 @@ func TestRemoveCommandInstallationScenarios(t *testing.T) {
 			_ = os.RemoveAll(filepath.Join(tempDir, ".config")) // Ignore error - dir may not exist
 
 			if tt.hasLocalHook {
-				if err := os.WriteFile(localHookPath, []byte("#!/bin/sh\necho local hook"), 0750); err != nil {
+				if err := os.WriteFile(localHookPath, []byte("#!/bin/sh\necho local hook"), 0600); err != nil {
 					t.Fatalf("Failed to write local hook: %v", err)
 				}
 			}
@@ -1137,7 +1155,7 @@ func TestRemoveCommandInstallationScenarios(t *testing.T) {
 				if err := os.MkdirAll(globalConfigDir, 0750); err != nil {
 					t.Fatalf("Failed to create global config dir: %v", err)
 				}
-				if err := os.WriteFile(globalHookPath, []byte("#!/bin/sh\necho global hook"), 0750); err != nil {
+				if err := os.WriteFile(globalHookPath, []byte("#!/bin/sh\necho global hook"), 0600); err != nil {
 					t.Fatalf("Failed to write global hook: %v", err)
 				}
 			}
@@ -1274,11 +1292,15 @@ func TestInitCommandMoreErrorPaths(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to get working directory: %v", err)
 	}
-	os.Chdir(readOnlyDir)
+	if chErr := os.Chdir(readOnlyDir); chErr != nil {
+		t.Fatalf("Failed to change to read-only directory: %v", chErr)
+	}
 	defer func() {
-		os.Chdir(originalDir)
-		if err := os.Chmod(readOnlyDir, 0750); err != nil {
-			t.Logf("Failed to restore directory permissions: %v", err)
+		if chErr := os.Chdir(originalDir); chErr != nil {
+			t.Errorf("Failed to restore directory: %v", chErr)
+		}
+		if chErr := os.Chmod(readOnlyDir, 0600); chErr != nil {
+			t.Logf("Failed to restore directory permissions: %v", chErr)
 		}
 	}()
 
@@ -1304,16 +1326,25 @@ func TestSetupCommandMoreErrorPaths(t *testing.T) {
 
 	// Test in non-git directory with no HOME
 	tempDir := t.TempDir()
-	originalDir, _ := os.Getwd()
+	originalDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Failed to get working directory: %v", err)
+	}
 	originalHome := os.Getenv("HOME")
 
 	defer func() {
-		os.Chdir(originalDir)
-		os.Setenv("HOME", originalHome)
+		if chErr := os.Chdir(originalDir); chErr != nil {
+			t.Errorf("Failed to restore working directory: %v", chErr)
+		}
+		if chErr := os.Setenv("HOME", originalHome); chErr != nil {
+			t.Errorf("Failed to restore HOME: %v", chErr)
+		}
 	}()
 
 	// Change to temp directory (no git repo)
-	os.Chdir(tempDir)
+	if err = os.Chdir(tempDir); err != nil {
+		t.Fatalf("Failed to change to temp directory: %v", err)
+	}
 	// Unset HOME to trigger fallback paths
 	os.Unsetenv("HOME")
 
@@ -1321,7 +1352,7 @@ func TestSetupCommandMoreErrorPaths(t *testing.T) {
 
 	// Test with force flag in non-git directory
 	args := []string{"-force"}
-	err := cmd.Flags.Parse(args)
+	err = cmd.Flags.Parse(args)
 	if err != nil {
 		t.Errorf("Should parse flags: %v", err)
 	}
@@ -1338,28 +1369,39 @@ func TestSetupEnterpriseCommandMoreErrorPaths(t *testing.T) {
 	ctx := context.Background()
 	tempDir := t.TempDir()
 
-	originalDir, _ := os.Getwd()
+	originalDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Failed to get working directory: %v", err)
+	}
 	originalHome := os.Getenv("HOME")
 
 	defer func() {
-		os.Chdir(originalDir)
-		os.Setenv("HOME", originalHome)
+		if chErr := os.Chdir(originalDir); chErr != nil {
+			t.Errorf("Failed to restore working directory: %v", chErr)
+		}
+		if chErr := os.Setenv("HOME", originalHome); chErr != nil {
+			t.Errorf("Failed to restore HOME: %v", chErr)
+		}
 	}()
 
 	// Change to temp directory (no git repo)
-	os.Chdir(tempDir)
+	if err = os.Chdir(tempDir); err != nil {
+		t.Fatalf("Failed to change to temp directory: %v", err)
+	}
 	// Set HOME to temp directory
-	os.Setenv("HOME", tempDir)
+	if err = os.Setenv("HOME", tempDir); err != nil {
+		t.Fatalf("Failed to set HOME: %v", err)
+	}
 
 	// Create a read-only .fast-cc directory to trigger permission errors
 	fastCCDir := filepath.Join(tempDir, ".fast-cc")
-	err := os.Mkdir(fastCCDir, 0500)
+	err = os.Mkdir(fastCCDir, 0500)
 	if err != nil {
 		t.Fatalf("Failed to create read-only .fast-cc directory: %v", err)
 	}
 	defer func() {
-		if err := os.Chmod(fastCCDir, 0750); err != nil {
-			t.Logf("Failed to restore directory permissions: %v", err)
+		if chErr := os.Chmod(fastCCDir, 0600); chErr != nil {
+			t.Logf("Failed to restore directory permissions: %v", chErr)
 		}
 	}() // Make writable for cleanup
 
@@ -1389,8 +1431,8 @@ func TestCopyEnterpriseConfigPermissionError(t *testing.T) {
 		t.Fatalf("Failed to create read-only directory: %v", err)
 	}
 	defer func() {
-		if err := os.Chmod(readOnlyDir, 0750); err != nil {
-			t.Logf("Failed to restore directory permissions: %v", err)
+		if chErr := os.Chmod(readOnlyDir, 0600); chErr != nil {
+			t.Logf("Failed to restore directory permissions: %v", chErr)
 		}
 	}() // Make writable for cleanup
 
@@ -1416,7 +1458,7 @@ func TestEnsureConfigExistsMoreErrors(t *testing.T) {
 		t.Fatalf("Failed to create read-only directory: %v", err)
 	}
 	defer func() {
-		if err := os.Chmod(readOnlyDir, 0750); err != nil {
+		if err := os.Chmod(readOnlyDir, 0600); err != nil {
 			t.Logf("Failed to restore directory permissions: %v", err)
 		}
 	}()
@@ -1443,7 +1485,7 @@ func TestEnsureEnterpriseConfigExistsMoreErrors(t *testing.T) {
 		t.Fatalf("Failed to create read-only directory: %v", err)
 	}
 	defer func() {
-		if err := os.Chmod(readOnlyDir, 0750); err != nil {
+		if err := os.Chmod(readOnlyDir, 0600); err != nil {
 			t.Logf("Failed to restore directory permissions: %v", err)
 		}
 	}()
@@ -1486,7 +1528,9 @@ func TestGetGitConfigDirVariousScenarios(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.setupHome {
-				os.Setenv("HOME", tt.homeValue)
+				if err := os.Setenv("HOME", tt.homeValue); err != nil {
+					t.Fatalf("Failed to set HOME: %v", err)
+				}
 			} else {
 				os.Unsetenv("HOME")
 			}
@@ -1551,7 +1595,7 @@ func TestCopyEnterpriseConfigComprehensive(t *testing.T) {
 	}
 
 	// Verify file was created and has expected content
-	content, err := os.ReadFile(destPath)
+	content, err := os.ReadFile(destPath) // #nosec G304 -- This is a test file path
 	if err != nil {
 		t.Errorf("Should read copied file: %v", err)
 	}
