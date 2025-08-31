@@ -190,6 +190,7 @@ func (m *Manager) readJiraRefFile() (string, error) {
 	
 	// Construct safe path directly from validated repository path
 	safePath := filepath.Join(absRepoPath, JiraRefFile)
+	// #nosec G304 -- Path is validated: repository path is absolute and validated, filename is constant
 	content, err := os.ReadFile(safePath)
 	if err != nil {
 		return "", err
