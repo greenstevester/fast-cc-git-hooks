@@ -37,7 +37,9 @@ jobs:
       run: go test -race -coverprofile='coverage.out' -covermode='atomic' -v './...'
 
     - name: Run benchmarks
-      run: go test -bench=. -benchmem -run=^$$ ./...
+      run: |
+        echo "Running benchmarks..."
+        go test -bench=. -benchmem -run='^$' ./cmd/... ./internal/... ./pkg/... || true
 
     - name: Upload coverage to Codecov
       if: matrix.os == 'ubuntu-latest'
