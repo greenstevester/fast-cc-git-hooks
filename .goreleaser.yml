@@ -129,7 +129,13 @@ release:
     ## ⚡️ Super Quick Setup (2 steps!)
 
     ### Step 1: Download for your platform
-
+        
+      **🪟 Windows:**
+    ```powershell
+    # Download and extract fcgh_{{.Tag}}_windows_amd64.zip
+    # Add fcgh.exe, cc.exe and ccc.exe to your PATH
+    ```
+    
     **🐧 Linux:**
     ```bash
     # Most common (AMD64)
@@ -160,11 +166,6 @@ release:
     sudo mv fcgh cc ccc /usr/local/bin/
     ```
 
-    **🪟 Windows:**
-    ```powershell
-    # Download and extract fcgh_{{.Tag}}_windows_amd64.zip
-    # Add fcgh.exe, cc.exe and ccc.exe to your PATH
-    ```
 
     ### Step 2: Set it up (takes 5 seconds!)
     ```bash
@@ -183,11 +184,6 @@ release:
     ```
 
   footer: |
-    ## 🐳 Docker (Advanced Users)
-    ```bash
-    docker pull ghcr.io/greenstevester/fcgh:{{.Tag}}
-    ```
-
     ## 📦 Package Managers
     - **Ubuntu/Debian:** Download `.deb` file and run `sudo dpkg -i fcgh_{{.Tag}}_linux_amd64.deb`
     - **RHEL/CentOS:** Download `.rpm` file and run `sudo rpm -i fcgh_{{.Tag}}_linux_amd64.rpm`
@@ -211,24 +207,6 @@ release:
 #     test: |
 #       system "#{bin}/fast-cc-hooks --version"
 
-# Docker images - disabled until Docker setup is fixed
-# dockers:
-#   - image_templates:
-#       - "ghcr.io/greenstevester/fast-cc-hooks:{{ .Tag }}"
-#       - "ghcr.io/greenstevester/fast-cc-hooks:v{{ .Major }}"
-#       - "ghcr.io/greenstevester/fast-cc-hooks:v{{ .Major }}.{{ .Minor }}"
-#       - "ghcr.io/greenstevester/fast-cc-hooks:latest"
-#     dockerfile: Dockerfile
-#     build_flag_templates:
-#       - --platform=linux/amd64
-#       - --label=org.opencontainers.image.title={{ .ProjectName }}
-#       - --label=org.opencontainers.image.description=Fast conventional commits git hooks
-#       - --label=org.opencontainers.image.url=https://github.com/greenstevester/fast-cc-git-hooks
-#       - --label=org.opencontainers.image.source=https://github.com/greenstevester/fast-cc-git-hooks
-#       - --label=org.opencontainers.image.version={{ .Version }}
-#       - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
-#       - --label=org.opencontainers.image.revision={{ .FullCommit }}
-#       - --label=org.opencontainers.image.licenses=MIT
 
 # Snapcraft packages - disabled for now
 # snapcrafts:

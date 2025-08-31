@@ -60,9 +60,6 @@ make init-config
 ```bash
 # Create release snapshot
 make release-snapshot
-
-# Build Docker image
-make docker-build
 ```
 
 ## Configuration
@@ -109,7 +106,6 @@ The project minimizes external dependencies:
 
 Releases are automated via GoReleaser and support:
 - Multi-platform binaries (Linux, macOS, Windows)
-- Docker images with multi-arch support
 - Homebrew formula updates
 - Package manager distributions (deb, rpm, apk)
 - Container signatures with cosign

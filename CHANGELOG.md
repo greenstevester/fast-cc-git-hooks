@@ -13,7 +13,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - YAML-based configuration system with custom validation rules
 - Cross-platform git hook installation and management
 - CLI application with install, uninstall, validate, init, and version commands
-- Docker container support with multi-stage builds
 - Comprehensive test suite with benchmarks
 - CI/CD pipelines with GitHub Actions
 - GoReleaser configuration for automated releases

@@ -348,7 +348,7 @@ Once you're using conventional commits, you can automatically generate changelog
 
 - **[semantic-release](https://github.com/semantic-release/semantic-release)** - The gold standard for automated releases
   - Fully automates: version bumping, changelog generation, git tagging, and publishing
-  - Works with GitHub, GitLab, npm, Docker, and more
+  - Works with GitHub, GitLab, npm, and more
   - Perfect for CI/CD pipelines
 
 - **[commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version)** - Drop-in replacement for `npm version`

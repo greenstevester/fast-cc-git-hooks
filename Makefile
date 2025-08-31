@@ -178,11 +178,6 @@ release-snapshot:
 	@echo "Running goreleaser snapshot..."
 	@curl -sSfL https://goreleaser.com/static/run | bash -s -- release --snapshot --clean
 
-## docker-build: Build Docker image
-docker-build:
-	@echo "Building Docker image..."
-	@docker build -t $(BINARY_NAME):$(VERSION) -t $(BINARY_NAME):latest .
-
 ## ci: Run CI pipeline locally
 ci: clean mod fmt vet lint test build
 	@echo "CI pipeline complete"
