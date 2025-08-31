@@ -93,7 +93,7 @@ func main() {
 	// Generate commit message.
 	message := generateCommitMessage(changes)
 	fmt.Println("─────────────────────────────────────────")
-	fmt.Println(">>> based on your changes, cc created the following git commit message for you:")
+	fmt.Println("\n>>> based on your changes, cc created the following git commit message for you:")
 	fmt.Println(message)
 
 	if *execute {
@@ -101,9 +101,6 @@ func main() {
 			log.Fatalf("Failed to commit: %v", err)
 		}
 		fmt.Println("Commit created successfully!")
-	} else {
-		fmt.Println("\nWant this git commit message?, If Y, then run cmd below, and we will commit for you:")
-		fmt.Printf("cc --execute\n")
 	}
 }
 
