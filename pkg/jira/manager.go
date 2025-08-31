@@ -27,7 +27,7 @@ func NewManager(repoPath string) *Manager {
 			configDir: testDir,
 		}
 	}
-	
+
 	// First, check if there's a local .fast-cc directory in the repo
 	localConfigDir := filepath.Join(repoPath, ".fast-cc")
 	if info, err := os.Stat(localConfigDir); err == nil && info.IsDir() {
@@ -38,7 +38,7 @@ func NewManager(repoPath string) *Manager {
 		m.migrateOldJiraFile(repoPath)
 		return m
 	}
-	
+
 	// Otherwise, get the global config directory (~/.fast-cc)
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -47,7 +47,7 @@ func NewManager(repoPath string) *Manager {
 			configDir: repoPath,
 		}
 	}
-	
+
 	globalConfigDir := filepath.Join(home, ".fast-cc")
 	// Create the global directory if it doesn't exist
 	if err := os.MkdirAll(globalConfigDir, 0755); err != nil {
@@ -56,7 +56,7 @@ func NewManager(repoPath string) *Manager {
 			configDir: repoPath,
 		}
 	}
-	
+
 	m := &Manager{
 		configDir: globalConfigDir,
 	}
@@ -205,7 +205,7 @@ func (m *Manager) getJiraRefFilePath() string {
 // readJiraRefFile reads the content of the JIRA reference file
 func (m *Manager) readJiraRefFile() (string, error) {
 	filePath := m.getJiraRefFilePath()
-	
+
 	// Validate that the file path is within the config directory
 	absConfigDir, err := filepath.Abs(m.configDir)
 	if err != nil {
@@ -215,17 +215,17 @@ func (m *Manager) readJiraRefFile() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to resolve file path: %w", err)
 	}
-	
+
 	// Ensure the file is within the config directory
 	if !strings.HasPrefix(absFilePath, absConfigDir+string(filepath.Separator)) {
 		return "", fmt.Errorf("file access outside config directory not allowed")
 	}
-	
+
 	// Additional validation: ensure we're only reading the specific JIRA reference file
 	if filepath.Base(absFilePath) != JiraRefFile {
 		return "", fmt.Errorf("unauthorized file access: only %s is allowed", JiraRefFile)
 	}
-	
+
 	// Construct safe path directly from validated config directory path
 	safePath := filepath.Join(absConfigDir, JiraRefFile)
 	// #nosec G304 -- Path is validated: repository path is absolute and validated, filename is constant
@@ -254,7 +254,7 @@ func (m *Manager) createEmptyJiraRefFile() error {
 func (m *Manager) migrateOldJiraFile(repoPath string) {
 	oldPath := filepath.Join(repoPath, JiraRefFile)
 	newPath := m.getJiraRefFilePath()
-	
+
 	// If old file exists and new file doesn't, migrate it
 	if _, err := os.Stat(oldPath); err == nil {
 		if _, err := os.Stat(newPath); os.IsNotExist(err) {
