@@ -16,14 +16,45 @@ const (
 
 // Manager handles JIRA ticket reference management
 type Manager struct {
-	repoPath string
+	configDir string // Changed from repoPath to use ~/.fast-cc directory
 }
 
 // NewManager creates a new JIRA ticket manager
 func NewManager(repoPath string) *Manager {
-	return &Manager{
-		repoPath: repoPath,
+	// First, check if there's a local .fast-cc directory in the repo
+	localConfigDir := filepath.Join(repoPath, ".fast-cc")
+	if info, err := os.Stat(localConfigDir); err == nil && info.IsDir() {
+		// Use local .fast-cc directory if it exists
+		m := &Manager{
+			configDir: localConfigDir,
+		}
+		m.migrateOldJiraFile(repoPath)
+		return m
 	}
+	
+	// Otherwise, get the global config directory (~/.fast-cc)
+	home, err := os.UserHomeDir()
+	if err != nil {
+		// Fall back to using repo path if we can't get home directory
+		return &Manager{
+			configDir: repoPath,
+		}
+	}
+	
+	globalConfigDir := filepath.Join(home, ".fast-cc")
+	// Create the global directory if it doesn't exist
+	if err := os.MkdirAll(globalConfigDir, 0755); err != nil {
+		// Fall back to using repo path if we can't create config directory
+		return &Manager{
+			configDir: repoPath,
+		}
+	}
+	
+	m := &Manager{
+		configDir: globalConfigDir,
+	}
+	m.migrateOldJiraFile(repoPath)
+	return m
 }
 
 // SetJiraTicket sets the current JIRA ticket, commenting out previous entries
@@ -160,27 +191,27 @@ func (m *Manager) ClearJiraTicket() error {
 // getJiraRefFilePath returns the path to the JIRA reference file
 func (m *Manager) getJiraRefFilePath() string {
 	// Clean the path to prevent directory traversal attacks
-	cleanRepoPath := filepath.Clean(m.repoPath)
-	return filepath.Join(cleanRepoPath, JiraRefFile)
+	cleanConfigDir := filepath.Clean(m.configDir)
+	return filepath.Join(cleanConfigDir, JiraRefFile)
 }
 
 // readJiraRefFile reads the content of the JIRA reference file
 func (m *Manager) readJiraRefFile() (string, error) {
 	filePath := m.getJiraRefFilePath()
 	
-	// Validate that the file path is within the repository directory
-	absRepoPath, err := filepath.Abs(m.repoPath)
+	// Validate that the file path is within the config directory
+	absConfigDir, err := filepath.Abs(m.configDir)
 	if err != nil {
-		return "", fmt.Errorf("failed to resolve repository path: %w", err)
+		return "", fmt.Errorf("failed to resolve config directory path: %w", err)
 	}
 	absFilePath, err := filepath.Abs(filePath)
 	if err != nil {
 		return "", fmt.Errorf("failed to resolve file path: %w", err)
 	}
 	
-	// Ensure the file is within the repository directory
-	if !strings.HasPrefix(absFilePath, absRepoPath+string(filepath.Separator)) {
-		return "", fmt.Errorf("file access outside repository directory not allowed")
+	// Ensure the file is within the config directory
+	if !strings.HasPrefix(absFilePath, absConfigDir+string(filepath.Separator)) {
+		return "", fmt.Errorf("file access outside config directory not allowed")
 	}
 	
 	// Additional validation: ensure we're only reading the specific JIRA reference file
@@ -188,8 +219,8 @@ func (m *Manager) readJiraRefFile() (string, error) {
 		return "", fmt.Errorf("unauthorized file access: only %s is allowed", JiraRefFile)
 	}
 	
-	// Construct safe path directly from validated repository path
-	safePath := filepath.Join(absRepoPath, JiraRefFile)
+	// Construct safe path directly from validated config directory path
+	safePath := filepath.Join(absConfigDir, JiraRefFile)
 	// #nosec G304 -- Path is validated: repository path is absolute and validated, filename is constant
 	content, err := os.ReadFile(safePath)
 	if err != nil {
@@ -210,6 +241,27 @@ func (m *Manager) createEmptyJiraRefFile() error {
 	content += "# No active ticket set\n"
 	content += "# Use 'cc set-jira CGC-1234' to set a JIRA ticket for commits\n"
 	return m.writeJiraRefFile(content)
+}
+
+// migrateOldJiraFile migrates the JIRA file from the old location (repo root) to the new location
+func (m *Manager) migrateOldJiraFile(repoPath string) {
+	oldPath := filepath.Join(repoPath, JiraRefFile)
+	newPath := m.getJiraRefFilePath()
+	
+	// If old file exists and new file doesn't, migrate it
+	if _, err := os.Stat(oldPath); err == nil {
+		if _, err := os.Stat(newPath); os.IsNotExist(err) {
+			// Read old file
+			content, readErr := os.ReadFile(oldPath)
+			if readErr == nil {
+				// Write to new location
+				if writeErr := os.WriteFile(newPath, content, 0600); writeErr == nil {
+					// Remove old file after successful migration
+					os.Remove(oldPath)
+				}
+			}
+		}
+	}
 }
 
 // isValidJiraFormat validates JIRA ticket format (e.g., CGC-1245)
