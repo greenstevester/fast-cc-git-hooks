@@ -2,12 +2,12 @@
 
 # Variables
 BINARY_NAME := fcgh
-CC_BINARY_NAME := cc
-CCC_BINARY_NAME := ccc
+CC_BINARY_NAME := ccg
+CCC_BINARY_NAME := ccdo
 BUILD_DIR := build
 CMD_DIR := cmd/fcgh
-CC_CMD_DIR := cmd/cc
-CCC_CMD_DIR := cmd/ccc
+CC_CMD_DIR := cmd/ccg
+CCC_CMD_DIR := cmd/ccdo
 VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 BUILD_TIME := $(shell date -u '+%Y-%m-%d_%H:%M:%S')
 COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
@@ -35,22 +35,22 @@ build:
 	@go build $(GOFLAGS) $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME) ./$(CMD_DIR)
 	@echo "Build complete: $(BUILD_DIR)/$(BINARY_NAME)"
 
-## build-cc: Build the cc helper utility
-build-cc:
+## build-ccg: Build the ccg helper utility
+build-ccg:
 	@echo "Building $(CC_BINARY_NAME) $(VERSION)..."
 	@mkdir -p $(BUILD_DIR)
 	@go build $(GOFLAGS) $(LDFLAGS) -o $(BUILD_DIR)/$(CC_BINARY_NAME) ./$(CC_CMD_DIR)
 	@echo "Build complete: $(BUILD_DIR)/$(CC_BINARY_NAME)"
 
-## build-ccc: Build the ccc helper utility  
-build-ccc:
+## build-ccdo: Build the ccdo helper utility  
+build-ccdo:
 	@echo "Building $(CCC_BINARY_NAME) $(VERSION)..."
 	@mkdir -p $(BUILD_DIR)
 	@go build $(GOFLAGS) $(LDFLAGS) -o $(BUILD_DIR)/$(CCC_BINARY_NAME) ./$(CCC_CMD_DIR)
 	@echo "Build complete: $(BUILD_DIR)/$(CCC_BINARY_NAME)"
 
 ## build-all-tools: Build all tools
-build-all-tools: build build-cc build-ccc
+build-all-tools: build build-ccg build-ccdo
 
 ## build-all: Build for multiple platforms
 build-all: clean
@@ -139,14 +139,14 @@ install: build
 	@go install $(LDFLAGS) ./$(CMD_DIR)
 	@echo "Installation complete"
 
-## install-cc: Install the cc utility to GOPATH/bin
-install-cc: build-cc
+## install-ccg: Install the ccg utility to GOPATH/bin
+install-ccg: build-ccg
 	@echo "Installing $(CC_BINARY_NAME) to GOPATH/bin..."
 	@go install $(LDFLAGS) ./$(CC_CMD_DIR)
 	@echo "Installation complete"
 
 ## install-all: Install all tools
-install-all: install install-cc
+install-all: install install-ccg
 
 ## uninstall: Remove the binary from GOPATH/bin
 uninstall:

@@ -42,7 +42,7 @@ git diff --staged                     # Staged content (compatibility)
 ```go
 // Example output parsing:
 // pkg/ccgen/analyzer.go     | 45 +++++++++++++++++++++++++++++++++
-// cmd/cc/main.go           | 12 +++++++---
+// cmd/ccg/main.go           | 12 +++++++---
 // README.md                |  8 +++++++
 
 FileStatistics{

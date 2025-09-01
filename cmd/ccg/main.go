@@ -80,7 +80,7 @@ func handleSubcommand(args []string) error {
 	switch args[0] {
 	case "set-jira":
 		if len(args) != 2 {
-			return fmt.Errorf("usage: cc set-jira <JIRA-TICKET>\nExample: cc set-jira CGC-1234")
+			return fmt.Errorf("usage: ccg set-jira <JIRA-TICKET>\nExample: ccg set-jira CGC-1234")
 		}
 		ticketID := args[1]
 		if err := jiraManager.SetJiraTicket(ticketID); err != nil {
@@ -110,13 +110,13 @@ func handleSubcommand(args []string) error {
 }
 
 func showHelp() {
-	fmt.Printf("cc - Git Commit message generator v%s\n\n", version)
+	fmt.Printf("ccg - Git Commit message generator v%s\n\n", version)
 	fmt.Println("Analyzes staged changes and generates conventional commit messages.")
 	fmt.Println("Automatically copies git commit command to clipboard for easy pasting.")
 	fmt.Println()
 	fmt.Println("Usage:")
-	fmt.Println("  cc [flags]                    # Generate commit message")
-	fmt.Println("  cc <subcommand> [args]        # JIRA ticket management")
+	fmt.Println("  ccg [flags]                    # Generate commit message")
+	fmt.Println("  ccg <subcommand> [args]        # JIRA ticket management")
 	fmt.Println()
 	fmt.Println("Flags:")
 	fmt.Println("  --execute      Execute the commit after generating message")
@@ -132,11 +132,11 @@ func showHelp() {
 	fmt.Println("  jira-history          Show JIRA ticket history")
 	fmt.Println()
 	fmt.Println("Examples:")
-	fmt.Println("  cc                    # Generate and copy git commit command")
-	fmt.Println("  cc --execute          # Generate and commit immediately")
-	fmt.Println("  cc set-jira CGC-1234  # Set JIRA ticket for future commits")
-	fmt.Println("  cc jira-status        # Check current JIRA ticket")
-	fmt.Println("  cc clear-jira         # Remove JIRA ticket from commits")
+	fmt.Println("  ccg                    # Generate and copy git commit command")
+	fmt.Println("  ccg --execute          # Generate and commit immediately")
+	fmt.Println("  ccg set-jira CGC-1234  # Set JIRA ticket for future commits")
+	fmt.Println("  ccg jira-status        # Check current JIRA ticket")
+	fmt.Println("  ccg clear-jira         # Remove JIRA ticket from commits")
 	fmt.Println()
 	fmt.Printf("Build info: %s (%s)\n", buildTime, commit)
 }

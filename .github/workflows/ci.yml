@@ -66,8 +66,11 @@ jobs:
         echo "--- Testing cmd/fcgh ---"
         go test -race -v -count=1 ./cmd/fcgh 2>&1 | tee test-fcgh.log
         
-        echo "--- Testing cmd/ccc ---"
-        go test -race -v -count=1 ./cmd/ccc 2>&1 | tee test-ccc.log
+        echo "--- Testing cmd/ccg ---"
+        go test -race -v -count=1 ./cmd/ccg 2>&1 | tee test-ccg.log
+        
+        echo "--- Testing cmd/ccdo ---"
+        go test -race -v -count=1 ./cmd/ccdo 2>&1 | tee test-ccdo.log
         
         echo "--- Testing internal/config ---"
         go test -race -v -count=1 ./internal/config 2>&1 | tee test-config.log

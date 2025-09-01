@@ -16,7 +16,7 @@ var (
 	buildTime = "unknown"
 	commit    = "unknown"
 
-	// Command line flags for ccc.
+	// Command line flags for ccdo.
 	noVerify = flag.Bool("no-verify", false, "Skip pre-commit hooks")
 	verbose  = flag.Bool("verbose", false, "Show detailed analysis")
 	help     = flag.Bool("help", false, "Show help")
@@ -42,7 +42,7 @@ func main() {
 	// Create generator with execute option enabled
 	generator := ccgen.New(ccgen.Options{
 		NoVerify:    *noVerify,
-		Execute:     true, // ccc always executes
+		Execute:     true, // ccdo always executes
 		Copy:        false,
 		Verbose:     *verbose,
 		JiraManager: jira.NewManager(cwd),
@@ -64,12 +64,12 @@ func main() {
 }
 
 func showHelp() {
-	fmt.Printf(`ccc - Conventional Git Commit that bad boy... v %s
+	fmt.Printf(`ccdo - Conventional Commit Do... v %s
 
 auto generates a conventional commit message and commits it for you (it doesn't get any easier than that).'.
 
 USAGE:
-    ccc [options]
+    ccdo [options]
 
 OPTIONS:
     --no-verify     Skip pre-commit hooks when committing
@@ -77,27 +77,27 @@ OPTIONS:
     --help          Show this help message
 
 DESCRIPTION:
-    ccc is a convenience tool, that combines commit message generation with 
+    ccdo is a convenience tool, that combines commit message generation with 
     immediate git commit. It analyzes your staged changes, generates an appropriate
     conventional commit message, and commits the changes automatically.
 
-    This command is equivalent to running: cc --execute
+    This command is equivalent to running: ccg --execute
 
 EXAMPLES:
-    ccc                    # Generate and commit with default settings
-    ccc --no-verify        # Generate and commit, skipping pre-commit hooks
-    ccc --verbose          # Generate and commit with detailed analysis
+    ccdo                    # Generate and commit with default settings
+    ccdo --no-verify        # Generate and commit, skipping pre-commit hooks
+    ccdo --verbose          # Generate and commit with detailed analysis
 
 NOTES:
     - Works best with staged changes (git add your files first)
     - Follows conventional commit format (feat:, fix:, docs:, etc.)
-    - Now uses shared commit generation logic (no external cc dependency)
+    - Now uses shared commit generation logic (no external ccg dependency)
 
 VERSION:
     Version: %s
     Built:   %s
     Commit:  %s
 
-For more information about the underlying cc command, run: cc --help
+For more information about the underlying ccg command, run: ccg --help
 `, version, version, buildTime, commit)
 }

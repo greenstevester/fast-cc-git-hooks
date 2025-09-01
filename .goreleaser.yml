@@ -28,9 +28,9 @@ builds:
     flags:
       - -trimpath
 
-  - id: cc
-    main: ./cmd/cc
-    binary: cc
+  - id: ccg
+    main: ./cmd/ccg
+    binary: ccg
     goos:
       - linux
       - darwin
@@ -48,9 +48,9 @@ builds:
     flags:
       - -trimpath
 
-  - id: ccc
-    main: ./cmd/ccc
-    binary: ccc
+  - id: ccdo
+    main: ./cmd/ccdo
+    binary: ccdo
     goos:
       - linux
       - darwin
@@ -123,8 +123,8 @@ release:
     
     This release includes **three powerful tools**:
     - **`fcgh`** - Fast Conventional Git Hooks for enforcing conventional commits
-    - **`cc`** - Preview generated commit messages based on your changes
-    - **`ccc`** - Generate and commit automatically (Create Conventional Commit)
+    - **`ccg`** - Preview generated commit messages based on your changes
+    - **`ccdo`** - Generate and commit automatically (Conventional Commit Do)
 
     ## ⚡️ Super Quick Setup (2 steps!)
 
@@ -133,7 +133,7 @@ release:
       **🪟 Windows:**
     ```powershell
     # Download and extract fcgh_{{.Tag}}_windows_amd64.zip
-    # Add fcgh.exe, cc.exe and ccc.exe to your PATH
+    # Add fcgh.exe, ccg.exe and ccdo.exe to your PATH
     ```
     
     **🐧 Linux:**
@@ -141,14 +141,14 @@ release:
     # Most common (AMD64)
     curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/download/{{.Tag}}/fcgh_{{.Tag}}_linux_amd64.tar.gz
     tar -xzf fcgh.tar.gz
-    chmod +x fcgh cc ccc
-    sudo mv fcgh cc ccc /usr/local/bin/
+    chmod +x fcgh ccg ccdo
+    sudo mv fcgh ccg ccdo /usr/local/bin/
 
     # ARM64 (Raspberry Pi, etc.)
     curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/download/{{.Tag}}/fcgh_{{.Tag}}_linux_arm64.tar.gz
     tar -xzf fcgh.tar.gz
-    chmod +x fcgh cc ccc
-    sudo mv fcgh cc ccc /usr/local/bin/
+    chmod +x fcgh ccg ccdo
+    sudo mv fcgh ccg ccdo /usr/local/bin/
     ```
 
     **🍎 macOS:**
@@ -156,14 +156,14 @@ release:
     # Intel Macs
     curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/download/{{.Tag}}/fcgh_{{.Tag}}_darwin_amd64.tar.gz
     tar -xzf fcgh.tar.gz
-    chmod +x fcgh cc ccc
-    sudo mv fcgh cc ccc /usr/local/bin/
+    chmod +x fcgh ccg ccdo
+    sudo mv fcgh ccg ccdo /usr/local/bin/
 
     # Apple Silicon (M1/M2/M3)
     curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/download/{{.Tag}}/fcgh_{{.Tag}}_darwin_arm64.tar.gz
     tar -xzf fcgh.tar.gz
-    chmod +x fcgh cc ccc
-    sudo mv fcgh cc ccc /usr/local/bin/
+    chmod +x fcgh ccg ccdo
+    sudo mv fcgh ccg ccdo /usr/local/bin/
     ```
 
 
@@ -176,11 +176,11 @@ release:
 
     ## 🤖 NEW: Automatic Commit Message Generation
     
-    Use the included `cc` helper to automatically generate conventional commit messages:
+    Use the included `ccg` helper to automatically generate conventional commit messages:
     ```bash
-    cc                    # Preview generated commit message
-    ccc                   # Generate and commit automatically
-    cc --verbose          # Show detailed analysis
+    ccg                    # Preview generated commit message
+    ccdo                   # Generate and commit automatically
+    ccg --verbose          # Show detailed analysis
     ```
 
   footer: |

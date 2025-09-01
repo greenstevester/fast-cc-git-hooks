@@ -34,8 +34,8 @@ Inspired by **_Boo_** ...after seeing lots and lots of their git commit messages
 ## Cause it's a lightening-fast "git add-on," that does the work (you don't have time to do):
 
 * **`fcgh`** - installs a git-hook (locally or globally with local install always taking precedence), that checks your commit messages, ensuring they comply to conventional commit format.
-* **`cc`** - generates conventional commit messages, based on your recent changes (and copies it to your clipboard)
-* **`ccc`** - same as cc (above), except it ALSO does the git commit FOR YOU (3 c's for "Create Conventional Commit")
+* **`ccg`** - generates conventional commit messages, based on your recent changes (and copies it to your clipboard)
+* **`ccdo`** - same as ccg (above), except it ALSO does the git commit FOR YOU ("Conventional Commit Do")
 
 ## More features?
 
@@ -46,7 +46,7 @@ Inspired by **_Boo_** ...after seeing lots and lots of their git commit messages
 - Team Developer: Can remove only local hooks while keeping global ones
 - Personal Setup: Can remove global hooks without affecting project-specific local ones
 
-## 🔄 Using fcgh + cc Together or separately - your choice!
+## 🔄 Using fcgh + ccg Together or separately - your choice!
 
 The tools are **independent**, you can happily use one without the other but work beautifully together:
 
@@ -58,12 +58,12 @@ git commit -m "feat: CGC-1245 Added login authentication"
 # ↳ The fcgh hook, automatically validates your message ✅
 ```
 
-### Usage Option 2: Commit messages are generated based on your changes (using ccc) and validated by the fcgh hook
+### Usage Option 2: Commit messages are generated based on your changes (using ccdo) and validated by the fcgh hook
 
 ```bash
-# Let ccc generate the conventional commit message and execute it for you
-ccc
-# ↳ ccc analyzes your git changes and creates a conventional commit message
+# Let ccdo generate the conventional commit message and execute it for you
+ccdo
+# ↳ ccdo analyzes your git changes and creates a conventional commit message
 # ↳ When git commit runs, the git hook (installed via fcgh) validates the generated message ✅
 # ↳ which means: compliant conventional commits, every time! 
 ```
@@ -71,11 +71,11 @@ ccc
 ### You can mix and match:
 
 * **Use fcgh alone**: Ensures your manual commit messages get automatic validation
-* **Use cc alone**: Preview generated conventional commit messages, based on your changes, but you (ctrl-v), paste the whole git command, and you do the commit yourself
-* **Use ccc alone**: Generated conventional commits without validation (but why would you?)
-* **Use ALL THREE**: 1) See generated conventional commits via cc, then 2) trigger the commit via cc PLUS 3) BONUS validation via fcgh being setup - talk about the perfect combo! 🎯
+* **Use ccg alone**: Preview generated conventional commit messages, based on your changes, but you (ctrl-v), paste the whole git command, and you do the commit yourself
+* **Use ccdo alone**: Generated conventional commits without validation (but why would you?)
+* **Use ALL THREE**: 1) See generated conventional commits via ccg, then 2) trigger the commit via ccg PLUS 3) BONUS validation via fcgh being setup - talk about the perfect combo! 🎯
 
-**Pro tip**: Start with `cc` to see what good commit messages look like, then graduate to writing your own!
+**Pro tip**: Start with `ccg` to see what good commit messages look like, then graduate to writing your own!
 
 ## ⚡️ Installation
 
@@ -92,7 +92,7 @@ Each release includes **both tools** - you get everything in one download!
 **🪟 Windows:**
 1. Go to [Releases Page](https://github.com/greenstevester/fast-cc-git-hooks/releases/latest)
 2. Download `fast-cc-git-hooks_windows_amd64.zip`
-3. Extract and add `fcgh.exe` and `cc.exe` and `ccc.exe` to a directory on your PATH
+3. Extract and add `fcgh.exe` and `ccg.exe` and `ccdo.exe` to a directory on your PATH
 NOTE: In windows, there's an option to change only your environment variables - use that as a preference, or just add both to your PATH.
 
 **🐧 Linux:**
@@ -101,14 +101,14 @@ NOTE: In windows, there's an option to change only your environment variables - 
 # Most common (AMD64)
 curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fcgh_linux_amd64.tar.gz
 tar -xzf fcgh.tar.gz
-chmod +x fcgh cc
-sudo mv fcgh cc /usr/local/bin/
+chmod +x fcgh ccg
+sudo mv fcgh ccg /usr/local/bin/
 
 # ARM64 (Raspberry Pi, etc.)
 curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fcgh_linux_arm64.tar.gz
 tar -xzf fcgh.tar.gz
-chmod +x fcgh cc
-sudo mv fcgh cc /usr/local/bin/
+chmod +x fcgh ccg
+sudo mv fcgh ccg /usr/local/bin/
 ```
 
 **🍎 macOS:**
@@ -126,14 +126,14 @@ curl -sSL https://raw.githubusercontent.com/greenstevester/fast-cc-git-hooks/ref
 # Intel Macs
 curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fcgh_darwin_amd64.tar.gz
 tar -xzf fcgh.tar.gz
-chmod +x fcgh cc ccc
-sudo mv fcgh cc ccc /usr/local/bin/
+chmod +x fcgh ccg ccdo
+sudo mv fcgh ccg ccdo /usr/local/bin/
 
 # Apple Silicon (M1/M2/M3) - most common now
 curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fcgh_darwin_arm64.tar.gz
 tar -xzf fcgh.tar.gz
-chmod +x fcgh cc ccc
-sudo mv fcgh cc ccc /usr/local/bin/
+chmod +x fcgh ccg ccdo
+sudo mv fcgh ccg ccdo /usr/local/bin/
 ```
 
 **📱 For macOS Security (Both Options):**
@@ -168,7 +168,7 @@ make install-all
 ```bash
 fcgh setup      # For standard projects
 fcgh setup-ent  # For enterprise projects with JIRA validation
-cc
+ccg
 ```
 
 #### Local Installation (Current Repository Only)
@@ -202,48 +202,48 @@ fcgh remove --global  # Remove only from global git configuration
 fcgh validate "freak: my terrible message"  # Test if a message is bad
 ```
 
-### Commit Helper Commands (cc)
+### Commit Helper Commands (ccg)
 
 **Smart commit generation with semantic analysis:**
 
 ```bash
-cc                     # Generate commit message and copy to clipboard automatically
-cc --no-copy           # Generate commit message without copying to clipboard
-ccc                    # Generate commit message and commit
-cc --verbose           # Show detailed analysis of your changes
-cc --help              # Show all available options
+ccg                     # Generate commit message and copy to clipboard automatically
+ccg --no-copy           # Generate commit message without copying to clipboard
+ccdo                    # Generate commit message and commit
+ccg --verbose           # Show detailed analysis of your changes
+ccg --help              # Show all available options
 ```
 
 **🧠 Semantic Analysis for Infrastructure Code:**
-The `cc` command includes semantic analysis for Terraform files with Oracle OCI awareness. 
+The `ccg` command includes semantic analysis for Terraform files with Oracle OCI awareness. 
 It understands the infrastructure changes and generates contextual commit messages. [See examples →](docs/semantic-analysis-examples.md)
 
 **📋 Clipboard Integration:**
-The `cc` command automatically copies the generated git commit command to your clipboard by default. 
-Perfect for quick copy-paste workflows - just run `cc` and press Ctrl+V in your terminal! Use `--no-copy` to disable this behavior.
+The `ccg` command automatically copies the generated git commit command to your clipboard by default. 
+Perfect for quick copy-paste workflows - just run `ccg` and press Ctrl+V in your terminal! Use `--no-copy` to disable this behavior.
 
-**That's it!** Most people only ever need `fcgh setup-ent` and `ccc`.
+**That's it!** Most people only ever need `fcgh setup-ent` and `ccdo`.
 
 
 ## 🤔 Common Questions
 
 **Q: Do I need all tools?**
-A: No! They're completely independent. Install hooks for validation, ccc for generation, or both together.
+A: No! They're completely independent. Install hooks for validation, ccg for generation, or both together.
 
 **Q: What if I want to turn off validation temporarily?**
 A: Just run `fcgh remove` and it's gone! Run `fcgh setup-ent` to turn it back on.
 
 **Q: Will this mess up my code?**
-A: Nope! The hooks only check commit messages, cc only generates them. Your code stays exactly the same.
+A: Nope! The hooks only check commit messages, ccg only generates them. Your code stays exactly the same.
 
-**Q: What if cc generates a bad commit message?**
+**Q: What if ccg generates a bad commit message?**
 A: The hook will catch it! That's why they work so well together.
 
 **Q: Can I use this on all my projects?**
-A: Yes! When you run `fcgh setup-ent`, it works for ALL your Git projects. cc works in any git repo.
+A: Yes! When you run `fcgh setup-ent`, it works for ALL your Git projects. ccg works in any git repo.
 
-**Q: What if I don't like the cc generated message?**
-A: Just use `cc` (without ccc) to preview first, then write your own and let the hook validate it!
+**Q: What if I don't like the ccg generated message?**
+A: Just use `ccg` (without ccdo) to preview first, then write your own and let the hook validate it!
 
 ## 🎯 Examples of Good vs Bad Commits
 
