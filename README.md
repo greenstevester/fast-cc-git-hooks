@@ -276,10 +276,9 @@ scopes:
 - **Local always wins** when both are installed
 
 ### Changelog Generation Tools
-Once using conventional commits, try these tools:
-- **[semantic-release](https://github.com/semantic-release/semantic-release)** - Fully automated releases
-- **[conventional-changelog](https://github.com/conventional-changelog/conventional-changelog)** - Generate changelogs
-- **[commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version)** - Version + tag management
+Once using conventional commits, you can automate your entire release process:
+- **[See our complete guide →](docs/ChangelogGenerationTools.md)** - Detailed comparison of all tools
+- **Quick picks**: [semantic-release](https://github.com/semantic-release/semantic-release) (automated), [conventional-changelog](https://github.com/conventional-changelog/conventional-changelog) (manual)
 </details>
 
 ## 🤝 Contributing
@@ -293,3 +292,9 @@ MIT License - do whatever you want with this code!
 ---
 
 **TL;DR: `fcgh setup-ent` + `ccdo` = perfect commits forever** 🚀
+
+---
+
+📚 **Learn More:**
+- **[Why these tools exist →](docs/10SecondHistory.md)** - The inspiration behind fcgh
+- **[Changelog automation →](docs/ChangelogGenerationTools.md)** - Next-level release management

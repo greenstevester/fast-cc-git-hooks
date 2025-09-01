@@ -43,13 +43,13 @@ func PrintWithVersionAndBuildTime(version, commit, buildTime string) {
 		if commit != "unknown" && commit != "" && len(commit) >= 7 {
 			// Use short commit hash (first 7 characters)
 			if formattedBuildTime != "" {
-				versionSuffix = fmt.Sprintf(" / version %s (%s) built %s", version, commit[:7], formattedBuildTime)
+				versionSuffix = fmt.Sprintf(" / version %s (%s) / Est. %s", version, commit[:7], formattedBuildTime)
 			} else {
 				versionSuffix = fmt.Sprintf(" / version %s (%s)", version, commit[:7])
 			}
 		} else {
 			if formattedBuildTime != "" {
-				versionSuffix = fmt.Sprintf(" / version %s built %s", version, formattedBuildTime)
+				versionSuffix = fmt.Sprintf(" / version %s / Est. %s", version, formattedBuildTime)
 			} else {
 				versionSuffix = fmt.Sprintf(" / version %s", version)
 			}
@@ -57,12 +57,12 @@ func PrintWithVersionAndBuildTime(version, commit, buildTime string) {
 	} else if commit != "unknown" && commit != "" && len(commit) >= 7 {
 		// Just show commit if version is not available
 		if formattedBuildTime != "" {
-			versionSuffix = fmt.Sprintf(" / %s built %s", commit[:7], formattedBuildTime)
+			versionSuffix = fmt.Sprintf(" / %s / Est. %s", commit[:7], formattedBuildTime)
 		} else {
 			versionSuffix = fmt.Sprintf(" / %s", commit[:7])
 		}
 	} else if formattedBuildTime != "" {
-		versionSuffix = fmt.Sprintf(" / built %s", formattedBuildTime)
+		versionSuffix = fmt.Sprintf(" / Est. %s", formattedBuildTime)
 	}
 
 	if UseASCII() {

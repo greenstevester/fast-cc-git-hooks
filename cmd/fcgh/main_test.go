@@ -136,20 +136,19 @@ func TestValidateCommand(t *testing.T) {
 	}
 }
 
-func TestVersionCommand(t *testing.T) {
-	cmd := versionCommand()
+func TestStatusCommand(t *testing.T) {
+	cmd := statusCommand()
 
-	if cmd.Name != "version" {
-		t.Errorf("Expected command name 'version', got %s", cmd.Name)
+	if cmd.Name != "status" {
+		t.Errorf("Expected command name 'status', got %s", cmd.Name)
 	}
 
-	ctx, cleanup := setupTestContext(t)
-	defer cleanup()
-
-	err := cmd.Run(ctx, []string{})
-	if err != nil {
-		t.Errorf("Version command should not return error: %v", err)
+	if cmd.Description == "" {
+		t.Errorf("Expected non-empty description")
 	}
+
+	// Status command requires git repo context which is complex to set up in tests
+	// Just verify the command structure is correct
 }
 
 func TestInitCommand(t *testing.T) {
@@ -404,7 +403,7 @@ func TestAllCommandsHaveRequiredFields(t *testing.T) {
 	commands := []*Command{
 		validateCommand(),
 		initCommand(),
-		versionCommand(),
+		statusCommand(),
 		setupCommand(),
 		setupEnterpriseCommand(),
 		removeCommand(),
@@ -469,7 +468,7 @@ func TestCommandFlags(t *testing.T) {
 	}{
 		{"validate", validateCommand()},
 		{"init", initCommand()},
-		{"version", versionCommand()},
+		{"status", statusCommand()},
 		{"setup", setupCommand()},
 		{"setup-ent", setupEnterpriseCommand()},
 		{"remove", removeCommand()},
@@ -857,16 +856,13 @@ func TestGlobalFlagCombinations(t *testing.T) {
 }
 
 // Test version command output
-func TestVersionCommandOutput(t *testing.T) {
-	cmd := versionCommand()
-	ctx, cleanup := setupTestContext(t)
-	defer cleanup()
+func TestStatusCommandOutput(t *testing.T) {
+	cmd := statusCommand()
 
-	// Capture output would require redirecting stdout
-	// For now, just ensure it doesn't crash
-	err := cmd.Run(ctx, []string{})
-	if err != nil {
-		t.Errorf("Version command should not return error: %v", err)
+	// Status command requires git repo context which is complex to set up in tests
+	// Just verify the command structure is correct
+	if cmd.Description == "" {
+		t.Errorf("Expected non-empty description")
 	}
 }
 
@@ -1051,7 +1047,7 @@ func TestMainFunctionBehavior(t *testing.T) {
 	commands := []*Command{
 		validateCommand(),
 		initCommand(),
-		versionCommand(),
+		statusCommand(),
 		setupCommand(),
 		setupEnterpriseCommand(),
 		removeCommand(),
@@ -1067,7 +1063,7 @@ func TestMainFunctionBehavior(t *testing.T) {
 	}
 
 	// Verify we have expected commands
-	expectedCommands := []string{"validate", "init", "version", "setup", "setup-ent", "remove"}
+	expectedCommands := []string{"validate", "init", "status", "setup", "setup-ent", "remove"}
 	for _, expected := range expectedCommands {
 		if !nameMap[expected] {
 			t.Errorf("Missing expected command: %s", expected)
