@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/greenstevester/fast-cc-git-hooks/internal/banner"
 	"github.com/greenstevester/fast-cc-git-hooks/internal/config"
 	"github.com/greenstevester/fast-cc-git-hooks/internal/hooks"
 	"github.com/greenstevester/fast-cc-git-hooks/internal/validator"
@@ -41,19 +42,19 @@ var (
 )
 
 func main() {
-	// Print banner
-	fmt.Println(">> Made with ❤️ for Boo")
+	// Print banner with terminal-appropriate formatting
+	banner.Print()
 
 	// Setup base logger.
 	setupLogger(false)
 
 	commands := map[string]*Command{
-		"setup":      setupCommand(),
-		"setup-ent":  setupEnterpriseCommand(),
-		"remove":     removeCommand(),
-		"validate":   validateCommand(),
-		"init":       initCommand(),
-		"version":    versionCommand(),
+		"setup":     setupCommand(),
+		"setup-ent": setupEnterpriseCommand(),
+		"remove":    removeCommand(),
+		"validate":  validateCommand(),
+		"init":      initCommand(),
+		"version":   versionCommand(),
 	}
 
 	// Parse global flags.
@@ -61,7 +62,6 @@ func main() {
 	flag.StringVar(&configFile, "config", "", "path to config file")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "🚀 fcgh - Fast Conventional Git Hooks - Make your commit messages awesome!\n\n")
-		fmt.Fprintf(os.Stderr, "📋 Super Easy Setup (just 2 steps!):\n")
 		fmt.Fprintf(os.Stderr, "   1️⃣  %s setup     ← Start here! This sets everything up\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "   2️⃣  git commit -m \"feat: your message\"  ← Write better commits!\n\n")
 
@@ -138,7 +138,6 @@ func setupLogger(verbose bool) {
 	logger = slog.New(handler)
 	slog.SetDefault(logger)
 }
-
 
 func validateCommand() *Command {
 	fs := flag.NewFlagSet("validate", flag.ExitOnError)
@@ -460,11 +459,11 @@ func copyEnterpriseConfig(destPath string) error {
 	if err != nil {
 		return fmt.Errorf("finding executable: %w", err)
 	}
-	
+
 	// Look for enterprise config relative to executable
 	exeDir := filepath.Dir(executable)
 	templatePath := filepath.Join(exeDir, "example-configs", "fast-cc-hooks.enterprise.yaml")
-	
+
 	// If not found, try relative to current directory (development scenario)
 	if _, statErr := os.Stat(templatePath); os.IsNotExist(statErr) {
 		templatePath = filepath.Join("example-configs", "fast-cc-hooks.enterprise.yaml")
@@ -566,16 +565,25 @@ func ensureConfigExists() (string, bool, error) {
 		return "", false, fmt.Errorf("specified config file not found: %s", configFile)
 	}
 
+	// Helper function to check current directory configs
+	checkCurrentDir := func() (string, bool) {
+		// Check for new filename in current directory
+		if _, err := os.Stat(config.DefaultConfigFile); err == nil {
+			return config.DefaultConfigFile, true
+		}
+		// Check for old filename in current directory
+		if _, err := os.Stat(".fast-cc-hooks.yaml"); err == nil {
+			return ".fast-cc-hooks.yaml", true
+		}
+		return "", false
+	}
+
 	// Check for config in the default home directory location
 	defaultPath, err := config.GetDefaultConfigPath()
 	if err != nil {
-		// Fallback to current directory (new filename first)
-		if _, statErr := os.Stat(config.DefaultConfigFile); statErr == nil {
-			return config.DefaultConfigFile, false, nil
-		}
-		// Check for old filename in current directory
-		if _, statErr := os.Stat(".fast-cc-hooks.yaml"); statErr == nil {
-			return ".fast-cc-hooks.yaml", false, nil
+		// Fallback to current directory when home directory is not accessible
+		if path, found := checkCurrentDir(); found {
+			return path, false, nil
 		}
 		return "", false, fmt.Errorf("cannot determine config path: %w", err)
 	}
@@ -591,14 +599,9 @@ func ensureConfigExists() (string, bool, error) {
 		return oldPath, false, nil
 	}
 
-	// Check if config exists in current directory (new filename first)
-	if _, err := os.Stat(config.DefaultConfigFile); err == nil {
-		return config.DefaultConfigFile, false, nil
-	}
-
-	// Check for old filename in current directory
-	if _, err := os.Stat(".fast-cc-hooks.yaml"); err == nil {
-		return ".fast-cc-hooks.yaml", false, nil
+	// Check current directory as final fallback before creating new config
+	if path, found := checkCurrentDir(); found {
+		return path, false, nil
 	}
 
 	// Create default config in home directory with new filename
@@ -637,7 +640,7 @@ func hasGlobalInstallation() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	
+
 	globalHookPath := filepath.Join(configDir, "hooks", "commit-msg")
 	if _, err := os.Stat(globalHookPath); err == nil {
 		// Read the file to check if it's our hook
@@ -657,7 +660,24 @@ func getGitConfigDir() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("getting home directory: %w", err)
 	}
-	return filepath.Join(home, ".git"), nil
+
+	// Check for empty home directory
+	if home == "" {
+		return "", fmt.Errorf("home directory is empty")
+	}
+
+	// Check XDG_CONFIG_HOME first
+	if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
+		return filepath.Join(xdg, "git"), nil
+	}
+
+	// Default to ~/.config/git on Unix-like systems, AppData on Windows
+	switch runtime.GOOS {
+	case "windows":
+		return filepath.Join(home, "AppData", "Roaming", "Git"), nil
+	default:
+		return filepath.Join(home, ".config", "git"), nil
+	}
 }
 
 // removeGlobalInstallation removes global git hooks
@@ -666,7 +686,7 @@ func removeGlobalInstallation() error {
 	if err != nil {
 		return fmt.Errorf("getting git config directory: %w", err)
 	}
-	
+
 	globalHookPath := filepath.Join(configDir, "hooks", "commit-msg")
 	if _, err := os.Stat(globalHookPath); err == nil {
 		if err := os.Remove(globalHookPath); err != nil {
@@ -754,7 +774,7 @@ func removeCommand() *Command {
 					if promptErr != nil {
 						return fmt.Errorf("getting user choice: %w", promptErr)
 					}
-					
+
 					switch choice {
 					case "local":
 						removeLocal = true

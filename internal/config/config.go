@@ -15,7 +15,7 @@ const (
 	// DefaultConfigFile is the default configuration filename.
 	DefaultConfigFile = "fast-cc-config.yaml"
 	// DefaultConfigDir is the default configuration directory.
-	DefaultConfigDir = ".fast-cc-git-hooks"
+	DefaultConfigDir = ".fast-cc"
 	// DefaultMaxSubjectLength is the default maximum subject line length.
 	DefaultMaxSubjectLength = 72
 )

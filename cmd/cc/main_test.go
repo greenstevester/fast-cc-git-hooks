@@ -3,17 +3,19 @@ package main
 import (
 	"strings"
 	"testing"
+
+	"github.com/greenstevester/fast-cc-git-hooks/pkg/ccgen"
 )
 
 func TestGenerateCommitMessage(t *testing.T) {
 	tests := []struct {
 		name     string
-		changes  []ChangeType
+		changes  []ccgen.ChangeType
 		expected string
 	}{
 		{
 			name: "single change without footer",
-			changes: []ChangeType{
+			changes: []ccgen.ChangeType{
 				{
 					Type:        "feat",
 					Scope:       "auth",
@@ -26,7 +28,7 @@ func TestGenerateCommitMessage(t *testing.T) {
 		},
 		{
 			name: "multiple changes without footer",
-			changes: []ChangeType{
+			changes: []ccgen.ChangeType{
 				{
 					Type:        "feat",
 					Scope:       "auth",
@@ -46,15 +48,15 @@ func TestGenerateCommitMessage(t *testing.T) {
 		},
 		{
 			name:     "empty changes",
-			changes:  []ChangeType{},
+			changes:  []ccgen.ChangeType{},
 			expected: "chore: update files",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := generateCommitMessage(tt.changes)
-			
+			result := ccgen.New(ccgen.Options{}).GenerateCommitMessage(tt.changes)
+
 			// Verify the footer is not present
 			if strings.Contains(result, "Generated with [Claude Code]") {
 				t.Errorf("Expected no Claude Code footer in commit message, but found one")
@@ -62,7 +64,7 @@ func TestGenerateCommitMessage(t *testing.T) {
 			if strings.Contains(result, "Co-Authored-By: Claude") {
 				t.Errorf("Expected no Co-Authored-By footer in commit message, but found one")
 			}
-			
+
 			// For the expected output, we only check the main part (not the full body for multi-change)
 			if tt.name == "multiple changes without footer" {
 				// For multiple changes, just verify it starts correctly and has no footer
@@ -83,7 +85,7 @@ func TestGenerateCommitMessage(t *testing.T) {
 
 func TestGenerateCommitMessageFooterRemoval(t *testing.T) {
 	// Test specifically that no footer is added
-	changes := []ChangeType{
+	changes := []ccgen.ChangeType{
 		{
 			Type:        "feat",
 			Scope:       "test",
@@ -92,9 +94,9 @@ func TestGenerateCommitMessageFooterRemoval(t *testing.T) {
 			Priority:    1,
 		},
 	}
-	
-	result := generateCommitMessage(changes)
-	
+
+	result := ccgen.New(ccgen.Options{}).GenerateCommitMessage(changes)
+
 	// Verify no footer components are present
 	footerElements := []string{
 		"🤖 Generated with [Claude Code]",
@@ -102,7 +104,7 @@ func TestGenerateCommitMessageFooterRemoval(t *testing.T) {
 		"claude.ai/code",
 		"noreply@anthropic.com",
 	}
-	
+
 	for _, element := range footerElements {
 		if strings.Contains(result, element) {
 			t.Errorf("Found unwanted footer element '%s' in commit message: %s", element, result)
@@ -113,13 +115,13 @@ func TestGenerateCommitMessageFooterRemoval(t *testing.T) {
 func TestGenerateCommitMessageFormat(t *testing.T) {
 	// Test that commit messages follow conventional commit format
 	tests := []struct {
-		name    string
-		changes []ChangeType
+		name       string
+		changes    []ccgen.ChangeType
 		wantPrefix string
 	}{
 		{
 			name: "feat with scope",
-			changes: []ChangeType{
+			changes: []ccgen.ChangeType{
 				{
 					Type:        "feat",
 					Scope:       "auth",
@@ -132,7 +134,7 @@ func TestGenerateCommitMessageFormat(t *testing.T) {
 		},
 		{
 			name: "fix without scope",
-			changes: []ChangeType{
+			changes: []ccgen.ChangeType{
 				{
 					Type:        "fix",
 					Scope:       "",
@@ -145,7 +147,7 @@ func TestGenerateCommitMessageFormat(t *testing.T) {
 		},
 		{
 			name: "docs with scope",
-			changes: []ChangeType{
+			changes: []ccgen.ChangeType{
 				{
 					Type:        "docs",
 					Scope:       "api",
@@ -160,21 +162,21 @@ func TestGenerateCommitMessageFormat(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := generateCommitMessage(tt.changes)
-			
+			result := ccgen.New(ccgen.Options{}).GenerateCommitMessage(tt.changes)
+
 			if !strings.HasPrefix(result, tt.wantPrefix) {
 				t.Errorf("Expected commit message to start with '%s', got: %s", tt.wantPrefix, result)
 			}
-			
+
 			// Verify conventional commit format (no footer)
 			lines := strings.Split(result, "\n")
 			firstLine := lines[0]
-			
+
 			// Check that first line doesn't exceed recommended length
 			if len(firstLine) > 72 {
 				t.Errorf("Subject line too long (%d chars): %s", len(firstLine), firstLine)
 			}
-			
+
 			// Ensure no footer is present anywhere in the message
 			if strings.Contains(result, "Generated with") || strings.Contains(result, "Co-Authored-By") {
 				t.Errorf("Commit message should not contain footer, got: %s", result)

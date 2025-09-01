@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
-	"path/filepath"
+
+	"github.com/greenstevester/fast-cc-git-hooks/internal/banner"
+	"github.com/greenstevester/fast-cc-git-hooks/pkg/ccgen"
+	"github.com/greenstevester/fast-cc-git-hooks/pkg/jira"
 )
 
 var (
@@ -21,9 +23,9 @@ var (
 )
 
 func main() {
-	// Print banner
-	fmt.Println(">> Made with ❤️ for Boo")
-	
+	// Print banner with version and commit information
+	banner.PrintWithVersion(version, commit)
+
 	flag.Parse()
 
 	if *help {
@@ -31,74 +33,40 @@ func main() {
 		return
 	}
 
-	// Find the cc binary
-	ccBinary, err := findCCBinary()
+	// Get current working directory for JIRA manager
+	cwd, err := os.Getwd()
 	if err != nil {
-		log.Fatalf("Cannot find cc binary: %v", err)
+		log.Fatalf("Failed to get current directory: %v", err)
 	}
 
-	// Build arguments for cc --execute
-	args := []string{"--execute"}
-	
-	if *noVerify {
-		args = append(args, "--no-verify")
-	}
-	
-	if *verbose {
-		args = append(args, "--verbose")
-	}
+	// Create generator with execute option enabled
+	generator := ccgen.New(ccgen.Options{
+		NoVerify:    *noVerify,
+		Execute:     true, // ccc always executes
+		Copy:        false,
+		Verbose:     *verbose,
+		JiraManager: jira.NewManager(cwd),
+	})
 
-	// Execute cc with --execute flag
-	// #nosec G204 - ccBinary is validated by findCCBinary function
-	cmd := exec.Command(ccBinary, args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
-
-	if err := cmd.Run(); err != nil {
-		if exitError, ok := err.(*exec.ExitError); ok {
-			os.Exit(exitError.ExitCode())
-		}
-		log.Fatalf("Error running cc: %v", err)
-	}
-}
-
-// findCCBinary locates the cc binary relative to ccc.
-func findCCBinary() (string, error) {
-	// Get the path of the current executable (ccc)
-	cccExe, err := os.Executable()
+	// Generate commit message and execute
+	result, err := generator.Generate()
 	if err != nil {
-		return "", fmt.Errorf("cannot find ccc executable: %w", err)
+		log.Fatalf("Failed to generate commit: %v", err)
 	}
 
-	// Look for cc in the same directory
-	cccDir := filepath.Dir(cccExe)
-	ccPath := filepath.Join(cccDir, "cc")
-	
-	// Check if cc exists in the same directory
-	if _, statErr := os.Stat(ccPath); statErr == nil {
-		return ccPath, nil
-	}
+	// Print result (includes execution)
+	generator.PrintResult(result)
 
-	// Try cc with .exe extension (Windows)
-	ccExePath := ccPath + ".exe"
-	if _, statErr := os.Stat(ccExePath); statErr == nil {
-		return ccExePath, nil
+	// Exit with appropriate code
+	if !result.HasChanges {
+		os.Exit(0)
 	}
-
-	// Fallback: try to find cc in PATH
-	ccInPath, err := exec.LookPath("cc")
-	if err == nil {
-		return ccInPath, nil
-	}
-
-	return "", fmt.Errorf("cc binary not found in %s or PATH", cccDir)
 }
 
 func showHelp() {
-	fmt.Printf(`ccc - Generate Commit & Execute v%s
+	fmt.Printf(`ccc - Conventional Git Commit that bad boy... v %s
 
-A shortcut for 'cc --execute' that generates a conventional commit message and executes it.
+auto generates a conventional commit message and commits it for you (it doesn't get any easier than that).'.
 
 USAGE:
     ccc [options]
@@ -110,7 +78,7 @@ OPTIONS:
 
 DESCRIPTION:
     ccc is a convenience tool, that combines commit message generation with 
-    immediate execution. It analyzes your staged changes, generates an appropriate
+    immediate git commit. It analyzes your staged changes, generates an appropriate
     conventional commit message, and commits the changes automatically.
 
     This command is equivalent to running: cc --execute
@@ -121,9 +89,9 @@ EXAMPLES:
     ccc --verbose          # Generate and commit with detailed analysis
 
 NOTES:
-    - Requires the 'cc' command to be available
     - Works best with staged changes (git add your files first)
     - Follows conventional commit format (feat:, fix:, docs:, etc.)
+    - Now uses shared commit generation logic (no external cc dependency)
 
 VERSION:
     Version: %s
