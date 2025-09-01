@@ -285,12 +285,6 @@ func (g *Generator) addAllChanges() error {
 	return cmd.Run()
 }
 
-// getStagedDiff gets the staged diff
-func (g *Generator) getStagedDiff() (string, error) {
-	cmd := exec.Command("git", "diff", "--staged")
-	output, err := cmd.Output()
-	return string(output), err
-}
 
 // convertToLegacyFormat converts intelligent analyses to legacy ChangeType format for compatibility
 func (g *Generator) convertToLegacyFormat(analyses []*IntelligentChangeAnalysis) []ChangeType {

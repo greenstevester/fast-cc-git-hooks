@@ -741,48 +741,4 @@ func (t *TerraformPlugin) detectHotspotFiles(files []semantic.FileChange) map[st
 	return hotspots
 }
 
-// Project-level analysis methods
-func (t *TerraformPlugin) analyzeProviderChanges(files []semantic.FileChange) *semantic.SemanticChange {
-	for _, file := range files {
-		if strings.Contains(file.DiffContent, "provider \"") {
-			return &semantic.SemanticChange{
-				Type:        "feat",
-				Scope:       "infra",
-				Description: "update Terraform provider configuration",
-				Intent:      "Provider management",
-				Impact:      "Changes to infrastructure provider setup",
-				Files:       []string{file.Path},
-				Confidence:  0.9,
-				Reasoning:   "Terraform provider configuration changes detected",
-			}
-		}
-	}
-	return nil
-}
 
-func (t *TerraformPlugin) analyzeModuleStructureChanges(files []semantic.FileChange) *semantic.SemanticChange {
-	moduleChanges := 0
-	var moduleFiles []string
-
-	for _, file := range files {
-		if strings.Contains(file.DiffContent, "module \"") {
-			moduleChanges++
-			moduleFiles = append(moduleFiles, file.Path)
-		}
-	}
-
-	if moduleChanges > 0 {
-		return &semantic.SemanticChange{
-			Type:        "refactor",
-			Scope:       "infra",
-			Description: "restructure Terraform modules",
-			Intent:      "Infrastructure organization",
-			Impact:      fmt.Sprintf("Module structure changes affecting %d files", len(moduleFiles)),
-			Files:       moduleFiles,
-			Confidence:  0.85,
-			Reasoning:   fmt.Sprintf("Terraform module changes detected in %d files", moduleChanges),
-		}
-	}
-
-	return nil
-}

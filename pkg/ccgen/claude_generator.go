@@ -8,10 +8,6 @@ import (
 	"unicode/utf8"
 )
 
-// generateClaudeStyleCommitMessage generates a commit message using Claude's patterns
-func (g *Generator) generateClaudeStyleCommitMessage(analyses []*IntelligentChangeAnalysis) string {
-	return g.generateClaudeStyleCommitMessageWithPatterns(analyses, nil)
-}
 
 // generateClaudeStyleCommitMessageWithPatterns generates commit message using patterns from git analysis
 func (g *Generator) generateClaudeStyleCommitMessageWithPatterns(analyses []*IntelligentChangeAnalysis, patterns *CommitPatterns) string {
