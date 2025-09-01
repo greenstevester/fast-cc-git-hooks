@@ -1603,7 +1603,9 @@ func TestGetGitConfigDirVariousScenarios(t *testing.T) {
 	tempDir := t.TempDir()
 	originalHome := os.Getenv("HOME")
 
-	defer os.Setenv("HOME", originalHome)
+	defer func() {
+		_ = os.Setenv("HOME", originalHome)
+	}()
 
 	tests := []struct {
 		name        string
@@ -1657,9 +1659,9 @@ func TestHasGlobalInstallationErrors(t *testing.T) {
 	originalHome := os.Getenv("HOME")
 	originalUserProfile := os.Getenv("USERPROFILE")
 	defer func() {
-		os.Setenv("HOME", originalHome)
+		_ = os.Setenv("HOME", originalHome)
 		if runtime.GOOS == "windows" {
-			os.Setenv("USERPROFILE", originalUserProfile)
+			_ = os.Setenv("USERPROFILE", originalUserProfile)
 		}
 	}()
 
@@ -1683,9 +1685,9 @@ func TestRemoveGlobalInstallationErrors(t *testing.T) {
 	originalHome := os.Getenv("HOME")
 	originalUserProfile := os.Getenv("USERPROFILE")
 	defer func() {
-		os.Setenv("HOME", originalHome)
+		_ = os.Setenv("HOME", originalHome)
 		if runtime.GOOS == "windows" {
-			os.Setenv("USERPROFILE", originalUserProfile)
+			_ = os.Setenv("USERPROFILE", originalUserProfile)
 		}
 	}()
 
