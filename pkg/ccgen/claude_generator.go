@@ -83,7 +83,9 @@ func (g *Generator) enhanceDescription(analysis *IntelligentChangeAnalysis) stri
 	
 	for old, new := range replacements {
 		if strings.Contains(strings.ToLower(desc), old) {
-			desc = strings.ReplaceAll(strings.ToLower(desc), old, new)
+			// Preserve case by using case-insensitive replacement
+			desc = strings.ReplaceAll(desc, old, new)
+			desc = strings.ReplaceAll(desc, strings.Title(old), strings.Title(new))
 			break
 		}
 	}

@@ -128,25 +128,22 @@ func (g *Generator) analyzeChangeContext(analysis *IntelligentChangeAnalysis, di
 	contexts := []string{}
 	
 	// Look for error handling improvements
-	if strings.Contains(diff, "+.*error") || strings.Contains(diff, "+.*Error") {
+	if g.containsPattern(strings.Split(diff, "\n"), `\+.*(?i)(error|Error)`) {
 		contexts = append(contexts, "improve error handling")
 	}
 	
 	// Look for performance improvements
-	if strings.Contains(diff, "+.*cache") || strings.Contains(diff, "+.*Cache") ||
-		strings.Contains(diff, "+.*optimize") || strings.Contains(diff, "+.*Optimize") {
+	if g.containsPattern(strings.Split(diff, "\n"), `\+.*(?i)(cache|Cache|optimize|Optimize)`) {
 		contexts = append(contexts, "enhance performance")
 	}
 	
 	// Look for security improvements
-	if strings.Contains(diff, "+.*security") || strings.Contains(diff, "+.*Security") ||
-		strings.Contains(diff, "+.*validate") || strings.Contains(diff, "+.*Validate") {
+	if g.containsPattern(strings.Split(diff, "\n"), `\+.*(?i)(security|Security|validate|Validate)`) {
 		contexts = append(contexts, "strengthen security")
 	}
 	
 	// Look for user experience improvements
-	if strings.Contains(diff, "+.*user") || strings.Contains(diff, "+.*User") ||
-		strings.Contains(diff, "+.*help") || strings.Contains(diff, "+.*Help") {
+	if g.containsPattern(strings.Split(diff, "\n"), `\+.*(?i)(user|User|help|Help)`) {
 		contexts = append(contexts, "improve user experience")
 	}
 	
