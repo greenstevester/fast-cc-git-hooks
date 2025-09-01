@@ -1613,9 +1613,13 @@ func TestEnsureEnterpriseConfigExistsMoreErrors(t *testing.T) {
 func TestGetGitConfigDirVariousScenarios(t *testing.T) {
 	tempDir := t.TempDir()
 	originalHome := os.Getenv("HOME")
+	originalUserProfile := os.Getenv("USERPROFILE")
 
 	defer func() {
 		_ = os.Setenv("HOME", originalHome)
+		if runtime.GOOS == "windows" {
+			_ = os.Setenv("USERPROFILE", originalUserProfile)
+		}
 	}()
 
 	tests := []struct {
@@ -1644,8 +1648,17 @@ func TestGetGitConfigDirVariousScenarios(t *testing.T) {
 				if err := os.Setenv("HOME", tt.homeValue); err != nil {
 					t.Fatalf("Failed to set HOME: %v", err)
 				}
+				// On Windows, also set USERPROFILE which is used by os.UserHomeDir()
+				if runtime.GOOS == "windows" {
+					if err := os.Setenv("USERPROFILE", tt.homeValue); err != nil {
+						t.Fatalf("Failed to set USERPROFILE: %v", err)
+					}
+				}
 			} else {
 				os.Unsetenv("HOME")
+				if runtime.GOOS == "windows" {
+					os.Unsetenv("USERPROFILE")
+				}
 			}
 
 			dir, err := getGitConfigDir()
