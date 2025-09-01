@@ -11,7 +11,18 @@ import (
 
 // Print displays the banner with appropriate formatting for the terminal
 func Print() {
-	PrintWithVersion("dev", "unknown")
+	PrintSimple()
+}
+
+// PrintSimple displays the basic banner without version information
+func PrintSimple() {
+	if UseASCII() {
+		// Use ASCII art heart for better compatibility
+		fmt.Printf(">>> fast-cc gen / Made with <3 for Boo\n")
+	} else {
+		// Use emoji for terminals that support it
+		fmt.Printf(">>> fast-cc gen / Made with ❤️  for Boo\n")
+	}
 }
 
 // PrintWithVersion displays the banner with version and commit information

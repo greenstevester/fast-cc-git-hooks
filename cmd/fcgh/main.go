@@ -47,8 +47,30 @@ var (
 )
 
 func main() {
-	// Print banner with version, commit and build time information
-	banner.PrintWithVersionAndBuildTime(version, commit, buildTime)
+	// Parse global flags first to check for verbose mode
+	flag.BoolVar(&verbose, "v", false, "verbose output")
+	flag.BoolVar(&verbose, "verbose", false, "verbose output")
+	flag.StringVar(&configFile, "config", "", "path to config file")
+	
+	// We need to parse flags early to determine if we should show verbose banner
+	// But we'll do a proper parse later for command-specific flags
+	for i, arg := range os.Args[1:] {
+		if arg == "-v" || arg == "--verbose" {
+			verbose = true
+			break
+		}
+		// Stop parsing if we hit a command name (not a flag)
+		if !strings.HasPrefix(arg, "-") && i > 0 {
+			break
+		}
+	}
+	
+	// Print banner - verbose if flag is set
+	if verbose {
+		banner.PrintWithVersionAndBuildTime(version, commit, buildTime)
+	} else {
+		banner.PrintSimple()
+	}
 
 	// Setup base logger.
 	setupLogger(false)
@@ -62,8 +84,10 @@ func main() {
 		"status":    statusCommand(),
 	}
 
-	// Parse global flags.
+	// Parse global flags (already defined above, just reset for proper parsing).
+	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	flag.BoolVar(&verbose, "v", false, "verbose output")
+	flag.BoolVar(&verbose, "verbose", false, "verbose output")  
 	flag.StringVar(&configFile, "config", "", "path to config file")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "🚀 fcgh - Fast Conventional Git Hooks\n\n")

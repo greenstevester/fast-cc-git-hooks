@@ -19,14 +19,22 @@ var (
 	// Command line flags for ccdo.
 	noVerify = flag.Bool("no-verify", false, "Skip pre-commit hooks")
 	verbose  = flag.Bool("verbose", false, "Show detailed analysis")
+	verboseV = flag.Bool("v", false, "Show detailed analysis (shorthand)")
 	help     = flag.Bool("help", false, "Show help")
 )
 
 func main() {
-	// Print banner with version, commit and build time information
-	banner.PrintWithVersionAndBuildTime(version, commit, buildTime)
-
 	flag.Parse()
+	
+	// Check if verbose mode is enabled (either flag)
+	isVerbose := *verbose || *verboseV
+	
+	// Print banner - verbose if flag is set
+	if isVerbose {
+		banner.PrintWithVersionAndBuildTime(version, commit, buildTime)
+	} else {
+		banner.PrintSimple()
+	}
 
 	if *help {
 		showHelp()
@@ -44,7 +52,7 @@ func main() {
 		NoVerify:    *noVerify,
 		Execute:     true, // ccdo always executes
 		Copy:        false,
-		Verbose:     *verbose,
+		Verbose:     isVerbose,
 		JiraManager: jira.NewManager(cwd),
 	})
 
@@ -73,7 +81,7 @@ USAGE:
 
 OPTIONS:
     --no-verify     Skip pre-commit hooks when committing
-    --verbose       Show detailed analysis of changes
+    --verbose, -v   Show detailed analysis of changes and version info
     --help          Show this help message
 
 DESCRIPTION:

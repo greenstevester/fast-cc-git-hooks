@@ -21,14 +21,22 @@ var (
 	execute  = flag.Bool("execute", false, "Execute the commit after generating message")
 	noCopy   = flag.Bool("no-copy", false, "Disable copying git commit command to clipboard")
 	verbose  = flag.Bool("verbose", false, "Show detailed analysis")
+	verboseV = flag.Bool("v", false, "Show detailed analysis (shorthand)")
 	help     = flag.Bool("help", false, "Show help")
 )
 
 func main() {
-	// Print banner with version, commit and build time information
-	banner.PrintWithVersionAndBuildTime(version, commit, buildTime)
-
 	flag.Parse()
+	
+	// Check if verbose mode is enabled (either flag)
+	isVerbose := *verbose || *verboseV
+	
+	// Print banner - verbose if flag is set
+	if isVerbose {
+		banner.PrintWithVersionAndBuildTime(version, commit, buildTime)
+	} else {
+		banner.PrintSimple()
+	}
 
 	// Handle subcommands
 	args := flag.Args()
@@ -55,7 +63,7 @@ func main() {
 		NoVerify:    *noVerify,
 		Execute:     *execute,
 		Copy:        !*noCopy, // Copy by default unless --no-copy is specified
-		Verbose:     *verbose,
+		Verbose:     isVerbose,
 		JiraManager: jira.NewManager(cwd),
 	})
 
@@ -122,7 +130,7 @@ func showHelp() {
 	fmt.Println("  --execute      Execute the commit after generating message")
 	fmt.Println("  --no-copy      Disable copying git commit command to clipboard")
 	fmt.Println("  --no-verify    Skip pre-commit hooks when committing")
-	fmt.Println("  --verbose      Show detailed analysis of changes")
+	fmt.Println("  --verbose, -v  Show detailed analysis of changes and version info")
 	fmt.Println("  --help         Show this help message")
 	fmt.Println()
 	fmt.Println("JIRA Commands:")
