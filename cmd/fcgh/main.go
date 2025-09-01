@@ -199,6 +199,7 @@ func validateCommand() *Command {
 				for _, err := range result.Errors {
 					fmt.Fprintf(os.Stderr, "  • %v\n", err)
 				}
+				return fmt.Errorf("validation failed")
 			}
 
 			fmt.Println("✅ Commit message is valid")

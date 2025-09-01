@@ -806,10 +806,10 @@ func TestValidateCommandEdgeCases(t *testing.T) {
 	// Reset validateFile
 	validateFile = ""
 
-	// Test with multiple arguments
-	err = cmd.Run(ctx, []string{"arg1", "arg2"})
-	if err == nil {
-		t.Error("Should return error for multiple arguments")
+	// Test with multiple arguments (should join them and validate as message)
+	err = cmd.Run(ctx, []string{"feat:", "test", "message"})
+	if err != nil {
+		t.Errorf("Should handle multiple arguments by joining them: %v", err)
 	}
 }
 
