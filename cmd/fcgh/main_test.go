@@ -29,14 +29,24 @@ func setupTestContext(t *testing.T) (context.Context, func()) {
 	// Store original environment variables
 	origHome := os.Getenv("HOME")
 	origUser := os.Getenv("USER")
+	origUserProfile := os.Getenv("USERPROFILE")
 
-	// Set test environment
+	// Set test environment (Windows uses different env vars)
 	if err := os.Setenv("HOME", tempDir); err != nil {
 		t.Fatalf("Failed to set HOME: %v", err)
+	}
+	// On Windows, also set USERPROFILE which is used by os.UserHomeDir()
+	if runtime.GOOS == "windows" {
+		if err := os.Setenv("USERPROFILE", tempDir); err != nil {
+			t.Fatalf("Failed to set USERPROFILE: %v", err)
+		}
 	}
 	if err := os.Setenv("USER", "testuser"); err != nil {
 		t.Fatalf("Failed to set USER: %v", err)
 	}
+
+	// Initialize logger for tests
+	setupLogger(false)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 
@@ -50,6 +60,11 @@ func setupTestContext(t *testing.T) (context.Context, func()) {
 		}
 		if err := os.Setenv("USER", origUser); err != nil {
 			t.Errorf("Failed to restore USER: %v", err)
+		}
+		if runtime.GOOS == "windows" {
+			if err := os.Setenv("USERPROFILE", origUserProfile); err != nil {
+				t.Errorf("Failed to restore USERPROFILE: %v", err)
+			}
 		}
 	}
 
@@ -612,8 +627,15 @@ func TestEnsureEnterpriseConfigExistsEdgeCases(t *testing.T) {
 
 // Test copyEnterpriseConfig edge cases
 func TestCopyEnterpriseConfigEdgeCases(t *testing.T) {
-	// Test with invalid destination path
-	err := copyEnterpriseConfig("/invalid/path/config.yaml")
+	// Test with invalid destination path (use definitely invalid path for all platforms)
+	var invalidPath string
+	if runtime.GOOS == "windows" {
+		invalidPath = "Z:\\nonexistent\\very\\deep\\invalid\\path\\config.yaml"
+	} else {
+		invalidPath = "/nonexistent/very/deep/invalid/path/config.yaml"
+	}
+	
+	err := copyEnterpriseConfig(invalidPath)
 	if err == nil {
 		t.Error("Should return error for invalid path")
 	}
@@ -635,8 +657,15 @@ func TestCopyEnterpriseConfigEdgeCases(t *testing.T) {
 
 // Test createBasicEnterpriseConfig edge cases
 func TestCreateBasicEnterpriseConfigEdgeCases(t *testing.T) {
-	// Test with invalid destination path
-	err := createBasicEnterpriseConfig("/invalid/path/config.yaml")
+	// Test with invalid destination path (use definitely invalid path for all platforms)
+	var invalidPath string
+	if runtime.GOOS == "windows" {
+		invalidPath = "Z:\\nonexistent\\very\\deep\\invalid\\path\\config.yaml"
+	} else {
+		invalidPath = "/nonexistent/very/deep/invalid/path/config.yaml"
+	}
+	
+	err := createBasicEnterpriseConfig(invalidPath)
 	if err == nil {
 		t.Error("Should return error for invalid path")
 	}
@@ -1626,10 +1655,19 @@ func TestGetGitConfigDirVariousScenarios(t *testing.T) {
 // Test hasGlobalInstallation error scenarios
 func TestHasGlobalInstallationErrors(t *testing.T) {
 	originalHome := os.Getenv("HOME")
-	defer os.Setenv("HOME", originalHome)
+	originalUserProfile := os.Getenv("USERPROFILE")
+	defer func() {
+		os.Setenv("HOME", originalHome)
+		if runtime.GOOS == "windows" {
+			os.Setenv("USERPROFILE", originalUserProfile)
+		}
+	}()
 
-	// Test with no HOME directory
+	// Test with no HOME directory (unset both HOME and USERPROFILE on Windows)
 	os.Unsetenv("HOME")
+	if runtime.GOOS == "windows" {
+		os.Unsetenv("USERPROFILE")
+	}
 
 	has, err := hasGlobalInstallation()
 	if err == nil {
@@ -1643,10 +1681,19 @@ func TestHasGlobalInstallationErrors(t *testing.T) {
 // Test removeGlobalInstallation error scenarios
 func TestRemoveGlobalInstallationErrors(t *testing.T) {
 	originalHome := os.Getenv("HOME")
-	defer os.Setenv("HOME", originalHome)
+	originalUserProfile := os.Getenv("USERPROFILE")
+	defer func() {
+		os.Setenv("HOME", originalHome)
+		if runtime.GOOS == "windows" {
+			os.Setenv("USERPROFILE", originalUserProfile)
+		}
+	}()
 
-	// Test with no HOME directory
+	// Test with no HOME directory (unset both HOME and USERPROFILE on Windows)
 	os.Unsetenv("HOME")
+	if runtime.GOOS == "windows" {
+		os.Unsetenv("USERPROFILE")
+	}
 
 	err := removeGlobalInstallation()
 	if err == nil {
