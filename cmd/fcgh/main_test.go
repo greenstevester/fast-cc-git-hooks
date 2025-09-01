@@ -602,7 +602,6 @@ func TestEnsureEnterpriseConfigExistsEdgeCases(t *testing.T) {
 	if err := os.Setenv("HOME", tempHome); err != nil {
 		t.Fatalf("Failed to set HOME: %v", err)
 	}
-	defer cleanup()
 
 	// Create .fast-cc directory
 	configDir := filepath.Join(tempHome, ".fast-cc")
@@ -634,7 +633,7 @@ func TestCopyEnterpriseConfigEdgeCases(t *testing.T) {
 	} else {
 		invalidPath = "/nonexistent/very/deep/invalid/path/config.yaml"
 	}
-	
+
 	err := copyEnterpriseConfig(invalidPath)
 	if err == nil {
 		t.Error("Should return error for invalid path")
@@ -664,7 +663,7 @@ func TestCreateBasicEnterpriseConfigEdgeCases(t *testing.T) {
 	} else {
 		invalidPath = "/nonexistent/very/deep/invalid/path/config.yaml"
 	}
-	
+
 	err := createBasicEnterpriseConfig(invalidPath)
 	if err == nil {
 		t.Error("Should return error for invalid path")

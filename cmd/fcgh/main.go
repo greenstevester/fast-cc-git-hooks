@@ -565,16 +565,25 @@ func ensureConfigExists() (string, bool, error) {
 		return "", false, fmt.Errorf("specified config file not found: %s", configFile)
 	}
 
+	// Helper function to check current directory configs
+	checkCurrentDir := func() (string, bool) {
+		// Check for new filename in current directory
+		if _, err := os.Stat(config.DefaultConfigFile); err == nil {
+			return config.DefaultConfigFile, true
+		}
+		// Check for old filename in current directory
+		if _, err := os.Stat(".fast-cc-hooks.yaml"); err == nil {
+			return ".fast-cc-hooks.yaml", true
+		}
+		return "", false
+	}
+
 	// Check for config in the default home directory location
 	defaultPath, err := config.GetDefaultConfigPath()
 	if err != nil {
-		// Fallback to current directory (new filename first)
-		if _, statErr := os.Stat(config.DefaultConfigFile); statErr == nil {
-			return config.DefaultConfigFile, false, nil
-		}
-		// Check for old filename in current directory
-		if _, statErr := os.Stat(".fast-cc-hooks.yaml"); statErr == nil {
-			return ".fast-cc-hooks.yaml", false, nil
+		// Fallback to current directory when home directory is not accessible
+		if path, found := checkCurrentDir(); found {
+			return path, false, nil
 		}
 		return "", false, fmt.Errorf("cannot determine config path: %w", err)
 	}
@@ -590,14 +599,9 @@ func ensureConfigExists() (string, bool, error) {
 		return oldPath, false, nil
 	}
 
-	// Check if config exists in current directory (new filename first)
-	if _, err := os.Stat(config.DefaultConfigFile); err == nil {
-		return config.DefaultConfigFile, false, nil
-	}
-
-	// Check for old filename in current directory
-	if _, err := os.Stat(".fast-cc-hooks.yaml"); err == nil {
-		return ".fast-cc-hooks.yaml", false, nil
+	// Check current directory as final fallback before creating new config
+	if path, found := checkCurrentDir(); found {
+		return path, false, nil
 	}
 
 	// Create default config in home directory with new filename
