@@ -16,9 +16,14 @@ import (
 	"github.com/greenstevester/fast-cc-git-hooks/internal/config"
 	"github.com/greenstevester/fast-cc-git-hooks/internal/hooks"
 	"github.com/greenstevester/fast-cc-git-hooks/internal/validator"
+	"github.com/greenstevester/fast-cc-git-hooks/pkg/jira"
 )
 
-const version = "1.0.0"
+var (
+	version   = "dev"
+	buildTime = "unknown"
+	commit    = "unknown"
+)
 
 // Command represents a CLI command.
 type Command struct {
@@ -42,8 +47,8 @@ var (
 )
 
 func main() {
-	// Print banner with terminal-appropriate formatting
-	banner.Print()
+	// Print banner with version, commit and build time information
+	banner.PrintWithVersionAndBuildTime(version, commit, buildTime)
 
 	// Setup base logger.
 	setupLogger(false)
@@ -54,7 +59,7 @@ func main() {
 		"remove":    removeCommand(),
 		"validate":  validateCommand(),
 		"init":      initCommand(),
-		"version":   versionCommand(),
+		"status":    statusCommand(),
 	}
 
 	// Parse global flags.
@@ -68,8 +73,8 @@ func main() {
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "setup-ent", "🏢 Enterprise setup - global by default (--local for current repo, local overrides global)")
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "remove", "🗑️  Easy removal - uninstall git hooks (--local for current repo removal)")
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "validate", "🔍 Test a git commit message, to see if it follows conventional format")
+		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "status", "📊 Show git hook installation status and current JIRA ticket")
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "init", "📝 Create a config file")
-		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "version", "ℹ️  Show version info")
 
 		fmt.Fprintf(os.Stderr, "\n🔧 Options:\n")
 		flag.PrintDefaults()
@@ -253,21 +258,6 @@ func initCommand() *Command {
 	}
 }
 
-func versionCommand() *Command {
-	fs := flag.NewFlagSet("version", flag.ExitOnError)
-
-	return &Command{
-		Name:        "version",
-		Description: "ℹ️  Show version info",
-		Flags:       fs,
-		Run: func(_ context.Context, _ []string) error {
-			fmt.Printf("fcgh version %s\n", version)
-			fmt.Printf("Go version: %s\n", runtime.Version())
-			fmt.Printf("OS/Arch: %s/%s\n", runtime.GOOS, runtime.GOARCH)
-			return nil
-		},
-	}
-}
 
 func setupCommand() *Command {
 	fs := flag.NewFlagSet("setup", flag.ExitOnError)
@@ -719,6 +709,90 @@ func promptUserChoice() (string, error) {
 		return "cancel", nil
 	default:
 		return "", fmt.Errorf("invalid choice: %s", choice)
+	}
+}
+
+func statusCommand() *Command {
+	fs := flag.NewFlagSet("status", flag.ExitOnError)
+
+	return &Command{
+		Name:        "status",
+		Description: "📊 Show git hook installation status and current JIRA ticket",
+		Flags:       fs,
+		Run: func(_ context.Context, _ []string) error {
+			fmt.Println("📊 fcgh Status")
+			fmt.Println("==============")
+			fmt.Println()
+
+			// Check git hook installations
+			hasLocal, hasGlobal, err := checkInstallations()
+			if err != nil {
+				return fmt.Errorf("checking installations: %w", err)
+			}
+
+			// Git Hook Status
+			fmt.Println("🪝 Git Hook Status:")
+			if hasLocal {
+				fmt.Println("   ✅ Local hooks installed (current repository)")
+			} else {
+				fmt.Println("   ❌ Local hooks not installed")
+			}
+
+			if hasGlobal {
+				fmt.Println("   ✅ Global hooks installed (all repositories)")
+			} else {
+				fmt.Println("   ❌ Global hooks not installed")
+			}
+
+			if !hasLocal && !hasGlobal {
+				fmt.Println("   💡 Run 'fcgh setup-ent' to install hooks")
+			}
+			fmt.Println()
+
+			// JIRA Status
+			cwd, err := os.Getwd()
+			if err != nil {
+				fmt.Println("🎫 JIRA Status:")
+				fmt.Println("   ⚠️  Unable to determine current directory")
+			} else {
+				jiraManager := jira.NewManager(cwd)
+				currentTicket, err := jiraManager.GetCurrentJiraTicket()
+				if err != nil {
+					fmt.Println("🎫 JIRA Status:")
+					fmt.Printf("   ⚠️  Error reading JIRA status: %v\n", err)
+				} else {
+					fmt.Println("🎫 JIRA Status:")
+					if currentTicket == "" {
+						fmt.Println("   ❌ No JIRA ticket set")
+						fmt.Println("   💡 Use 'ccg set-jira PROJ-123' to set a ticket")
+					} else {
+						fmt.Printf("   ✅ Current ticket: %s\n", currentTicket)
+						fmt.Println("   💡 Use 'ccg clear-jira' to clear or 'ccg set-jira NEW-123' to change")
+					}
+				}
+			}
+			fmt.Println()
+
+			// Configuration Status
+			configPath := configFile
+			if configPath == "" {
+				if defaultPath, err := config.GetDefaultConfigPath(); err == nil {
+					configPath = defaultPath
+				} else {
+					configPath = config.DefaultConfigFile
+				}
+			}
+
+			fmt.Println("⚙️  Configuration:")
+			if _, err := os.Stat(configPath); err == nil {
+				fmt.Printf("   ✅ Config file found: %s\n", configPath)
+			} else {
+				fmt.Println("   ❌ No config file found")
+				fmt.Println("   💡 Run 'fcgh init' to create a config file")
+			}
+
+			return nil
+		},
 	}
 }
 

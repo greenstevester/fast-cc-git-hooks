@@ -1,404 +1,295 @@
-# 🚀 Fast Conventional Commit Git Hooks
+# ⚡ Fast Conventional Commits
 
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/greenstevester/fast-cc-git-hooks?style=for-the-badge&logo=github)](https://github.com/greenstevester/fast-cc-git-hooks/releases/latest)
-[![Go Version](https://img.shields.io/github/go-mod/go-version/greenstevester/fast-cc-git-hooks?style=for-the-badge&logo=go)](https://golang.org/)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/greenstevester/fast-cc-git-hooks/release.yml?branch=main&style=for-the-badge&logo=github-actions)](https://github.com/greenstevester/fast-cc-git-hooks/actions)
-[![License](https://img.shields.io/github/license/greenstevester/fast-cc-git-hooks?style=for-the-badge)](https://github.com/greenstevester/fast-cc-git-hooks/blob/main/LICENSE)
-
 [![Platform Support](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-blue?style=for-the-badge)](https://github.com/greenstevester/fast-cc-git-hooks/releases/latest)
-[![Architecture](https://img.shields.io/badge/arch-amd64%20%7C%20arm64-lightgrey?style=for-the-badge)](https://github.com/greenstevester/fast-cc-git-hooks/releases/latest)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg?style=for-the-badge)](https://conventionalcommits.org)
+
+> **Write [conventional](https://www.conventionalcommits.org/en/v1.0.0/) git commits automatically.** Never think about allowed commit formats again, this toolset does it for you.
+
+```bash
+# Instead of this:
+git commit -m "fix stuff"
+git commit -m "WIP"
+git commit -m "updated files"
+
+# Get this automatically:
+git commit -m "feat(auth): add JWT token validation"
+git commit -m "fix(api): resolve timeout in user login"
+git commit -m "docs(readme): update installation instructions"
+```
 
 ## WHAT IS THIS?
 
-**The fastest way for YOU, to get [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) messages for ALL your git commits!** 
+Lightening-fast "git add-ons," that do the repetitive work:
 
-WHY CONVENTIONAL COMMITS?  WHY DO YOU CARE?
-Well, it depends really, do you care about: 
-- clean, consistent, and easy-to-understand commit messages (sure)
-- auto-generate CHANGELOG's (maybe)
-- infer semantic version bumps when required, just from your commit messages. (yes, take that boilerplate out of your life)
-- making you a less "amateur-hour" developer, and more "professional-hour" developer.
-- make your commit history data-mine-able, and more importantly, **easier to understand** for other developers (to help contribute).
-
-It all stems from something simple, but usually this means more discipline AND (worst of all) strict adherence to a specific workflow. Most people automate this via their bash shell, but bash only goes so far - ergo this tool. 
-
-And on that note, strict adherence to a specific workflow is enough to scare away most coders, who just want to build without the added "admin" overhead / accounting / audits while they're in flow.
-
-So, this small set of performance-obsessed tools is for YOU (and the wider community of coders), to free the world of *crappy commit messages* AND to prevent further pollution of potentially GREAT git repos.
-
-Inspired by **_Boo_** ...after seeing lots and lots of their git commit messages, all having something to the tune of "feat: CGC-0000 bla bla bla...".
-
-## WHY USE THIS?
-
-## Cause it's a lightening-fast "git add-on," that does the work (you don't have time to do):
-
-* **`fcgh`** - installs a git-hook (locally or globally with local install always taking precedence), that checks your commit messages, ensuring they comply to conventional commit format.
+* **`fcgh`** - installs a git-hook (locally or globally), to check your commit messages, ensuring they comply to conventional commit format.
 * **`ccg`** - generates conventional commit messages, based on your recent changes (and copies it to your clipboard)
-* **`ccdo`** - same as ccg (above), except it ALSO does the git commit FOR YOU ("Conventional Commit Do")
+* **`ccdo`** - same as ccg (above), except it ALSO does the git commit FOR YOU
 
-## More features?
 
-* easily choose between system-wide or project-specific hook installation
-* set a JIRA ticket to be auto-included in your 10 next git commits, (although maybe you need to do a squash after all that)
+## 🚀 Quick Start
 
-🎯 Real-World Scenarios Handled:
-- Team Developer: Can remove only local hooks while keeping global ones
-- Personal Setup: Can remove global hooks without affecting project-specific local ones
+**Step 1:** Install
 
-## 🔄 Using fcgh + ccg Together or separately - your choice!
-
-The tools are **independent**, you can happily use one without the other but work beautifully together:
-
-### Usage Option 1: You write your own commit messages (with fcgh installed)
+**For Linux/Windows:** Download from [releases](https://github.com/greenstevester/fast-cc-git-hooks/releases) and extract to your PATH
 
 ```bash
-# Write your commit message manually
-git commit -m "feat: CGC-1245 Added login authentication"
-# ↳ The fcgh hook, automatically validates your message ✅
+# macOS 
+curl -sSL https://raw.githubusercontent.com/greenstevester/fast-cc-git-hooks/main/install-macos.sh | bash
+
+# Linux/Windows - Manual install (choose your platform below)
 ```
 
-### Usage Option 2: Commit messages are generated based on your changes (using ccdo) and validated by the fcgh hook
+**Step 2:** Set up once, globally (for all repos - this is the default)
+```bash
+fcgh setup-ent
+```
+Or Locally (from within the current repo)
 
 ```bash
-# Let ccdo generate the conventional commit message and execute it for you
-ccdo
-# ↳ ccdo analyzes your git changes and creates a conventional commit message
-# ↳ When git commit runs, the git hook (installed via fcgh) validates the generated message ✅
-# ↳ which means: compliant conventional commits, every time! 
+fcgh setup-ent --local
 ```
 
-### You can mix and match:
+**Step 3:** set a JIRA ticket reference (when you start working on a ticket)
+```bash
+ccg set-jira CGC-1234
+```
 
-* **Use fcgh alone**: Ensures your manual commit messages get automatic validation
-* **Use ccg alone**: Preview generated conventional commit messages, based on your changes, but you (ctrl-v), paste the whole git command, and you do the commit yourself
-* **Use ccdo alone**: Generated conventional commits without validation (but why would you?)
-* **Use ALL THREE**: 1) See generated conventional commits via ccg, then 2) trigger the commit via ccg PLUS 3) BONUS validation via fcgh being setup - talk about the perfect combo! 🎯
+**Step 4.a:** use `ccg` to preview the commit message (copied to the clipboard)
 
-**Pro tip**: Start with `ccg` to see what good commit messages look like, then graduate to writing your own!
-
-## ⚡️ Installation
-
-### Prerequisites
-
-* Git (obviously!)
-
-### Step 1: Install the tools
-
-**Option A: Download the Binary** 
-
-Each release includes **both tools** - you get everything in one download!
-
-**🪟 Windows:**
-1. Go to [Releases Page](https://github.com/greenstevester/fast-cc-git-hooks/releases/latest)
-2. Download `fast-cc-git-hooks_windows_amd64.zip`
-3. Extract and add `fcgh.exe` and `ccg.exe` and `ccdo.exe` to a directory on your PATH
-NOTE: In windows, there's an option to change only your environment variables - use that as a preference, or just add both to your PATH.
-
-**🐧 Linux:**
+NOTE: You don't need to run git add . manually - both ccg and ccdo handle this automatically as part of their workflow.
 
 ```bash
-# Most common (AMD64)
+ccg  # Generates commit message with ticket reference (if you set one) and copies to the clipboard
+```
+OR 
+
+**Step 4.b:** Generate + Commit automatically (fastest)
+```bash
+ccdo  # Generates commit message with ticket reference (if you set one) + commits automatically
+```
+
+🎉 **Done!** Every commit is now formatted.
+
+
+## 📖 To recap, choose your workflow
+
+### **🤖 Fully Automated** (fastest)
+Let the tools do everything for you:
+```bash
+ccdo  # Analyzes changes, creates perfect commit message, commits it
+```
+- **No heavy lifting for message formulation required**
+- **Always follows conventions** 
+- **Perfect for daily development**
+
+### **👀 Preview First** 
+See the generated message before committing:
+```bash
+ccg   # Shows suggested commit message + copies to clipboard
+# Review the message, then paste with Ctrl+V:
+git commit -m "feat(api): add user authentication endpoint"
+```
+- **Review before committing**
+- **Learn good commit patterns**
+- **Full control over final message**
+
+### **✍️ Manual + Validation**
+Write your own messages with automatic validation:
+```bash
+git commit -m "feat: add cool feature"
+# ✅ Commit message is valid (fcgh hook is invoked and validates automatically)
+
+git commit -m "fix stuff" 
+# ❌ Commit message validation failed: invalid format
+```
+- **Write your own messages**
+- **Automatic format checking** 
+- **Learn by doing**
+
+<details>
+
+**Windows:**
+1. Download `fast-cc-git-hooks_windows_amd64.zip` from [releases](https://github.com/greenstevester/fast-cc-git-hooks/releases/latest)
+2. Extract `fcgh.exe`, `ccg.exe`, and `ccdo.exe` 
+3. Add to your PATH
+
+**Linux:**
+```bash
 curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fcgh_linux_amd64.tar.gz
 tar -xzf fcgh.tar.gz
-chmod +x fcgh ccg
-sudo mv fcgh ccg /usr/local/bin/
-
-# ARM64 (Raspberry Pi, etc.)
-curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fcgh_linux_arm64.tar.gz
-tar -xzf fcgh.tar.gz
-chmod +x fcgh ccg
-sudo mv fcgh ccg /usr/local/bin/
+chmod +x fcgh ccg ccdo
+sudo mv fcgh ccg ccdo /usr/local/bin/
 ```
 
-**🍎 macOS:**
-
-**Option A: Easy Installation Script (Recommended)**
-
-```bash
-# One-line install - automatically detects your Mac type and handles PATH
-curl -sSL https://raw.githubusercontent.com/greenstevester/fast-cc-git-hooks/refs/heads/main/install-macos-source.sh | bash
-```
-
-**Option B: Manual Installation**
-
+**macOS:**
 ```bash
 # Intel Macs
 curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fcgh_darwin_amd64.tar.gz
-tar -xzf fcgh.tar.gz
-chmod +x fcgh ccg ccdo
-sudo mv fcgh ccg ccdo /usr/local/bin/
+tar -xzf fcgh.tar.gz && chmod +x fcgh ccg ccdo && sudo mv fcgh ccg ccdo /usr/local/bin/
 
-# Apple Silicon (M1/M2/M3) - most common now
+# Apple Silicon (M1/M2/M3)
 curl -L -o fcgh.tar.gz https://github.com/greenstevester/fast-cc-git-hooks/releases/latest/download/fcgh_darwin_arm64.tar.gz
-tar -xzf fcgh.tar.gz
-chmod +x fcgh ccg ccdo
-sudo mv fcgh ccg ccdo /usr/local/bin/
+tar -xzf fcgh.tar.gz && chmod +x fcgh ccg ccdo && sudo mv fcgh ccg ccdo /usr/local/bin/
 ```
+</details>
 
-**📱 For macOS Security (Both Options):**
-If you see "fcgh cannot be opened" security warning:
-1. Click "Done" in the dialog
-2. Go to **System Preferences** → **Security & Privacy** → **General** tab
-3. Click "Allow Anyway" next to the fcgh message
-4. Try running `fcgh` again and click "Open" when prompted
+<details>
+<summary><strong>🔧 Build from Source</strong></summary>
 
-_Note: The installation script automatically handles the quarantine removal to minimize security warnings._
-
-**Option C: Build from Source**
-
-**⚠️ Requires Go 1.25 or later** - The project uses modern Go features and will not compile with older versions.
-
+Requires Go 1.25+
 ```bash
-# Clone the repository
 git clone https://github.com/greenstevester/fast-cc-git-hooks.git
 cd fast-cc-git-hooks
-
-# Build all tools (requires Go 1.25+)
 make build-all-tools
-
-# Install to GOPATH/bin
 make install-all
 ```
+</details>
 
-### 🛠️ Step 2: Setup
+## ⚙️ Configuration
 
-#### Global Installation (Default - Recommended)
+**Basic Setup (Works for 90% of projects):**
+```bash
+fcgh setup-ent  # Sets up everything with enterprise features
+```
+
+**Project-Only Setup:**
+```bash
+fcgh setup-ent --local  # Only for current repository
+```
+
+**Custom Configuration:**
+```bash
+fcgh init  # Creates ~/.fast-cc/fast-cc-config.yaml for customization
+```
+
+<details>
+<summary><strong>🏢 Enterprise Features</strong></summary>
+
+- **JIRA Integration**: Auto-include ticket numbers
+- **Team Scopes**: Predefined scopes (api, web, cli, db, etc.)
+- **Custom Rules**: Company-specific validation
+- **Advanced Patterns**: Complex commit requirements
 
 ```bash
-fcgh setup      # For standard projects
-fcgh setup-ent  # For enterprise projects with JIRA validation
-ccg
+ccg set-jira PROJ-1234    # Auto-include JIRA ticket
+ccg jira-status           # Check current ticket
 ```
+</details>
 
-#### Local Installation (Current Repository Only)
+## 🛠️ Commands Reference
+
+| Command | Purpose | Example |
+|---------|---------|---------|
+| `fcgh setup-ent` | One-time setup with validation | Sets up git hooks |
+| `ccdo` | Generate + commit automatically | `ccdo` |
+| `ccg` | Generate message (preview only) | `ccg --verbose` |
+| `fcgh validate` | Test a commit message | `fcgh validate "feat: add feature"` |
+| `fcgh status` | Show hook and JIRA status | Shows installation status and current ticket |
+
+## ❓ Common Questions
+
+<details>
+<summary><strong>Q: Do I need all three tools?</strong></summary>
+
+No! They work independently:
+- **Just hooks**: `fcgh setup-ent` validates your manual messages
+- **Just generation**: `ccg` generates messages without validation  
+- **Full automation**: All three together for zero-thought commits
+</details>
+
+<details>
+<summary><strong>Q: What if I don't like the generated message?</strong></summary>
+
+Use `ccg` (without `ccdo`) to preview first. Copy the generated command and modify it before running.
+</details>
+
+<details>
+<summary><strong>Q: Does this change my code?</strong></summary>
+
+No! It only affects commit messages. Your code stays exactly the same.
+</details>
+
+<details>
+<summary><strong>Q: Can I turn it off temporarily?</strong></summary>
 
 ```bash
-fcgh setup --local      # Install only for current repository
-fcgh setup-ent --local  # Enterprise setup for current repository only
+fcgh remove      # Remove hooks
+fcgh setup-ent   # Add them back
+```
+</details>
+
+## 🎯 Examples
+
+**✅ Good commits (auto-generated):**
+```
+feat(auth): add JWT token validation
+fix(api): resolve timeout in user login  
+docs(readme): update installation instructions
+test(user): add integration tests for signup flow
 ```
 
-#### 🏆 Configuration Precedence (Important!)
-
-When you have both local and global installations:
-
+**❌ Bad commits (blocked by validation):**
 ```
-Local Repository Hook  ➤  ALWAYS WINS  ⚡
-Global Git Hook        ➤  Ignored when local exists
+fix stuff
+WIP
+updated files
+asdf
 ```
 
-### Commands (fcgh)
+## 🔗 Why Conventional Commits?
 
+- **📈 Auto-generate changelogs** from commit history
+- **🏷️ Semantic version bumps** based on commit types  
+- **🔍 Searchable history** with consistent formatting
+- **👥 Team collaboration** with clear change communication
+- **🤖 CI/CD integration** for automated workflows
+
+<details>
+<summary><strong>📚 Advanced Topics</strong></summary>
+
+### Semantic Analysis
+The tools include intelligent analysis for infrastructure code, particularly Terraform with Oracle OCI awareness.
+
+### JIRA Integration
 ```bash
-fcgh setup-ent # Set up everything (This creates a file called `fast-cc-config.yaml` in your home directory (`~/.fast-cc/`) that you can edit. )
-fcgh remove    # Smart removal - prompts to choose local/global if both exist
-fcgh remove --local   # Remove only from current repository
-fcgh remove --global  # Remove only from global git configuration
+ccg set-jira PROJ-1234     # Set ticket for next 10 commits
+ccg clear-jira            # Remove ticket
+ccg jira-history          # View ticket history
 ```
 
-**Testing fcgh:**
-
-```bash
-fcgh validate "freak: my terrible message"  # Test if a message is bad
+### Custom Scopes
+Edit `~/.fast-cc/fast-cc-config.yaml` to add project-specific scopes:
+```yaml
+scopes:
+  - api
+  - web  
+  - cli
+  - database
+  - auth
+  - docs
 ```
 
-### Commit Helper Commands (ccg)
+### Multiple Install Types
+- **Global**: Works for all Git repositories on your machine
+- **Local**: Works only for current repository
+- **Local always wins** when both are installed
 
-**Smart commit generation with semantic analysis:**
+### Changelog Generation Tools
+Once using conventional commits, try these tools:
+- **[semantic-release](https://github.com/semantic-release/semantic-release)** - Fully automated releases
+- **[conventional-changelog](https://github.com/conventional-changelog/conventional-changelog)** - Generate changelogs
+- **[commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version)** - Version + tag management
+</details>
 
-```bash
-ccg                     # Generate commit message and copy to clipboard automatically
-ccg --no-copy           # Generate commit message without copying to clipboard
-ccdo                    # Generate commit message and commit
-ccg --verbose           # Show detailed analysis of your changes
-ccg --help              # Show all available options
-```
+## 🤝 Contributing
 
-**🧠 Semantic Analysis for Infrastructure Code:**
-The `ccg` command includes semantic analysis for Terraform files with Oracle OCI awareness. 
-It understands the infrastructure changes and generates contextual commit messages. [See examples →](docs/semantic-analysis-examples.md)
+Found a bug? Want a feature? [Open an issue](https://github.com/greenstevester/fast-cc-git-hooks/issues) or submit a PR.
 
-**📋 Clipboard Integration:**
-The `ccg` command automatically copies the generated git commit command to your clipboard by default. 
-Perfect for quick copy-paste workflows - just run `ccg` and press Ctrl+V in your terminal! Use `--no-copy` to disable this behavior.
-
-**That's it!** Most people only ever need `fcgh setup-ent` and `ccdo`.
-
-
-## 🤔 Common Questions
-
-**Q: Do I need all tools?**
-A: No! They're completely independent. Install hooks for validation, ccg for generation, or both together.
-
-**Q: What if I want to turn off validation temporarily?**
-A: Just run `fcgh remove` and it's gone! Run `fcgh setup-ent` to turn it back on.
-
-**Q: Will this mess up my code?**
-A: Nope! The hooks only check commit messages, ccg only generates them. Your code stays exactly the same.
-
-**Q: What if ccg generates a bad commit message?**
-A: The hook will catch it! That's why they work so well together.
-
-**Q: Can I use this on all my projects?**
-A: Yes! When you run `fcgh setup-ent`, it works for ALL your Git projects. ccg works in any git repo.
-
-**Q: What if I don't like the ccg generated message?**
-A: Just use `ccg` (without ccdo) to preview first, then write your own and let the hook validate it!
-
-## 🎯 Examples of Good vs Bad Commits
-
-❌ **Bad commits** (these will be rejected):
-
-```bash
-git commit -m "fix"
-git commit -m "updated stuff"  
-git commit -m "asdf"
-git commit -m "WIP"
-```
-
-✅ **Good Enterprise commits** (these will work):
-
-```bash
-git commit -m "feat: CGC-5641 Added user login page"
-git commit -m "fix: CAHC-4132 Resolve password validation bug"
-git commit -m "docs: LIND-4777 installation instructions"
-```
-
-## ⚙️ Want to Customize? (Optional)
-
-**Most people don't need to do this!** The tool works great out of the box.
-
-But if you want to customize the rules, run:
-
-```bash
-fcgh init
-```
-
-This creates a file called `fast-cc-config.yaml` in your home directory (`~/.fast-cc/`) that you can edit. 
-
-## 🚨 Troubleshooting
-
-**Problem: The tool says my commit message is bad, but I think it's fine!**
-
-Run this to test your message:
-
-```bash
-fcgh validate "your message here"
-```
-
-It will tell you exactly what's wrong and how to fix it.
-
-**Problem: I want to turn it off for just one commit**
-
-You can't bypass it easily (that's the point!), but you can run:
-
-```bash
-fcgh remove
-git commit -m "your message"  
-fcgh setup
-```
-
-**Problem: It's not working at all**
-
-Try setting it up again:
-
-```bash
-fcgh remove
-fcgh setup-ent
-```
-
-## 🏗️ Advanced Examples
-
-**Want to include ticket numbers?** (like JIRA tickets)
-
-```bash
-git commit -m "feat: CGC-1234 add user login"
-git commit -m "fix: PROJ-456 resolve password bug"
-```
-
-**Want to use scopes?** (optional grouping)
-
-```bash
-git commit -m "feat(auth): add login form"
-git commit -m "fix(api): resolve timeout issue"
-git commit -m "docs(readme): update setup instructions"  
-```
-
-The part in `()` is called a "scope" - it's like a category for your change.
-
-## 👨‍💻 For Developers
-
-**Want to help make this tool better?**
-
-```bash
-git clone https://github.com/greenstevester/fast-cc-git-hooks.git
-cd fast-cc-git-hooks
-make build
-make test
-```
-
-All commits to this project must follow conventional format too! 😄
-
-## 🔄 Changelog Generation Tools
-
-Once you're using conventional commits, you can automatically generate changelogs and manage versioning! Here are the most popular tools:
-
-### 🚀 **Fully Automated Release Tools** (Recommended)
-
-* **[semantic-release](https://github.com/semantic-release/semantic-release)** - The gold standard for automated releases
-* Fully automates: version bumping, changelog generation, git tagging, and publishing
-* Works with GitHub, GitLab, npm, and more
-* Perfect for CI/CD pipelines
-* **[commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version)** - Drop-in replacement for `npm version`
-
-* Handles version bumping, tagging, and CHANGELOG generation
-* Great for manual releases with automation
-
-### 📊 **Changelog-Focused Tools**
-
-* **[conventional-changelog](https://github.com/conventional-changelog/conventional-changelog)** - The original changelog generator
-* Generate changelog from git metadata
-* Multiple presets (Angular, Atom, etc.)
-* Highly customizable
-* **[git-cliff](https://git-cliff.org/)** - Modern Rust-based changelog generator
-
-* Highly customizable templates
-* Fast and reliable
-* Great for complex projects
-
-### 🏢 **Enterprise & Monorepo Tools**
-
-* **[cocogitto](https://github.com/oknozor/cocogitto)** - Complete conventional commits toolkit
-* Version bumping, changelog generation, and commit linting
-* Great for complex workflows
-* **[versio](https://github.com/chaaz/versio)** - Monorepo-compatible versioning
-
-* Handles project dependencies
-* Generates tags and changelogs
-
-### ⚙️ **Language-Specific Tools**
-
-* **Go**: [chglog](https://github.com/goreleaser/chglog) - Template-based changelog generation
-* **Python**: [python-semantic-release](https://github.com/relekang/python-semantic-release)
-* **PHP**: [php-conventional-changelog](https://github.com/marcocesarato/php-conventional-changelog)
-* **Java**: [git-changelog-lib](https://github.com/tomasbjerre/git-changelog-lib)
-
-### 🎯 **Quick Start Recommendations**
-
-1. **For automated CI/CD**: Use `semantic-release`
-2. **For manual releases**: Use `commit-and-tag-version`
-3. **For just changelogs**: Use `conventional-changelog` or `git-cliff`
-4. **For monorepos**: Use `versio` or `cocogitto`
-
-All these tools work perfectly with the conventional commit messages that `fcgh` enforces! 🎉
-
-## 📚 Documentation
-
-* [Semantic Analysis Examples](docs/semantic-analysis-examples.md) - See how the intelligent commit message generation works with real-world infrastructure code examples
-* [CLAUDE.md](CLAUDE.md) - Project development guide for Claude Code
-
-## 📝 License
+## 📄 License
 
 MIT License - do whatever you want with this code!
 
-**That's everything!** Remember: just run `fcgh setup-ent` and start writing better commits! 🚀
+---
+
+**TL;DR: `fcgh setup-ent` + `ccdo` = perfect commits forever** 🚀

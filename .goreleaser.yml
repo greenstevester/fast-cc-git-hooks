@@ -24,7 +24,7 @@ builds:
       - -s -w
       - -X main.version={{.Version}}
       - -X main.commit={{.Commit}}
-      - -X main.buildTime={{.Date}}
+      - -X 'main.buildTime={{.Date}}'
     flags:
       - -trimpath
 
@@ -44,7 +44,7 @@ builds:
       - -s -w
       - -X main.version={{.Version}}
       - -X main.commit={{.Commit}}
-      - -X main.buildTime={{.Date}}
+      - -X 'main.buildTime={{.Date}}'
     flags:
       - -trimpath
 
@@ -64,7 +64,7 @@ builds:
       - -s -w
       - -X main.version={{.Version}}
       - -X main.commit={{.Commit}}
-      - -X main.buildTime={{.Date}}
+      - -X 'main.buildTime={{.Date}}'
     flags:
       - -trimpath
 

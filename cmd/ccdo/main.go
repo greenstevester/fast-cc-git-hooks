@@ -23,8 +23,8 @@ var (
 )
 
 func main() {
-	// Print banner with version and commit information
-	banner.PrintWithVersion(version, commit)
+	// Print banner with version, commit and build time information
+	banner.PrintWithVersionAndBuildTime(version, commit, buildTime)
 
 	flag.Parse()
 
