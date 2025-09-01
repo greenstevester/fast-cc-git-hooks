@@ -30,10 +30,10 @@ func PrintWithVersion(version, commit string) {
 
 	if UseASCII() {
 		// Use ASCII art heart for better compatibility
-		fmt.Printf(">>> fast-cc gen >>> Made with <3 for Boo%s\n", versionSuffix)
+		fmt.Printf(">>> fast-cc gen / Made with <3 for Boo%s\n", versionSuffix)
 	} else {
 		// Use emoji for terminals that support it
-		fmt.Printf(">>> fast-cc gen >>> Made with ❤️  for Boo%s\n", versionSuffix)
+		fmt.Printf(">>> fast-cc gen / Made with ❤️  for Boo%s\n", versionSuffix)
 	}
 }
 

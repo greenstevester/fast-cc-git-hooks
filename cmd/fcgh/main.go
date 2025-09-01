@@ -61,21 +61,16 @@ func main() {
 	flag.BoolVar(&verbose, "v", false, "verbose output")
 	flag.StringVar(&configFile, "config", "", "path to config file")
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "🚀 fcgh - Fast Conventional Git Hooks - Make your commit messages awesome!\n\n")
-		fmt.Fprintf(os.Stderr, "   1️⃣  %s setup     ← Start here! This sets everything up\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "   2️⃣  git commit -m \"feat: your message\"  ← Write better commits!\n\n")
+		fmt.Fprintf(os.Stderr, "🚀 fcgh - Fast Conventional Git Hooks\n\n")
 
 		fmt.Fprintf(os.Stderr, "✨ All Commands:\n")
-		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "setup", "🚀 Easy setup - global by default (local overrides global)")
-		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "setup-ent", "🏢 Enterprise setup - global by default (local overrides global)")
-		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "remove", "🗑️  Easy removal - uninstall git hooks (use --local or --global for specific removal)")
-		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "validate", "🔍 Test a commit message")
+		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "setup", "🚀 Easy setup - global by default (use --local for current repo, local overrides global)")
+		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "setup-ent", "🏢 Enterprise setup - global by default (--local for current repo, local overrides global)")
+		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "remove", "🗑️  Easy removal - uninstall git hooks (--local for current repo removal)")
+		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "validate", "🔍 Test a git commit message, to see if it follows conventional format")
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "init", "📝 Create a config file")
 		fmt.Fprintf(os.Stderr, "  %-10s %s\n", "version", "ℹ️  Show version info")
-		fmt.Fprintf(os.Stderr, "\n🤓 Advanced Commands:\n")
 
-		fmt.Fprintf(os.Stderr, "\n🏁 Quick Start:\n")
-		fmt.Fprintf(os.Stderr, "   %s setup\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "\n🔧 Options:\n")
 		flag.PrintDefaults()
 		fmt.Fprintf(os.Stderr, "\n💡 Need help? Use '%s <command> -h' for more details\n", os.Args[0])
@@ -204,7 +199,6 @@ func validateCommand() *Command {
 				for _, err := range result.Errors {
 					fmt.Fprintf(os.Stderr, "  • %v\n", err)
 				}
-				return fmt.Errorf("validation failed")
 			}
 
 			fmt.Println("✅ Commit message is valid")
