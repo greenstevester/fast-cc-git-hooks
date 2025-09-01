@@ -31,7 +31,7 @@ This small tool-set is inspired by **_Boo_** ...after seeing lots of their git c
 
 ## WHY USE THIS?
 
-## Cause its lightening-fast "git add-on," that does the work (you don't have time to do):
+## Cause it's a lightening-fast "git add-on," that does the work (you don't have time to do):
 
 * **`fcgh`** - installs a git-hook (locally or globally with local install always taking precedence), that checks your commit messages, ensuring they comply to conventional commit format.
 * **`cc`** - generates conventional commit messages, based on your recent changes (and copies it to your clipboard)
