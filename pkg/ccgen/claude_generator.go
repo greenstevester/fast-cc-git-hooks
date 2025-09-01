@@ -120,7 +120,7 @@ func (g *Generator) enhanceDescription(analysis *IntelligentChangeAnalysis) stri
 		if strings.Contains(strings.ToLower(desc), old) {
 			// Preserve case by using case-insensitive replacement
 			desc = strings.ReplaceAll(desc, old, new)
-			desc = strings.ReplaceAll(desc, strings.Title(old), strings.Title(new))
+			desc = strings.ReplaceAll(desc, g.capitalizeFirst(old), g.capitalizeFirst(new))
 			break
 		}
 	}

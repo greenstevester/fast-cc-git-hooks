@@ -8,7 +8,8 @@
       "Bash(/opt/homebrew/bin/go test ./...)",
       "Bash(/opt/homebrew/bin/go test ./cmd/cc ./cmd/ccc ./internal/config ./internal/validator ./pkg/conventionalcommit ./pkg/semantic/plugins -v)",
       "Bash(/opt/homebrew/bin/go fmt ./...)",
-      "Bash(/opt/homebrew/bin/go vet ./...)"
+      "Bash(/opt/homebrew/bin/go vet ./...)",
+      "Bash(/opt/homebrew/bin/go build ./...)"
     ],
     "deny": [],
     "ask": []

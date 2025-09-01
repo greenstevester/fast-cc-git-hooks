@@ -179,7 +179,7 @@ func (a *TerraformChangesetAnalyzer) detectEnvironmentChanges() *semantic.Semant
 				Type:        changeType,
 				Scope:       scope,
 				Description: fmt.Sprintf("update %s environment infrastructure", env),
-				Intent:      fmt.Sprintf("%s environment infrastructure changes", strings.Title(env)),
+				Intent:      fmt.Sprintf("%s environment infrastructure changes", a.capitalizeFirst(env)),
 				Impact:      fmt.Sprintf("Changes isolated to %s environment", env),
 				Files:       files,
 				Confidence:  0.95,
@@ -827,4 +827,12 @@ func (a *TerraformChangesetAnalyzer) isOnlyOutputDefinitions(content string) boo
 	}
 
 	return nonOutputLines < 5 // Allow some non-output lines
+}
+
+// capitalizeFirst capitalizes the first letter of a string
+func (t *TerraformChangesetAnalyzer) capitalizeFirst(s string) string {
+	if len(s) == 0 {
+		return s
+	}
+	return strings.ToUpper(s[:1]) + s[1:]
 }

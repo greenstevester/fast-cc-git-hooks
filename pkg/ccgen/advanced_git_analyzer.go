@@ -121,9 +121,7 @@ func (g *Generator) performAdvancedGitAnalysis() (*GitAnalysisResult, error) {
 	}
 
 	// Step 9: Analyze recent commit patterns
-	if err := g.analyzeRecentCommitPatterns(result); err != nil {
-		return nil, fmt.Errorf("analyzing commit patterns: %w", err)
-	}
+	g.analyzeRecentCommitPatterns(result)
 
 	return result, nil
 }
@@ -255,7 +253,7 @@ func (g *Generator) getStagedDiffContent(result *GitAnalysisResult) error {
 }
 
 // analyzeRecentCommitPatterns implements: git log --oneline -10
-func (g *Generator) analyzeRecentCommitPatterns(result *GitAnalysisResult) error {
+func (g *Generator) analyzeRecentCommitPatterns(result *GitAnalysisResult) {
 	fmt.Printf("Running `git log --oneline -10`")
 
 	cmd := exec.Command("git", "log", "--oneline", "-10")
@@ -267,15 +265,13 @@ func (g *Generator) analyzeRecentCommitPatterns(result *GitAnalysisResult) error
 			CommonTypes:  make(map[string]int),
 			CommonScopes: make(map[string]int),
 		}
-		return nil
+		return
 	}
 	fmt.Println(" ✅")
 
 	// Parse recent commits
 	result.RecentCommits = g.parseRecentCommits(string(output))
 	result.CommitPatterns = g.analyzeCommitPatterns(result.RecentCommits)
-
-	return nil
 }
 
 // parseStatOutput parses git diff --stat output
@@ -317,7 +313,10 @@ func (g *Generator) parseStatsLine(statsStr string) (additions, deletions int) {
 		return 0, 0
 	}
 
-	totalChanges, _ := strconv.Atoi(parts[0])
+	totalChanges, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return 0, 0 // Return zeros if parsing fails
+	}
 
 	// Count + and - symbols
 	plusCount := strings.Count(statsStr, "+")
@@ -441,13 +440,13 @@ func (g *Generator) createAdvancedChangeAnalysis(filename string, stats *FileSta
 	analysis.Impact = g.assessStatisticalImpact(stats, gitAnalysis)
 
 	// Enhanced description using all available data
-	analysis.Description = g.generateAdvancedDescription(filename, stats, gitAnalysis)
+	analysis.Description = g.generateAdvancedDescription(filename, stats)
 
 	// Context detection from word diff
-	analysis.Context = g.detectContextFromWordDiff(gitAnalysis.WordDiffContent, filename)
+	analysis.Context = g.detectContextFromWordDiff(gitAnalysis.WordDiffContent)
 
 	// Priority based on change magnitude and type
-	analysis.Priority = g.calculateAdvancedPriority(analysis.ChangeType, stats, gitAnalysis)
+	analysis.Priority = g.calculateAdvancedPriority(analysis.ChangeType, stats)
 
 	return analysis
 }
@@ -512,7 +511,7 @@ func (g *Generator) assessStatisticalImpact(stats *FileStatistics, gitAnalysis *
 }
 
 // generateAdvancedDescription creates descriptions using comprehensive analysis
-func (g *Generator) generateAdvancedDescription(filename string, stats *FileStatistics, gitAnalysis *GitAnalysisResult) string {
+func (g *Generator) generateAdvancedDescription(filename string, stats *FileStatistics) string {
 	baseName := g.extractFileName(filename)
 	changeType := stats.ChangeType
 
@@ -535,7 +534,7 @@ func (g *Generator) generateAdvancedDescription(filename string, stats *FileStat
 }
 
 // detectContextFromWordDiff analyzes word-level changes for context
-func (g *Generator) detectContextFromWordDiff(wordDiff, filename string) string {
+func (g *Generator) detectContextFromWordDiff(wordDiff string) string {
 	contexts := []string{}
 
 	// Look for specific patterns in word diff
@@ -563,7 +562,7 @@ func (g *Generator) detectContextFromWordDiff(wordDiff, filename string) string 
 }
 
 // calculateAdvancedPriority uses comprehensive data for priority calculation
-func (g *Generator) calculateAdvancedPriority(changeType string, stats *FileStatistics, gitAnalysis *GitAnalysisResult) int {
+func (g *Generator) calculateAdvancedPriority(changeType string, stats *FileStatistics) int {
 	basePriority := g.getTypePriority(changeType)
 
 	// Adjust based on change magnitude

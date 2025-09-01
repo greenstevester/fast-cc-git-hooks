@@ -215,7 +215,7 @@ func (t *TerraformPlugin) analyzeDeletedFile(file semantic.FileChange, _ semanti
 }
 
 // analyzeModifiedFile analyzes a modified Terraform file
-func (t *TerraformPlugin) analyzeModifiedFile(file semantic.FileChange, context semantic.AnalysisContext) (*semantic.SemanticChange, error) {
+func (t *TerraformPlugin) analyzeModifiedFile(file semantic.FileChange, _ semantic.AnalysisContext) (*semantic.SemanticChange, error) {
 	beforeResources := t.extractResourceTypes(file.BeforeContent)
 	afterResources := t.extractResourceTypes(file.AfterContent)
 
@@ -707,8 +707,13 @@ func (t *TerraformPlugin) detectHotspotFiles(files []semantic.FileChange) map[st
 	hotspots := make(map[string]int)
 
 	for _, file := range files {
+		// Validate file path to prevent command injection
+		if strings.Contains(file.Path, "..") || strings.Contains(file.Path, ";") {
+			continue // Skip potentially malicious paths
+		}
+		
 		// Run git log to check recent commits for this file
-		cmd := exec.Command("git", "log", "-n", "5", "--name-only", "--pretty=", file.Path)
+		cmd := exec.Command("git", "log", "-n", "5", "--name-only", "--pretty=", "--", file.Path)
 		output, err := cmd.Output()
 		if err != nil {
 			continue // Skip if git command fails
