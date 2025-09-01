@@ -96,7 +96,7 @@ func GetBannerTextWithVersion(version, commit string) string {
 	}
 
 	if UseASCII() {
-		return fmt.Sprintf(">>> fast-cc gen >>> Made with <3 for Boo%s", versionSuffix)
+		return fmt.Sprintf(">>> fast-cc gen / Made with <3 for Boo%s", versionSuffix)
 	}
-	return fmt.Sprintf(">>> fast-cc gen >>> Made with ❤️  for Boo%s", versionSuffix)
+	return fmt.Sprintf(">>> fast-cc gen / Made with ❤️  for Boo%s", versionSuffix)
 }

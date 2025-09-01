@@ -63,12 +63,6 @@ func New(opts Options) *Generator {
 // Generate analyzes the repository and generates a commit message
 func (g *Generator) Generate() (*Result, error) {
 	fmt.Println()
-	if banner.UseASCII() {
-		fmt.Println("## Analyzing Git Repository")
-	} else {
-		fmt.Println("## 🔍 Analyzing Git Repository")
-	}
-	fmt.Println()
 
 	// Check if we're in a git repo
 	fmt.Printf("Running `git rev-parse --git-dir`")
@@ -141,14 +135,6 @@ func (g *Generator) Generate() (*Result, error) {
 		fmt.Printf("\n\n")
 	}
 
-	// Generate commit message
-	if banner.UseASCII() {
-		fmt.Println("## Generating Commit Message")
-	} else {
-		fmt.Println("## 📝 Generating Commit Message")
-	}
-	fmt.Println()
-
 	// Check for JIRA ticket
 	var jiraTicket string
 	if g.options.JiraManager != nil {
@@ -199,35 +185,22 @@ func (g *Generator) PrintResult(result *Result) {
 		return
 	}
 
-	if banner.UseASCII() {
-		fmt.Println("## Generated Commit Message")
-	} else {
-		fmt.Println("## 🎯 Generated Commit Message")
-	}
-	fmt.Println()
-
 	// Display the commit message in a code block
 	fmt.Printf("```\n%s\n```\n\n", result.Message)
 
 	if g.options.Copy {
-		fmt.Printf("**Clipboard Action:** ")
 		if err := g.CopyToClipboard(result.GitCommand); err != nil {
 			fmt.Printf("❌ Failed to copy to clipboard: %v\n", err)
 		} else {
 			if banner.UseASCII() {
 				fmt.Printf("✅ Git commit command copied to clipboard!\n\n")
-				fmt.Printf("**Ready to paste:** `%s`\n\n", result.GitCommand)
-				fmt.Println("Use **Ctrl+V** (or **Cmd+V** on Mac) to paste and execute.")
 			} else {
 				fmt.Printf("✅ Git commit command copied to clipboard!\n\n")
-				fmt.Printf("**Ready to paste:** `%s`\n\n", result.GitCommand)
-				fmt.Println("Use **Ctrl+V** (or **⌘+V** on Mac) to paste and execute.")
 			}
 		}
 	}
 
 	if g.options.Execute {
-		fmt.Printf("**Executing commit:** ")
 		if err := g.ExecuteCommit(result.Message); err != nil {
 			fmt.Printf("❌ Failed to commit: %v\n", err)
 			return
