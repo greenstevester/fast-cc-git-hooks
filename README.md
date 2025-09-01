@@ -13,11 +13,11 @@ image:https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg?style
 
 *The fastest way for YOU, to get https://www.conventionalcommits.org/en/v1.0.0/[conventional commit] messages for ALL your git commits!* 
 
-WHY CONVENTIONAL COMMITS?
--
-- Because when you use them, it damn makes your repo professional looking and as bonus, can:
-- auto generate CHANGELOG's
+WHY CONVENTIONAL COMMITS?  WHY WOULD YOU CARE?
+- clean, consistent, and easy to understand commit messages
+- auto-generate CHANGELOG's
 - infer semantic version bumps when required, just from your commit messages.
+- Because when you use them, it damn makes your repo professional looking and as bonus, can:
 - make your commit history data-mine-able, and more importantly, *easier to understand* for other developers.
 
 It all stems from something simple, but usually this means more discipline AND (worst of all) strict adherence to a specific workflow. Most people automate this via their bash shell, but bash only goes so far - ergo this tool. 
