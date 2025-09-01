@@ -661,6 +661,11 @@ func getGitConfigDir() (string, error) {
 		return "", fmt.Errorf("getting home directory: %w", err)
 	}
 
+	// Check for empty home directory
+	if home == "" {
+		return "", fmt.Errorf("home directory is empty")
+	}
+
 	// Check XDG_CONFIG_HOME first
 	if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
 		return filepath.Join(xdg, "git"), nil
