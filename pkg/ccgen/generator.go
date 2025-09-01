@@ -109,7 +109,7 @@ func (g *Generator) Generate() (*Result, error) {
 	}
 
 	fmt.Println()
-	// Analyze changes
+	// Perform intelligent analysis
 	if banner.UseASCII() {
 		fmt.Println("## Analyzing Changes")
 	} else {
@@ -117,36 +117,45 @@ func (g *Generator) Generate() (*Result, error) {
 	}
 	fmt.Println()
 
-	changes := g.analyzeDiff(diff)
+	// Use intelligent analysis for better commit messages
+	intelligentAnalyses := g.analyzeDiffIntelligently(diff)
 
-	fmt.Printf("**Found %d change type(s):**\n\n", len(changes))
-	for i, change := range changes {
-		fmt.Printf("%d. **%s", i+1, change.Type)
-		if change.Scope != "" {
-			fmt.Printf("(%s)", change.Scope)
+	fmt.Printf("**Found %d change type(s):**\n\n", len(intelligentAnalyses))
+	for i, analysis := range intelligentAnalyses {
+		fmt.Printf("%d. **%s", i+1, analysis.ChangeType)
+		if analysis.Scope != "" {
+			fmt.Printf("(%s)", analysis.Scope)
 		}
-		fmt.Printf("**: %s", change.Description)
-		if len(change.Files) > 0 {
-			fmt.Printf("\n   - Files: `%s`", change.Files[0])
-			if len(change.Files) > 1 {
-				fmt.Printf(" (+%d more)", len(change.Files)-1)
+		fmt.Printf("**: %s", analysis.Description)
+		if len(analysis.Files) > 0 {
+			fmt.Printf("\n   - Files: `%s`", analysis.Files[0])
+			if len(analysis.Files) > 1 {
+				fmt.Printf(" (+%d more)", len(analysis.Files)-1)
+			}
+		}
+		if g.options.Verbose && len(analysis.Details) > 0 {
+			fmt.Printf("\n   - Details:")
+			for _, detail := range analysis.Details {
+				fmt.Printf("\n     • %s", detail)
 			}
 		}
 		fmt.Printf("\n\n")
 	}
 
 	// Check for JIRA ticket
-	var jiraTicket string
 	if g.options.JiraManager != nil {
 		if ticket, err := g.options.JiraManager.GetCurrentJiraTicket(); err == nil && ticket != "" {
-			jiraTicket = ticket
-			fmt.Printf("**JIRA Ticket:** `%s` (will be included in commit)\n\n", jiraTicket)
+			fmt.Printf("**JIRA Ticket:** `%s` (will be included in commit)\n\n", ticket)
 		} else {
 			fmt.Printf("**JIRA Ticket:** None set (use `cc set-jira CGC-1234` to set one)\n\n")
 		}
 	}
 
-	message := g.GenerateCommitMessage(changes)
+	// Generate Claude-style commit message
+	message := g.generateClaudeStyleCommitMessage(intelligentAnalyses)
+
+	// Also maintain backward compatibility by converting to old format for result
+	changes := g.convertToLegacyFormat(intelligentAnalyses)
 
 	// Build git command
 	gitCommand := g.buildGitCommand(message)
@@ -242,4 +251,22 @@ func (g *Generator) getStagedDiff() (string, error) {
 	cmd := exec.Command("git", "diff", "--staged")
 	output, err := cmd.Output()
 	return string(output), err
+}
+
+// convertToLegacyFormat converts intelligent analyses to legacy ChangeType format for compatibility
+func (g *Generator) convertToLegacyFormat(analyses []*IntelligentChangeAnalysis) []ChangeType {
+	changes := make([]ChangeType, 0, len(analyses))
+	
+	for _, analysis := range analyses {
+		change := ChangeType{
+			Type:        analysis.ChangeType,
+			Scope:       analysis.Scope,
+			Description: analysis.Description,
+			Files:       analysis.Files,
+			Priority:    analysis.Priority,
+		}
+		changes = append(changes, change)
+	}
+	
+	return changes
 }

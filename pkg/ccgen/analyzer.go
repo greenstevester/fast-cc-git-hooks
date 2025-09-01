@@ -47,6 +47,31 @@ func (g *Generator) analyzeDiff(diff string) []ChangeType {
 	return changes
 }
 
+// analyzeDiffIntelligently performs Claude-style intelligent analysis
+func (g *Generator) analyzeDiffIntelligently(diff string) []*IntelligentChangeAnalysis {
+	// Parse diff by files
+	files := strings.Split(diff, "diff --git")
+	analyses := make([]*IntelligentChangeAnalysis, 0, len(files))
+	
+	for _, file := range files {
+		if strings.TrimSpace(file) == "" {
+			continue
+		}
+
+		analysis := g.analyzeChangeIntelligently(file)
+		if analysis != nil {
+			analyses = append(analyses, analysis)
+		}
+	}
+
+	// Sort by priority
+	sort.Slice(analyses, func(i, j int) bool {
+		return analyses[i].Priority < analyses[j].Priority
+	})
+
+	return analyses
+}
+
 // analyzeFileChange analyzes a single file's changes
 func (g *Generator) analyzeFileChange(fileDiff string) *ChangeType {
 	lines := strings.Split(fileDiff, "\n")
