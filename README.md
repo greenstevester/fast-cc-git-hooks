@@ -23,11 +23,11 @@ Well, it depends really, do you care about:
 
 It all stems from something simple, but usually this means more discipline AND (worst of all) strict adherence to a specific workflow. Most people automate this via their bash shell, but bash only goes so far - ergo this tool. 
 
-Strict adherence to a specific workflow alone is enough to scare away most coders, who just want to build without the added "admin" overhead / accounting / audits while they're in flow.
+And on that note, strict adherence to a specific workflow is enough to scare away most coders, who just want to build without the added "admin" overhead / accounting / audits while they're in flow.
 
-This small set of performance-obsessed tools is for YOU and the wider community of coders to free the world of crappy commit messages and to prevent further pollution of potentially grep git repos.
+So, this small set of performance-obsessed tools is for YOU (and the wider community of coders), to free the world of *crappy commit messages* AND to prevent further pollution of potentially GREAT git repos.
 
-This small tool-set is inspired by **_Boo_** ...after seeing lots of their git commits all with "feat: CGC-0000 added X" messages.
+Inspired by **_Boo_** ...after seeing lots and lots of their git commit messages, all having something to the tune of "feat: CGC-0000 bla bla bla...".
 
 ## WHY USE THIS?
 
