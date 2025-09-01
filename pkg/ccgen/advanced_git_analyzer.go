@@ -18,6 +18,18 @@ type GitAnalysisResult struct {
 	TotalAdditions int
 	TotalDeletions int
 
+	// Directory-level statistics
+	DirStats map[string]float64
+
+	// Numerical statistics (precise counts)
+	NumStats map[string]*NumStat
+
+	// File operation summaries
+	FileSummaries []string
+
+	// Function context information
+	ModifiedFunctions []string
+
 	// Content analysis
 	WordDiffContent string
 	StagedDiff      string
@@ -33,6 +45,13 @@ type FileStatistics struct {
 	Additions  int
 	Deletions  int
 	ChangeType string // A/M/D
+}
+
+// NumStat contains precise numerical statistics from git diff --numstat
+type NumStat struct {
+	Additions int
+	Deletions int
+	Filename  string
 }
 
 // CommitInfo represents recent commit information
@@ -53,31 +72,55 @@ type CommitPatterns struct {
 // performAdvancedGitAnalysis implements the comprehensive algorithm
 func (g *Generator) performAdvancedGitAnalysis() (*GitAnalysisResult, error) {
 	result := &GitAnalysisResult{
-		FileStats:   make(map[string]*FileStatistics),
-		ChangeTypes: make(map[string]string),
+		FileStats:         make(map[string]*FileStatistics),
+		ChangeTypes:       make(map[string]string),
+		DirStats:          make(map[string]float64),
+		NumStats:          make(map[string]*NumStat),
+		FileSummaries:     make([]string, 0),
+		ModifiedFunctions: make([]string, 0),
 	}
 
-	// Step 1: Get file statistics and line counts
-	if err := g.getFileStatistics(result); err != nil {
-		return nil, fmt.Errorf("getting file statistics: %w", err)
-	}
-
-	// Step 2: Get change types (A/M/D)
+	// Step 1: Get change types (A/M/D) - fundamental file operations
 	if err := g.getChangeTypes(result); err != nil {
 		return nil, fmt.Errorf("getting change types: %w", err)
 	}
 
-	// Step 3: Get word-level diff for granular analysis
-	if err := g.getWordDiff(result); err != nil {
-		return nil, fmt.Errorf("getting word diff: %w", err)
+	// Step 2: Get file operation summaries (create/delete/rename details)
+	if err := g.getFileSummaries(result); err != nil {
+		return nil, fmt.Errorf("getting file summaries: %w", err)
 	}
 
-	// Step 4: Get staged diff (maintain compatibility)
+	// Step 3: Get precise numerical statistics (exact line counts)
+	if err := g.getNumStats(result); err != nil {
+		return nil, fmt.Errorf("getting numerical statistics: %w", err)
+	}
+
+	// Step 4: Get file statistics (visual representation for compatibility)
+	if err := g.getFileStatistics(result); err != nil {
+		return nil, fmt.Errorf("getting file statistics: %w", err)
+	}
+
+	// Step 5: Get directory distribution statistics
+	if err := g.getDirStats(result); err != nil {
+		return nil, fmt.Errorf("getting directory statistics: %w", err)
+	}
+
+	// Step 6: Get staged diff (maintain compatibility)
 	if err := g.getStagedDiffContent(result); err != nil {
 		return nil, fmt.Errorf("getting staged diff: %w", err)
 	}
 
-	// Step 5: Analyze recent commit patterns
+	// Step 7: Get word-level diff for granular analysis
+	if err := g.getWordDiff(result); err != nil {
+		return nil, fmt.Errorf("getting word diff: %w", err)
+	}
+
+	// Step 8: Extract modified function contexts (specific change locations)
+	if err := g.extractFunctionContexts(result); err != nil {
+		return nil, fmt.Errorf("extracting function contexts: %w", err)
+	}
+
+	// Step 9: Analyze recent commit patterns
 	if err := g.analyzeRecentCommitPatterns(result); err != nil {
 		return nil, fmt.Errorf("analyzing commit patterns: %w", err)
 	}
@@ -111,6 +154,9 @@ func (g *Generator) getFileStatistics(result *GitAnalysisResult) error {
 
 	// Parse diff --stat output
 	g.parseStatOutput(string(output), result)
+
+	// Cross-reference with NumStats for more accurate data
+	g.enhanceWithNumStats(result)
 
 	return nil
 }
@@ -529,4 +575,193 @@ func (g *Generator) calculateAdvancedPriority(changeType string, stats *FileStat
 	}
 
 	return basePriority
+}
+
+// enhanceWithNumStats improves FileStatistics accuracy using NumStat data
+func (g *Generator) enhanceWithNumStats(result *GitAnalysisResult) {
+	for filename, numStat := range result.NumStats {
+		if fileStat, exists := result.FileStats[filename]; exists {
+			// Use precise NumStat data instead of approximated --stat parsing
+			fileStat.Additions = numStat.Additions
+			fileStat.Deletions = numStat.Deletions
+		}
+	}
+}
+
+// getDirStats implements: git diff --cached --dirstat=files,0
+func (g *Generator) getDirStats(result *GitAnalysisResult) error {
+	fmt.Printf("Running `git diff --cached --dirstat=files,0`")
+
+	var cmd *exec.Cmd
+	if g.hasPreviousCommits() {
+		cmd = exec.Command("git", "diff", "HEAD~1", "HEAD", "--dirstat=files,0")
+	} else {
+		cmd = exec.Command("git", "diff", "--cached", "--dirstat=files,0")
+	}
+
+	output, err := cmd.Output()
+	if err != nil {
+		// Fallback to cached
+		cmd = exec.Command("git", "diff", "--cached", "--dirstat=files,0")
+		output, err = cmd.Output()
+		if err != nil {
+			fmt.Println(" ❌")
+			return fmt.Errorf("failed to get dir stats: %w", err)
+		}
+	}
+	fmt.Println(" ✅")
+
+	// Parse dirstat output: " 28.5% pkg/semantic/plugins/"
+	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+	for _, line := range lines {
+		if strings.TrimSpace(line) == "" {
+			continue
+		}
+		parts := strings.Fields(line)
+		if len(parts) >= 2 {
+			percentStr := strings.TrimSuffix(parts[0], "%")
+			if percent, err := strconv.ParseFloat(percentStr, 64); err == nil {
+				directory := parts[1]
+				result.DirStats[directory] = percent
+			}
+		}
+	}
+
+	return nil
+}
+
+// getNumStats implements: git diff --cached --numstat
+func (g *Generator) getNumStats(result *GitAnalysisResult) error {
+	fmt.Printf("Running `git diff --cached --numstat`")
+
+	var cmd *exec.Cmd
+	if g.hasPreviousCommits() {
+		cmd = exec.Command("git", "diff", "HEAD~1", "HEAD", "--numstat")
+	} else {
+		cmd = exec.Command("git", "diff", "--cached", "--numstat")
+	}
+
+	output, err := cmd.Output()
+	if err != nil {
+		// Fallback to cached
+		cmd = exec.Command("git", "diff", "--cached", "--numstat")
+		output, err = cmd.Output()
+		if err != nil {
+			fmt.Println(" ❌")
+			return fmt.Errorf("failed to get numstat: %w", err)
+		}
+	}
+	fmt.Println(" ✅")
+
+	// Parse numstat output: "78	78	pkg/ccgen/advanced_git_analyzer.go"
+	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+	for _, line := range lines {
+		if strings.TrimSpace(line) == "" {
+			continue
+		}
+		parts := strings.Fields(line)
+		if len(parts) >= 3 {
+			additions, err1 := strconv.Atoi(parts[0])
+			deletions, err2 := strconv.Atoi(parts[1])
+			filename := parts[2]
+
+			if err1 == nil && err2 == nil {
+				result.NumStats[filename] = &NumStat{
+					Additions: additions,
+					Deletions: deletions,
+					Filename:  filename,
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+// getFileSummaries implements: git diff --cached --summary
+func (g *Generator) getFileSummaries(result *GitAnalysisResult) error {
+	fmt.Printf("Running `git diff --cached --summary`")
+
+	var cmd *exec.Cmd
+	if g.hasPreviousCommits() {
+		cmd = exec.Command("git", "diff", "HEAD~1", "HEAD", "--summary")
+	} else {
+		cmd = exec.Command("git", "diff", "--cached", "--summary")
+	}
+
+	output, err := cmd.Output()
+	if err != nil {
+		// Fallback to cached
+		cmd = exec.Command("git", "diff", "--cached", "--summary")
+		output, err = cmd.Output()
+		if err != nil {
+			fmt.Println(" ❌")
+			return fmt.Errorf("failed to get summary: %w", err)
+		}
+	}
+	fmt.Println(" ✅")
+
+	// Parse summary output: " create mode 100644 pkg/semantic/plugins/terraform_changeset_analyzer.go"
+	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line != "" {
+			result.FileSummaries = append(result.FileSummaries, line)
+		}
+	}
+
+	return nil
+}
+
+// extractFunctionContexts implements: git diff --cached --function-context --unified=0 | sed -n 's/^@@.* \(.*\) @@/\1/p' | sort -u | head -n 10
+func (g *Generator) extractFunctionContexts(result *GitAnalysisResult) error {
+	fmt.Printf("Running `git diff --cached --function-context --unified=0`")
+
+	var cmd *exec.Cmd
+	if g.hasPreviousCommits() {
+		cmd = exec.Command("git", "diff", "HEAD~1", "HEAD", "--function-context", "--unified=0")
+	} else {
+		cmd = exec.Command("git", "diff", "--cached", "--function-context", "--unified=0")
+	}
+
+	output, err := cmd.Output()
+	if err != nil {
+		// Fallback to cached
+		cmd = exec.Command("git", "diff", "--cached", "--function-context", "--unified=0")
+		output, err = cmd.Output()
+		if err != nil {
+			fmt.Println(" ❌")
+			return fmt.Errorf("failed to get function context: %w", err)
+		}
+	}
+	fmt.Println(" ✅")
+
+	// Extract function names from @@ lines using regex
+	lines := strings.Split(string(output), "\n")
+	functionMap := make(map[string]bool) // Use map to deduplicate
+
+	for _, line := range lines {
+		if strings.HasPrefix(line, "@@") && strings.HasSuffix(line, "@@") {
+			// Extract function name from: "@@ -1,2 +1,3 @@ func methodName"
+			parts := strings.Split(line, "@@")
+			if len(parts) >= 3 {
+				functionName := strings.TrimSpace(parts[2])
+				if functionName != "" {
+					functionMap[functionName] = true
+				}
+			}
+		}
+	}
+
+	// Convert map to slice and limit to 10
+	count := 0
+	for funcName := range functionMap {
+		if count >= 10 {
+			break
+		}
+		result.ModifiedFunctions = append(result.ModifiedFunctions, funcName)
+		count++
+	}
+
+	return nil
 }

@@ -124,6 +124,26 @@ func (g *Generator) Generate() (*Result, error) {
 	fmt.Printf("- Total additions: +%d lines\n", gitAnalysis.TotalAdditions)
 	fmt.Printf("- Total deletions: -%d lines\n", gitAnalysis.TotalDeletions)
 
+	// Display directory statistics
+	if len(gitAnalysis.DirStats) > 0 {
+		fmt.Printf("- Directory distribution: ")
+		var dirParts []string
+		for dir, percent := range gitAnalysis.DirStats {
+			dirParts = append(dirParts, fmt.Sprintf("%s (%.1f%%)", dir, percent))
+		}
+		fmt.Printf("%s\n", strings.Join(dirParts, ", "))
+	}
+
+	// Display file summaries
+	if len(gitAnalysis.FileSummaries) > 0 {
+		fmt.Printf("- File operations: %s\n", strings.Join(gitAnalysis.FileSummaries, ", "))
+	}
+
+	// Display modified functions
+	if len(gitAnalysis.ModifiedFunctions) > 0 {
+		fmt.Printf("- Modified functions: %s\n", strings.Join(gitAnalysis.ModifiedFunctions, ", "))
+	}
+
 	if gitAnalysis.CommitPatterns != nil && len(gitAnalysis.RecentCommits) > 0 {
 		fmt.Printf("- Recent commit style: %s\n", gitAnalysis.CommitPatterns.PreferredStyle)
 		fmt.Printf("- Average commit length: %d chars\n", gitAnalysis.CommitPatterns.AverageLength)
