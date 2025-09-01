@@ -33,8 +33,63 @@ jobs:
     - name: Build
       run: go build -v ./cmd/fcgh
 
+    - name: Debug - Show environment (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        echo "=== Environment Variables ==="
+        go env
+        echo "=== Current Directory ==="
+        pwd
+        echo "=== Directory Contents ==="
+        dir
+        echo "=== Go Version ==="
+        go version
+        echo "=== Git Version ==="
+        git version
+        echo "=== HOME and USER env vars ==="
+        echo "HOME: $env:HOME"
+        echo "USERPROFILE: $env:USERPROFILE"
+        echo "USERNAME: $env:USERNAME"
+      shell: pwsh
+
     - name: Run tests
       run: go test -race -coverprofile='coverage.out' -covermode='atomic' -v './...'
+      env:
+        VERBOSE_TEST: ${{ matrix.os == 'windows-latest' && 'true' || '' }}
+
+    - name: Run tests with extra debugging (Windows)
+      if: matrix.os == 'windows-latest' && failure()
+      run: |
+        echo "=== Running tests with extra verbosity ==="
+        echo "=== Testing each package individually ==="
+        
+        echo "--- Testing cmd/fcgh ---"
+        go test -race -v -count=1 ./cmd/fcgh 2>&1 | tee test-fcgh.log
+        
+        echo "--- Testing cmd/ccc ---"
+        go test -race -v -count=1 ./cmd/ccc 2>&1 | tee test-ccc.log
+        
+        echo "--- Testing internal/config ---"
+        go test -race -v -count=1 ./internal/config 2>&1 | tee test-config.log
+        
+        echo "--- Testing internal/validator ---"
+        go test -race -v -count=1 ./internal/validator 2>&1 | tee test-validator.log
+        
+        echo "--- Testing pkg/conventionalcommit ---"
+        go test -race -v -count=1 ./pkg/conventionalcommit 2>&1 | tee test-conventionalcommit.log
+        
+        echo "=== All test outputs saved ==="
+      shell: pwsh
+      continue-on-error: true
+
+    - name: Upload Windows test logs
+      if: matrix.os == 'windows-latest' && failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-test-logs
+        path: |
+          test-*.log
+          coverage-debug.out
 
     - name: Run benchmarks
       run: |

@@ -80,6 +80,10 @@ ccc
 
 == ⚡️ Installation
 
+=== Prerequisites
+
+* Git (obviously!)
+
 === Step 1: Install the tools
 
 *Option A: Download the Binary* 
@@ -144,6 +148,23 @@ If you see "fcgh cannot be opened" security warning:
 4. Try running `fcgh` again and click "Open" when prompted
 
 _Note: The installation script automatically handles the quarantine removal to minimize security warnings._
+
+*Option C: Build from Source*
+
+**⚠️ Requires Go 1.25 or later** - The project uses modern Go features and will not compile with older versions.
+
+[source,bash]
+----
+# Clone the repository
+git clone https://github.com/greenstevester/fast-cc-git-hooks.git
+cd fast-cc-git-hooks
+
+# Build all tools (requires Go 1.25+)
+make build-all-tools
+
+# Install to GOPATH/bin
+make install-all
+----
 
 === 🛠️ Step 2: Setup
 

@@ -88,7 +88,7 @@ The application uses `fast-cc-config.yaml` for configuration (stored in `~/.fast
 
 ## Code Style
 
-- Use Go 1.24+ features (slices package, structured logging)
+- Use Go 1.25+ features (slices package, structured logging)
 - Follow [Effective Go](https://golang.org/doc/effective_go.html) guidelines  
 - Error handling uses wrapped errors with context
 - Public APIs are documented with examples
