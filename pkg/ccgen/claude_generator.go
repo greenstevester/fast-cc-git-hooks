@@ -10,6 +10,11 @@ import (
 
 // generateClaudeStyleCommitMessage generates a commit message using Claude's patterns
 func (g *Generator) generateClaudeStyleCommitMessage(analyses []*IntelligentChangeAnalysis) string {
+	return g.generateClaudeStyleCommitMessageWithPatterns(analyses, nil)
+}
+
+// generateClaudeStyleCommitMessageWithPatterns generates commit message using patterns from git analysis
+func (g *Generator) generateClaudeStyleCommitMessageWithPatterns(analyses []*IntelligentChangeAnalysis, patterns *CommitPatterns) string {
 	if len(analyses) == 0 {
 		return "chore: update files"
 	}
@@ -20,6 +25,12 @@ func (g *Generator) generateClaudeStyleCommitMessage(analyses []*IntelligentChan
 	})
 
 	primary := analyses[0]
+
+	// Adapt to existing repository style if patterns available
+	if patterns != nil && patterns.PreferredStyle == "freeform" {
+		// If repo uses freeform style, use simpler format
+		return g.generateFreeformMessage(primary, analyses)
+	}
 
 	// Get JIRA ticket if available
 	var jiraTicket string
@@ -32,6 +43,14 @@ func (g *Generator) generateClaudeStyleCommitMessage(analyses []*IntelligentChan
 	// Create Claude-style subject line
 	subject := g.buildClaudeSubject(primary, jiraTicket)
 
+	// Adjust length based on repository patterns
+	if patterns != nil && patterns.AverageLength > 0 {
+		targetLength := patterns.AverageLength
+		if len(subject) > targetLength && targetLength > 30 {
+			subject = g.intelligentTruncate(subject, targetLength)
+		}
+	}
+
 	// Create Claude-style body with detailed explanations
 	body := g.buildClaudeBody(analyses, primary)
 
@@ -40,6 +59,22 @@ func (g *Generator) generateClaudeStyleCommitMessage(analyses []*IntelligentChan
 	}
 
 	return subject
+}
+
+// generateFreeformMessage generates simpler messages for repos that don't use conventional commits
+func (g *Generator) generateFreeformMessage(primary *IntelligentChangeAnalysis, analyses []*IntelligentChangeAnalysis) string {
+	// Simple format without conventional commit structure
+	if len(analyses) == 1 {
+		return g.capitalizeFirst(primary.Description)
+	}
+	
+	// Multiple changes - create simple list
+	message := g.capitalizeFirst(primary.Description)
+	if len(analyses) > 1 {
+		message += fmt.Sprintf(" and %d other changes", len(analyses)-1)
+	}
+	
+	return message
 }
 
 // buildClaudeSubject creates a Claude-style subject line

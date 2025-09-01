@@ -94,33 +94,42 @@ func (g *Generator) Generate() (*Result, error) {
 	}
 	fmt.Println(" ✅")
 
-	// Get staged diff
-	fmt.Printf("Running `git diff --staged`")
-	diff, err := g.getStagedDiff()
-	if err != nil {
-		fmt.Println(" ❌")
-		return nil, fmt.Errorf("failed to get diff: %w", err)
+	fmt.Println()
+	// Perform advanced git analysis using comprehensive algorithm
+	if banner.UseASCII() {
+		fmt.Println("## Performing Advanced Git Analysis")
+	} else {
+		fmt.Println("## 🔬 Performing Advanced Git Analysis")
 	}
-	fmt.Println(" ✅")
+	fmt.Println()
 
-	if strings.TrimSpace(diff) == "" {
+	// Use advanced git analysis algorithm
+	gitAnalysis, err := g.performAdvancedGitAnalysis()
+	if err != nil {
+		return nil, fmt.Errorf("advanced git analysis failed: %w", err)
+	}
+
+	// Check if there are any changes
+	if gitAnalysis.TotalFiles == 0 && strings.TrimSpace(gitAnalysis.StagedDiff) == "" {
 		fmt.Println("\n**No changes detected** - nothing to commit")
 		return &Result{HasChanges: false}, nil
 	}
 
-	fmt.Println()
-	// Perform intelligent analysis
-	if banner.UseASCII() {
-		fmt.Println("## Analyzing Changes")
-	} else {
-		fmt.Println("## 🧠 Analyzing Changes")
+	// Convert advanced analysis to intelligent analyses
+	intelligentAnalyses := g.getAdvancedChangeAnalyses(gitAnalysis)
+
+	// Display advanced analysis results
+	fmt.Printf("**Advanced Analysis Results:**\n")
+	fmt.Printf("- Total files changed: %d\n", gitAnalysis.TotalFiles)
+	fmt.Printf("- Total additions: +%d lines\n", gitAnalysis.TotalAdditions)  
+	fmt.Printf("- Total deletions: -%d lines\n", gitAnalysis.TotalDeletions)
+
+	if gitAnalysis.CommitPatterns != nil && len(gitAnalysis.RecentCommits) > 0 {
+		fmt.Printf("- Recent commit style: %s\n", gitAnalysis.CommitPatterns.PreferredStyle)
+		fmt.Printf("- Average commit length: %d chars\n", gitAnalysis.CommitPatterns.AverageLength)
 	}
-	fmt.Println()
-
-	// Use intelligent analysis for better commit messages
-	intelligentAnalyses := g.analyzeDiffIntelligently(diff)
-
-	fmt.Printf("**Found %d change type(s):**\n\n", len(intelligentAnalyses))
+	fmt.Printf("\n**Found %d change type(s):**\n\n", len(intelligentAnalyses))
+	
 	for i, analysis := range intelligentAnalyses {
 		fmt.Printf("%d. **%s", i+1, analysis.ChangeType)
 		if analysis.Scope != "" {
@@ -128,15 +137,25 @@ func (g *Generator) Generate() (*Result, error) {
 		}
 		fmt.Printf("**: %s", analysis.Description)
 		if len(analysis.Files) > 0 {
-			fmt.Printf("\n   - Files: `%s`", analysis.Files[0])
-			if len(analysis.Files) > 1 {
-				fmt.Printf(" (+%d more)", len(analysis.Files)-1)
-			}
+			fmt.Printf("\n   - File: `%s`", analysis.Files[0])
 		}
-		if g.options.Verbose && len(analysis.Details) > 0 {
-			fmt.Printf("\n   - Details:")
-			for _, detail := range analysis.Details {
-				fmt.Printf("\n     • %s", detail)
+		if analysis.Impact != "" {
+			fmt.Printf("\n   - Impact: %s", analysis.Impact)
+		}
+		if g.options.Verbose {
+			// Show detailed statistics in verbose mode
+			if stat, exists := gitAnalysis.FileStats[analysis.FilePath]; exists {
+				fmt.Printf("\n   - Statistics: +%d/-%d lines, Type: %s", 
+					stat.Additions, stat.Deletions, stat.ChangeType)
+			}
+			if analysis.Context != "" {
+				fmt.Printf("\n   - Context: %s", analysis.Context)
+			}
+			if len(analysis.Details) > 0 {
+				fmt.Printf("\n   - Details:")
+				for _, detail := range analysis.Details {
+					fmt.Printf("\n     • %s", detail)
+				}
 			}
 		}
 		fmt.Printf("\n\n")
@@ -151,8 +170,8 @@ func (g *Generator) Generate() (*Result, error) {
 		}
 	}
 
-	// Generate Claude-style commit message
-	message := g.generateClaudeStyleCommitMessage(intelligentAnalyses)
+	// Generate Claude-style commit message using repository patterns
+	message := g.generateClaudeStyleCommitMessageWithPatterns(intelligentAnalyses, gitAnalysis.CommitPatterns)
 
 	// Also maintain backward compatibility by converting to old format for result
 	changes := g.convertToLegacyFormat(intelligentAnalyses)
