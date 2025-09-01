@@ -567,6 +567,12 @@ func TestEnsureConfigExistsEdgeCases(t *testing.T) {
 	if err := os.Setenv("HOME", tempHome); err != nil {
 		t.Fatalf("Failed to set HOME: %v", err)
 	}
+	// On Windows, also set USERPROFILE which is used by os.UserHomeDir()
+	if runtime.GOOS == "windows" {
+		if err := os.Setenv("USERPROFILE", tempHome); err != nil {
+			t.Fatalf("Failed to set USERPROFILE: %v", err)
+		}
+	}
 	defer cleanup()
 
 	// Create .fast-cc directory
@@ -601,6 +607,12 @@ func TestEnsureEnterpriseConfigExistsEdgeCases(t *testing.T) {
 	tempHome := t.TempDir()
 	if err := os.Setenv("HOME", tempHome); err != nil {
 		t.Fatalf("Failed to set HOME: %v", err)
+	}
+	// On Windows, also set USERPROFILE which is used by os.UserHomeDir()
+	if runtime.GOOS == "windows" {
+		if err := os.Setenv("USERPROFILE", tempHome); err != nil {
+			t.Fatalf("Failed to set USERPROFILE: %v", err)
+		}
 	}
 
 	// Create .fast-cc directory
