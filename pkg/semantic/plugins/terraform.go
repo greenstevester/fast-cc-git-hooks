@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -707,13 +708,17 @@ func (t *TerraformPlugin) detectHotspotFiles(files []semantic.FileChange) map[st
 	hotspots := make(map[string]int)
 
 	for _, file := range files {
-		// Validate file path to prevent command injection
-		if strings.Contains(file.Path, "..") || strings.Contains(file.Path, ";") {
-			continue // Skip potentially malicious paths
+		// Sanitize and validate file path to prevent command injection
+		cleanPath := filepath.Clean(file.Path)
+		if strings.Contains(cleanPath, "..") || strings.Contains(cleanPath, ";") || 
+		   strings.Contains(cleanPath, "|") || strings.Contains(cleanPath, "&") ||
+		   strings.HasPrefix(cleanPath, "-") || len(cleanPath) == 0 {
+			continue // Skip potentially malicious or invalid paths
 		}
 		
-		// Run git log to check recent commits for this file
-		cmd := exec.Command("git", "log", "-n", "5", "--name-only", "--pretty=", "--", file.Path)
+		// Use a safe, sanitized path for the git command
+		// #nosec G204 - path is sanitized above
+		cmd := exec.Command("git", "log", "-n", "5", "--name-only", "--pretty=", "--", cleanPath)
 		output, err := cmd.Output()
 		if err != nil {
 			continue // Skip if git command fails
@@ -723,7 +728,7 @@ func (t *TerraformPlugin) detectHotspotFiles(files []semantic.FileChange) map[st
 		lines := strings.Split(strings.TrimSpace(string(output)), "\n")
 		count := 0
 		for _, line := range lines {
-			if strings.TrimSpace(line) == file.Path {
+			if strings.TrimSpace(line) == cleanPath {
 				count++
 			}
 		}
