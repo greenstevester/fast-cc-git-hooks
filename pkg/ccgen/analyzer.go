@@ -52,7 +52,7 @@ func (g *Generator) analyzeDiffIntelligently(diff string) []*IntelligentChangeAn
 	// Parse diff by files
 	files := strings.Split(diff, "diff --git")
 	analyses := make([]*IntelligentChangeAnalysis, 0, len(files))
-	
+
 	for _, file := range files {
 		if strings.TrimSpace(file) == "" {
 			continue

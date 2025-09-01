@@ -121,7 +121,7 @@ func (g *Generator) Generate() (*Result, error) {
 	// Display advanced analysis results
 	fmt.Printf("**Advanced Analysis Results:**\n")
 	fmt.Printf("- Total files changed: %d\n", gitAnalysis.TotalFiles)
-	fmt.Printf("- Total additions: +%d lines\n", gitAnalysis.TotalAdditions)  
+	fmt.Printf("- Total additions: +%d lines\n", gitAnalysis.TotalAdditions)
 	fmt.Printf("- Total deletions: -%d lines\n", gitAnalysis.TotalDeletions)
 
 	if gitAnalysis.CommitPatterns != nil && len(gitAnalysis.RecentCommits) > 0 {
@@ -129,7 +129,7 @@ func (g *Generator) Generate() (*Result, error) {
 		fmt.Printf("- Average commit length: %d chars\n", gitAnalysis.CommitPatterns.AverageLength)
 	}
 	fmt.Printf("\n**Found %d change type(s):**\n\n", len(intelligentAnalyses))
-	
+
 	for i, analysis := range intelligentAnalyses {
 		fmt.Printf("%d. **%s", i+1, analysis.ChangeType)
 		if analysis.Scope != "" {
@@ -145,7 +145,7 @@ func (g *Generator) Generate() (*Result, error) {
 		if g.options.Verbose {
 			// Show detailed statistics in verbose mode
 			if stat, exists := gitAnalysis.FileStats[analysis.FilePath]; exists {
-				fmt.Printf("\n   - Statistics: +%d/-%d lines, Type: %s", 
+				fmt.Printf("\n   - Statistics: +%d/-%d lines, Type: %s",
 					stat.Additions, stat.Deletions, stat.ChangeType)
 			}
 			if analysis.Context != "" {
@@ -275,7 +275,7 @@ func (g *Generator) getStagedDiff() (string, error) {
 // convertToLegacyFormat converts intelligent analyses to legacy ChangeType format for compatibility
 func (g *Generator) convertToLegacyFormat(analyses []*IntelligentChangeAnalysis) []ChangeType {
 	changes := make([]ChangeType, 0, len(analyses))
-	
+
 	for _, analysis := range analyses {
 		change := ChangeType{
 			Type:        analysis.ChangeType,
@@ -286,6 +286,6 @@ func (g *Generator) convertToLegacyFormat(analyses []*IntelligentChangeAnalysis)
 		}
 		changes = append(changes, change)
 	}
-	
+
 	return changes
 }

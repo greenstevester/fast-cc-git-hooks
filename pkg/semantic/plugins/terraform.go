@@ -4,6 +4,7 @@ package plugins
 import (
 	"context"
 	"fmt"
+	"os/exec"
 	"regexp"
 	"strings"
 
@@ -99,6 +100,11 @@ func (t *TerraformPlugin) AnalyzeFile(ctx context.Context, file semantic.FileCha
 
 // AnalyzeProject performs project-level analysis for Terraform
 func (t *TerraformPlugin) AnalyzeProject(ctx context.Context, context semantic.AnalysisContext) (*semantic.SemanticChange, error) {
+	// First, detect if this is actually a Terraform codebase
+	if !t.isTerraformCodebase(context) {
+		return nil, nil
+	}
+
 	// Look for Terraform project-level changes
 	var terraformFiles []semantic.FileChange
 	for _, file := range context.Files {
@@ -111,16 +117,8 @@ func (t *TerraformPlugin) AnalyzeProject(ctx context.Context, context semantic.A
 		return nil, nil
 	}
 
-	// Analyze project-level patterns
-	if change := t.analyzeProviderChanges(terraformFiles); change != nil {
-		return change, nil
-	}
-
-	if change := t.analyzeModuleStructureChanges(terraformFiles); change != nil {
-		return change, nil
-	}
-
-	return nil, nil
+	// Use the sophisticated whole-changeset analysis
+	return t.AnalyzeChangeset(terraformFiles)
 }
 
 // DefaultConfig returns the default configuration for the plugin
@@ -217,7 +215,7 @@ func (t *TerraformPlugin) analyzeDeletedFile(file semantic.FileChange, _ semanti
 }
 
 // analyzeModifiedFile analyzes a modified Terraform file
-func (t *TerraformPlugin) analyzeModifiedFile(file semantic.FileChange, _ semantic.AnalysisContext) (*semantic.SemanticChange, error) {
+func (t *TerraformPlugin) analyzeModifiedFile(file semantic.FileChange, context semantic.AnalysisContext) (*semantic.SemanticChange, error) {
 	beforeResources := t.extractResourceTypes(file.BeforeContent)
 	afterResources := t.extractResourceTypes(file.AfterContent)
 
@@ -225,54 +223,92 @@ func (t *TerraformPlugin) analyzeModifiedFile(file semantic.FileChange, _ semant
 
 	scope := t.determineScope(file.Path, file.AfterContent)
 
+	// Check if this file is a hotspot (modified repeatedly in recent commits)
+	hotspots := t.detectHotspotFiles([]semantic.FileChange{file})
+	isHotspot := hotspots[file.Path] > 0
+
 	// Determine change type based on modifications
 	changeType := "refactor" // default
 	description := "update Terraform configuration"
 	intent := "Infrastructure modification"
 	breaking := false
 
-	if len(added) > 0 && len(removed) == 0 {
-		changeType = "feat"
-		if len(added) == 1 {
-			description = fmt.Sprintf("add %s resource", added[0])
-		} else {
-			description = fmt.Sprintf("add %d new resources", len(added))
-		}
-		intent = "Infrastructure expansion"
-	} else if len(removed) > 0 && len(added) == 0 {
-		changeType = "refactor"
-		if len(removed) == 1 {
-			description = fmt.Sprintf("remove %s resource", removed[0])
-		} else {
-			description = fmt.Sprintf("remove %d resources", len(removed))
-		}
-		intent = "Infrastructure cleanup"
-		breaking = t.isRemovalBreaking(removed)
-	} else if len(modified) > 0 {
-		// Check if it's a fix or enhancement
-		if t.isSecurityImprovement(file.DiffContent) {
-			changeType = "fix"
-			description = "improve infrastructure security configuration"
-			intent = "Security hardening"
-		} else if t.isPerformanceImprovement(file.DiffContent) {
-			changeType = "perf"
-			description = "optimize infrastructure performance"
-			intent = "Performance optimization"
-		} else if t.isBugFix(file.DiffContent) {
-			changeType = "fix"
-			description = "fix infrastructure configuration issues"
-			intent = "Bug fix"
-		} else {
-			changeType = "refactor"
-			description = "refactor infrastructure configuration"
-			intent = "Configuration improvement"
-		}
+	// Adjust for hotspot files
+	if isHotspot {
+		changeType = "fix"
+		description = "stabilize Terraform configuration"
+		intent = "Configuration stabilization and cleanup"
+	}
 
-		// Check for breaking changes
-		breaking = t.hasBreakingChanges(file.DiffContent)
+	// Override with specific change patterns if not already a hotspot
+	if !isHotspot {
+		if len(added) > 0 && len(removed) == 0 {
+			changeType = "feat"
+			if len(added) == 1 {
+				description = fmt.Sprintf("add %s resource", added[0])
+			} else {
+				description = fmt.Sprintf("add %d new resources", len(added))
+			}
+			intent = "Infrastructure expansion"
+		} else if len(removed) > 0 && len(added) == 0 {
+			changeType = "refactor"
+			if len(removed) == 1 {
+				description = fmt.Sprintf("remove %s resource", removed[0])
+			} else {
+				description = fmt.Sprintf("remove %d resources", len(removed))
+			}
+			intent = "Infrastructure cleanup"
+			breaking = t.isRemovalBreaking(removed)
+		} else if len(modified) > 0 {
+			// Check if it's a fix or enhancement
+			if t.isSecurityImprovement(file.DiffContent) {
+				changeType = "fix"
+				description = "improve infrastructure security configuration"
+				intent = "Security hardening"
+			} else if t.isPerformanceImprovement(file.DiffContent) {
+				changeType = "perf"
+				description = "optimize infrastructure performance"
+				intent = "Performance optimization"
+			} else if t.isBugFix(file.DiffContent) {
+				changeType = "fix"
+				description = "fix infrastructure configuration issues"
+				intent = "Bug fix"
+			} else {
+				changeType = "refactor"
+				description = "refactor infrastructure configuration"
+				intent = "Configuration improvement"
+			}
+
+			// Check for breaking changes
+			breaking = t.hasBreakingChanges(file.DiffContent)
+		}
+	} else {
+		// For hotspot files, append the hotspot count to description
+		hotspotCount := hotspots[file.Path]
+		description = fmt.Sprintf("stabilize %s configuration (modified %d times recently)", t.getFileName(file.Path), hotspotCount)
 	}
 
 	confidence := t.calculateConfidence(added, removed, modified, file.DiffContent)
+
+	// Prepare metadata
+	metadata := map[string]string{
+		"added_resources":    strings.Join(added, ","),
+		"removed_resources":  strings.Join(removed, ","),
+		"modified_resources": strings.Join(modified, ","),
+	}
+
+	// Add hotspot information to metadata
+	if isHotspot {
+		metadata["hotspot"] = "true"
+		metadata["hotspot_count"] = fmt.Sprintf("%d", hotspots[file.Path])
+		metadata["hotspot_reasoning"] = "File modified repeatedly in recent commits, indicating stabilization effort"
+	}
+
+	// Update reasoning to include hotspot information
+	reasoning := t.generateReasoning(added, removed, modified)
+	if isHotspot {
+		reasoning = fmt.Sprintf("%s; Hotspot detected: modified %d times in last 5 commits", reasoning, hotspots[file.Path])
+	}
 
 	return &semantic.SemanticChange{
 		Type:           changeType,
@@ -283,12 +319,8 @@ func (t *TerraformPlugin) analyzeModifiedFile(file semantic.FileChange, _ semant
 		BreakingChange: breaking,
 		Files:          []string{file.Path},
 		Confidence:     confidence,
-		Reasoning:      t.generateReasoning(added, removed, modified),
-		Metadata: map[string]string{
-			"added_resources":    strings.Join(added, ","),
-			"removed_resources":  strings.Join(removed, ","),
-			"modified_resources": strings.Join(modified, ","),
-		},
+		Reasoning:      reasoning,
+		Metadata:       metadata,
 	}, nil
 }
 
@@ -613,6 +645,90 @@ func (t *TerraformPlugin) generateReasoning(added, removed, modified []string) s
 func (t *TerraformPlugin) getFileName(path string) string {
 	parts := strings.Split(path, "/")
 	return parts[len(parts)-1]
+}
+
+// isTerraformCodebase detects if the current project is a Terraform codebase
+func (t *TerraformPlugin) isTerraformCodebase(context semantic.AnalysisContext) bool {
+	// Check for Terraform-specific indicators in the project
+	terraformIndicators := []string{
+		".terraform/",
+		"terraform.tfstate",
+		"terraform.tfstate.backup",
+		"terraform.tfvars",
+		"terraform.tfvars.json",
+		".terraform.lock.hcl",
+		"main.tf",
+		"variables.tf",
+		"outputs.tf",
+		"provider.tf",
+		"versions.tf",
+	}
+
+	// Check if any files in the changeset match Terraform patterns
+	terraformFileCount := 0
+	totalFiles := len(context.Files)
+
+	for _, file := range context.Files {
+		// Direct Terraform file check
+		if t.CanAnalyze(file) {
+			terraformFileCount++
+			continue
+		}
+
+		// Check for Terraform-specific file names/patterns
+		fileName := t.getFileName(file.Path)
+		filePath := strings.ToLower(file.Path)
+
+		for _, indicator := range terraformIndicators {
+			if strings.Contains(filePath, indicator) || fileName == indicator {
+				return true // Strong indicator - definitely a Terraform project
+			}
+		}
+
+		// Check for Terraform directory patterns
+		if strings.Contains(filePath, "/terraform/") ||
+			strings.Contains(filePath, "/infra/") ||
+			strings.Contains(filePath, "/infrastructure/") {
+			terraformFileCount++
+		}
+	}
+
+	// If more than 30% of files are Terraform-related, consider it a Terraform codebase
+	if totalFiles > 0 && float64(terraformFileCount)/float64(totalFiles) > 0.3 {
+		return true
+	}
+
+	// If we have any Terraform files at all, run the analysis
+	return terraformFileCount > 0
+}
+
+// detectHotspotFiles checks if files have been modified repeatedly in recent commits
+func (t *TerraformPlugin) detectHotspotFiles(files []semantic.FileChange) map[string]int {
+	hotspots := make(map[string]int)
+
+	for _, file := range files {
+		// Run git log to check recent commits for this file
+		cmd := exec.Command("git", "log", "-n", "5", "--name-only", "--pretty=", file.Path)
+		output, err := cmd.Output()
+		if err != nil {
+			continue // Skip if git command fails
+		}
+
+		// Count occurrences of this file in recent commits
+		lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+		count := 0
+		for _, line := range lines {
+			if strings.TrimSpace(line) == file.Path {
+				count++
+			}
+		}
+
+		if count > 1 { // File appears in multiple recent commits
+			hotspots[file.Path] = count
+		}
+	}
+
+	return hotspots
 }
 
 // Project-level analysis methods
