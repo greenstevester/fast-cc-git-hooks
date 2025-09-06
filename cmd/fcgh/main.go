@@ -47,20 +47,15 @@ var (
 )
 
 func main() {
-	// Parse global flags first to check for verbose mode
-	flag.BoolVar(&verbose, "v", false, "verbose output")
-	flag.BoolVar(&verbose, "verbose", false, "verbose output")
-	flag.StringVar(&configFile, "config", "", "path to config file")
-	
-	// We need to parse flags early to determine if we should show verbose banner
-	// But we'll do a proper parse later for command-specific flags
-	for i, arg := range os.Args[1:] {
+	// We need to check for verbose flag early to determine banner display
+	// But we'll do proper flag parsing later for command-specific flags
+	for _, arg := range os.Args[1:] {
 		if arg == "-v" || arg == "--verbose" {
 			verbose = true
 			break
 		}
 		// Stop parsing if we hit a command name (not a flag)
-		if !strings.HasPrefix(arg, "-") && i > 0 {
+		if !strings.HasPrefix(arg, "-") {
 			break
 		}
 	}
@@ -84,8 +79,7 @@ func main() {
 		"status":    statusCommand(),
 	}
 
-	// Parse global flags (already defined above, just reset for proper parsing).
-	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	// Parse global flags.
 	flag.BoolVar(&verbose, "v", false, "verbose output")
 	flag.BoolVar(&verbose, "verbose", false, "verbose output")  
 	flag.StringVar(&configFile, "config", "", "path to config file")
@@ -138,14 +132,13 @@ func main() {
 
 	// Create context with timeout...
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 
 	// Run command...
 	if err := cmd.Run(ctx, cmd.Flags.Args()); err != nil {
-		cancel()
 		logger.Error("command failed", "command", cmdName, "error", err)
 		os.Exit(1)
 	}
-	cancel()
 }
 
 func setupLogger(verbose bool) {
@@ -198,7 +191,8 @@ func validateCommand() *Command {
 				if len(args) > 0 {
 					message = strings.Join(args, " ")
 				} else {
-					// Read from stdin.
+					// Read from stdin with size limit (1MB max).
+					const maxInputSize = 1024 * 1024 // 1MB
 					buf := make([]byte, 0, 4096)
 					for {
 						n, err := os.Stdin.Read(buf[len(buf):cap(buf)])
@@ -206,9 +200,16 @@ func validateCommand() *Command {
 						if err != nil {
 							break
 						}
+						if len(buf) > maxInputSize {
+							return fmt.Errorf("input too large (max %d bytes)", maxInputSize)
+						}
 						if len(buf) == cap(buf) {
-							// Grow buffer.
-							newBuf := make([]byte, len(buf), cap(buf)*2)
+							// Grow buffer, but respect size limit.
+							newCap := cap(buf) * 2
+							if newCap > maxInputSize {
+								newCap = maxInputSize
+							}
+							newBuf := make([]byte, len(buf), newCap)
 							copy(newBuf, buf)
 							buf = newBuf
 						}

@@ -74,7 +74,7 @@ func main() {
 func showHelp() {
 	fmt.Printf(`ccdo - Conventional Commit Do... v %s
 
-auto generates a conventional commit message and commits it for you (it doesn't get any easier than that).'.
+auto generates a conventional commit message and commits it for you (it doesn't get any easier than that).
 
 USAGE:
     ccdo [options]
