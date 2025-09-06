@@ -128,7 +128,9 @@ func (g *Generator) performAdvancedGitAnalysis() (*GitAnalysisResult, error) {
 
 // getFileStatistics implements: git diff --stat HEAD~1 HEAD (or --staged if no HEAD~1)
 func (g *Generator) getFileStatistics(result *GitAnalysisResult) error {
-	fmt.Printf("Running `git diff --stat`")
+	if g.options.Verbose {
+		fmt.Printf("Running `git diff --stat`")
+	}
 
 	// Try staged first (for initial commits), fallback to HEAD~1 comparison
 	var cmd *exec.Cmd
