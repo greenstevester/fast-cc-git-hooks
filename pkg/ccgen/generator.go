@@ -97,11 +97,17 @@ func (g *Generator) Generate() (*Result, error) {
 	fmt.Println()
 	// Perform advanced git analysis using comprehensive algorithm
 	if banner.UseASCII() {
-		fmt.Println("## Performing Advanced Git Analysis")
+		if g.options.Verbose {
+			fmt.Println("## Performing Advanced Git Analysis")
+		}
 	} else {
-		fmt.Println("## 🔬 Performing Advanced Git Analysis")
+		if g.options.Verbose {
+			fmt.Println("## 🔬 Performing Advanced Git Analysis")
+		}
 	}
-	fmt.Println()
+	if g.options.Verbose {
+		fmt.Println()
+	}
 
 	// Use advanced git analysis algorithm
 	gitAnalysis, err := g.performAdvancedGitAnalysis()
@@ -119,14 +125,14 @@ func (g *Generator) Generate() (*Result, error) {
 	intelligentAnalyses := g.getAdvancedChangeAnalyses(gitAnalysis)
 
 	// Display advanced analysis results
-	fmt.Printf("**Advanced Analysis Results:**\n")
+	fmt.Printf("** Git Analysis Results :**\n")
 	fmt.Printf("- Total files changed: %d\n", gitAnalysis.TotalFiles)
 	fmt.Printf("- Total additions: +%d lines\n", gitAnalysis.TotalAdditions)
 	fmt.Printf("- Total deletions: -%d lines\n", gitAnalysis.TotalDeletions)
 
 	// Display directory statistics
 	if len(gitAnalysis.DirStats) > 0 {
-		fmt.Printf("- Directory distribution: ")
+		fmt.Printf("- Directory distribution (of changes): ")
 		var dirParts []string
 		for dir, percent := range gitAnalysis.DirStats {
 			dirParts = append(dirParts, fmt.Sprintf("%s (%.1f%%)", dir, percent))
@@ -144,11 +150,14 @@ func (g *Generator) Generate() (*Result, error) {
 		fmt.Printf("- Modified functions: %s\n", strings.Join(gitAnalysis.ModifiedFunctions, ", "))
 	}
 
-	if gitAnalysis.CommitPatterns != nil && len(gitAnalysis.RecentCommits) > 0 {
-		fmt.Printf("- Recent commit style: %s\n", gitAnalysis.CommitPatterns.PreferredStyle)
-		fmt.Printf("- Average commit length: %d chars\n", gitAnalysis.CommitPatterns.AverageLength)
+	if g.options.Verbose {
+		if gitAnalysis.CommitPatterns != nil && len(gitAnalysis.RecentCommits) > 0 {
+			fmt.Printf("- Recent commit style: %s\n", gitAnalysis.CommitPatterns.PreferredStyle)
+			fmt.Printf("- Average commit length: %d chars\n", gitAnalysis.CommitPatterns.AverageLength)
+		}
 	}
-	fmt.Printf("\n**Found %d change type(s):**\n\n", len(intelligentAnalyses))
+
+	fmt.Printf("\nFound %d change type(s):\n\n", len(intelligentAnalyses))
 
 	for i, analysis := range intelligentAnalyses {
 		fmt.Printf("%d. **%s", i+1, analysis.ChangeType)
@@ -182,13 +191,16 @@ func (g *Generator) Generate() (*Result, error) {
 	}
 
 	// Check for JIRA ticket
-	if g.options.JiraManager != nil {
-		if ticket, err := g.options.JiraManager.GetCurrentJiraTicket(); err == nil && ticket != "" {
-			fmt.Printf("**JIRA Ticket:** `%s` (will be included in commit)\n\n", ticket)
-		} else {
-			fmt.Printf("**JIRA Ticket:** None set (use `cc set-jira CGC-1234` to set one)\n\n")
+	if g.options.Verbose {
+		if g.options.JiraManager != nil {
+			if ticket, err := g.options.JiraManager.GetCurrentJiraTicket(); err == nil && ticket != "" {
+				fmt.Printf("JIRA Ticket: `%s` (will be included in commit)\n\n", ticket)
+			} else {
+				fmt.Printf("JIRA Ticket: None set (use `cc set-jira CGC-1234` to set one)\n\n")
+			}
 		}
 	}
+
 
 	// Generate Claude-style commit message using repository patterns
 	message := g.generateClaudeStyleCommitMessageWithPatterns(intelligentAnalyses, gitAnalysis.CommitPatterns)
@@ -234,6 +246,7 @@ func (g *Generator) PrintResult(result *Result) {
 	}
 
 	// Display the commit message in a code block
+	fmt.Println("--- your commit message ---")
 	fmt.Printf("```\n%s\n```\n\n", result.Message)
 
 	if g.options.Copy {
@@ -241,9 +254,9 @@ func (g *Generator) PrintResult(result *Result) {
 			fmt.Printf("❌ Failed to copy to clipboard: %v\n", err)
 		} else {
 			if banner.UseASCII() {
-				fmt.Printf("✅ Git commit command copied to clipboard!\n\n")
+				fmt.Printf("✅ Git commit command (with message) copied to clipboard!\n\n")
 			} else {
-				fmt.Printf("✅ Git commit command copied to clipboard!\n\n")
+				fmt.Printf("✅ Git commit command (with message) copied to clipboard!\n\n")
 			}
 		}
 	}

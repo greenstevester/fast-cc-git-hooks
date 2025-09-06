@@ -150,7 +150,9 @@ func (g *Generator) getFileStatistics(result *GitAnalysisResult) error {
 			return fmt.Errorf("failed to get diff stat: %w", err)
 		}
 	}
-	fmt.Println(" ✅")
+	if g.options.Verbose {
+		fmt.Println(" ✅")
+	}
 
 	// Parse diff --stat output
 	g.parseStatOutput(string(output), result)
@@ -163,7 +165,9 @@ func (g *Generator) getFileStatistics(result *GitAnalysisResult) error {
 
 // getChangeTypes implements: git diff --name-status HEAD~1 HEAD
 func (g *Generator) getChangeTypes(result *GitAnalysisResult) error {
-	fmt.Printf("Running `git diff --name-status`")
+	if g.options.Verbose {
+		fmt.Printf("Running `git diff --name-status`")
+	}
 
 	var cmd *exec.Cmd
 	if g.hasPreviousCommits() {
@@ -182,7 +186,9 @@ func (g *Generator) getChangeTypes(result *GitAnalysisResult) error {
 			return fmt.Errorf("failed to get name-status: %w", err)
 		}
 	}
-	fmt.Println(" ✅")
+	if g.options.Verbose {
+		fmt.Println(" ✅")
+	}
 
 	// Parse name-status output (format: "M\tfilename" or "A\tfilename")
 	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
@@ -213,7 +219,9 @@ func (g *Generator) getChangeTypes(result *GitAnalysisResult) error {
 
 // getWordDiff implements: git diff HEAD~1 HEAD --word-diff
 func (g *Generator) getWordDiff(result *GitAnalysisResult) error {
-	fmt.Printf("Running `git diff --word-diff`")
+	if g.options.Verbose {
+		fmt.Printf("Running `git diff --word-diff`")
+	}
 
 	var cmd *exec.Cmd
 	if g.hasPreviousCommits() {
@@ -232,7 +240,9 @@ func (g *Generator) getWordDiff(result *GitAnalysisResult) error {
 			return fmt.Errorf("failed to get word diff: %w", err)
 		}
 	}
-	fmt.Println(" ✅")
+	if g.options.Verbose {
+		fmt.Println(" ✅")
+	}
 
 	result.WordDiffContent = string(output)
 	return nil
@@ -240,7 +250,9 @@ func (g *Generator) getWordDiff(result *GitAnalysisResult) error {
 
 // getStagedDiffContent maintains compatibility with existing analyzer
 func (g *Generator) getStagedDiffContent(result *GitAnalysisResult) error {
-	fmt.Printf("Running `git diff --staged`")
+	if g.options.Verbose {
+		fmt.Printf("Running `git diff --staged`")
+	}
 
 	cmd := exec.Command("git", "diff", "--staged")
 	output, err := cmd.Output()
@@ -248,7 +260,9 @@ func (g *Generator) getStagedDiffContent(result *GitAnalysisResult) error {
 		fmt.Println(" ❌")
 		return fmt.Errorf("failed to get staged diff: %w", err)
 	}
-	fmt.Println(" ✅")
+	if g.options.Verbose {
+		fmt.Println(" ✅")
+	}
 
 	result.StagedDiff = string(output)
 	return nil
@@ -256,7 +270,9 @@ func (g *Generator) getStagedDiffContent(result *GitAnalysisResult) error {
 
 // analyzeRecentCommitPatterns implements: git log --oneline -10
 func (g *Generator) analyzeRecentCommitPatterns(result *GitAnalysisResult) {
-	fmt.Printf("Running `git log --oneline -10`")
+	if g.options.Verbose {
+		fmt.Printf("Running `git log --oneline -10`")
+	}
 
 	cmd := exec.Command("git", "log", "--oneline", "-10")
 	output, err := cmd.Output()
@@ -269,7 +285,9 @@ func (g *Generator) analyzeRecentCommitPatterns(result *GitAnalysisResult) {
 		}
 		return
 	}
-	fmt.Println(" ✅")
+	if g.options.Verbose {
+		fmt.Println(" ✅")
+	}
 
 	// Parse recent commits
 	result.RecentCommits = g.parseRecentCommits(string(output))
@@ -591,7 +609,9 @@ func (g *Generator) enhanceWithNumStats(result *GitAnalysisResult) {
 
 // getDirStats implements: git diff --cached --dirstat=files,0
 func (g *Generator) getDirStats(result *GitAnalysisResult) error {
-	fmt.Printf("Running `git diff --cached --dirstat=files,0`")
+	if g.options.Verbose {
+		fmt.Printf("Running `git diff --cached --dirstat=files,0`")
+	}
 
 	var cmd *exec.Cmd
 	if g.hasPreviousCommits() {
@@ -610,7 +630,9 @@ func (g *Generator) getDirStats(result *GitAnalysisResult) error {
 			return fmt.Errorf("failed to get dir stats: %w", err)
 		}
 	}
-	fmt.Println(" ✅")
+	if g.options.Verbose {
+		fmt.Println(" ✅")
+	}
 
 	// Parse dirstat output: " 28.5% pkg/semantic/plugins/"
 	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
@@ -633,7 +655,9 @@ func (g *Generator) getDirStats(result *GitAnalysisResult) error {
 
 // getNumStats implements: git diff --cached --numstat
 func (g *Generator) getNumStats(result *GitAnalysisResult) error {
-	fmt.Printf("Running `git diff --cached --numstat`")
+	if g.options.Verbose {
+		fmt.Printf("Running `git diff --cached --numstat`")
+	}
 
 	var cmd *exec.Cmd
 	if g.hasPreviousCommits() {
@@ -652,7 +676,9 @@ func (g *Generator) getNumStats(result *GitAnalysisResult) error {
 			return fmt.Errorf("failed to get numstat: %w", err)
 		}
 	}
-	fmt.Println(" ✅")
+	if g.options.Verbose {
+		fmt.Println(" ✅")
+	}
 
 	// Parse numstat output: "78	78	pkg/ccgen/advanced_git_analyzer.go"
 	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
@@ -681,7 +707,9 @@ func (g *Generator) getNumStats(result *GitAnalysisResult) error {
 
 // getFileSummaries implements: git diff --cached --summary
 func (g *Generator) getFileSummaries(result *GitAnalysisResult) error {
-	fmt.Printf("Running `git diff --cached --summary`")
+	if g.options.Verbose {
+		fmt.Printf("Running `git diff --cached --summary`")
+	}
 
 	var cmd *exec.Cmd
 	if g.hasPreviousCommits() {
@@ -700,7 +728,9 @@ func (g *Generator) getFileSummaries(result *GitAnalysisResult) error {
 			return fmt.Errorf("failed to get summary: %w", err)
 		}
 	}
-	fmt.Println(" ✅")
+	if g.options.Verbose {
+		fmt.Println(" ✅")
+	}
 
 	// Parse summary output: " create mode 100644 pkg/semantic/plugins/terraform_changeset_analyzer.go"
 	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
@@ -716,7 +746,9 @@ func (g *Generator) getFileSummaries(result *GitAnalysisResult) error {
 
 // extractFunctionContexts implements: git diff --cached --function-context --unified=0 | sed -n 's/^@@.* \(.*\) @@/\1/p' | sort -u | head -n 10
 func (g *Generator) extractFunctionContexts(result *GitAnalysisResult) error {
-	fmt.Printf("Running `git diff --cached --function-context --unified=0`")
+	if g.options.Verbose {
+		fmt.Printf("Running `git diff --cached --function-context --unified=0`")
+	}
 
 	var cmd *exec.Cmd
 	if g.hasPreviousCommits() {
@@ -735,7 +767,9 @@ func (g *Generator) extractFunctionContexts(result *GitAnalysisResult) error {
 			return fmt.Errorf("failed to get function context: %w", err)
 		}
 	}
-	fmt.Println(" ✅")
+	if g.options.Verbose {
+		fmt.Println(" ✅")
+	}
 
 	// Extract function names from @@ lines using regex
 	lines := strings.Split(string(output), "\n")
