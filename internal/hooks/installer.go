@@ -343,7 +343,7 @@ func configureGitTemplate(templateDir string) error {
 
 	// Execute git config command to set the template directory
 	// This makes Git use our template directory for all new repositories
-	cmd := exec.Command("git", "config", "--global", "init.templatedir", configDir)
+	cmd := exec.Command("git", "config", "--global", "init.templatedir", configDir) // #nosec G204 - configDir is controlled internally via getGitConfigDir
 	if err := cmd.Run(); err != nil {
 		// If git command fails, provide helpful error message
 		return fmt.Errorf("failed to configure git template directory - please run manually: git config --global init.templatedir %s (error: %w)", configDir, err)

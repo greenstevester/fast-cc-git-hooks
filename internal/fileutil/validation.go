@@ -61,7 +61,7 @@ func SafeReadFile(path string, maxSize int64) ([]byte, error) {
 		return nil, err
 	}
 
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) // #nosec G304 - path is validated by ValidateFilePath before use
 	if err != nil {
 		return nil, errors.WrapFileError(fmt.Sprintf("reading file %s", path), err)
 	}
