@@ -25,10 +25,10 @@ var (
 
 func main() {
 	flag.Parse()
-	
+
 	// Check if verbose mode is enabled (either flag)
 	isVerbose := *verbose || *verboseV
-	
+
 	// Print banner - verbose if flag is set
 	if isVerbose {
 		banner.PrintWithVersionAndBuildTime(version, commit, buildTime)

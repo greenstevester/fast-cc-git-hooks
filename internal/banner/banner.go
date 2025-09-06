@@ -33,7 +33,7 @@ func PrintWithVersion(version, commit string) {
 // PrintWithVersionAndBuildTime displays the banner with version, commit and build time information
 func PrintWithVersionAndBuildTime(version, commit, buildTime string) {
 	var versionSuffix string
-	
+
 	// Format buildTime to dd.mm.yyyy if provided
 	var formattedBuildTime string
 	if buildTime != "" && buildTime != "unknown" {
@@ -49,7 +49,7 @@ func PrintWithVersionAndBuildTime(version, commit, buildTime string) {
 			formattedBuildTime = buildTime
 		}
 	}
-	
+
 	if version != "dev" && version != "unknown" && version != "" {
 		if commit != "unknown" && commit != "" && len(commit) >= 7 {
 			// Use short commit hash (first 7 characters)

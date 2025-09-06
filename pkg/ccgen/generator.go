@@ -285,7 +285,6 @@ func (g *Generator) addAllChanges() error {
 	return cmd.Run()
 }
 
-
 // convertToLegacyFormat converts intelligent analyses to legacy ChangeType format for compatibility
 func (g *Generator) convertToLegacyFormat(analyses []*IntelligentChangeAnalysis) []ChangeType {
 	changes := make([]ChangeType, 0, len(analyses))

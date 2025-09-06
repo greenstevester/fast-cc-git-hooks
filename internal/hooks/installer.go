@@ -8,6 +8,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -275,8 +276,15 @@ func findGitDir() (string, error) {
 // GlobalInstall installs hooks globally for all repositories.
 // Note: Git's precedence rules ensure that local repository hooks (installed via Install())
 // will always take precedence over global template hooks when both exist.
+// 1. Purpose: When you run git init, Git copies files from a template directory into the new .git directory
+// 2. Location: Typically ~/.config/git/hooks/ (or similar platform-specific paths)
+// 3. Global Hooks: Any hooks placed in the template directory will be copied to every new repository
+// The template directory resolves to something like:
+//   - Linux/macOS: ~/.config/git/hooks/
+//   - Windows: ~/AppData/Roaming/Git/hooks/
 func GlobalInstall(ctx context.Context, logger *slog.Logger) error {
 	// Get git config directory.
+	fmt.Printf("Installing Git Hooks to git template dir. Any hooks placed in the template directory will be copied to every new repository\n")
 	configDir, err := getGitConfigDir()
 	if err != nil {
 		return fmt.Errorf("finding git config directory: %w", err)
@@ -284,7 +292,7 @@ func GlobalInstall(ctx context.Context, logger *slog.Logger) error {
 
 	templateDir := filepath.Join(configDir, "hooks")
 	if mkdirErr := os.MkdirAll(templateDir, 0o750); mkdirErr != nil {
-		return fmt.Errorf("creating template directory: %w", mkdirErr)
+		return fmt.Errorf("creating git template directory: %w", mkdirErr)
 	}
 
 	// Configure git to use template directory.
@@ -329,9 +337,17 @@ func getGitConfigDir() (string, error) {
 }
 
 // configureGitTemplate sets up git to use our template directory.
-func configureGitTemplate(_ string) error {
-	// This would typically call git config.
-	// For now, we'll document that users need to run:.
-	// git config --global init.templateDir <templateDir>.
+func configureGitTemplate(templateDir string) error {
+	// Get the parent directory (git config directory)
+	configDir := filepath.Dir(templateDir)
+
+	// Execute git config command to set the template directory
+	// This makes Git use our template directory for all new repositories
+	cmd := exec.Command("git", "config", "--global", "init.templatedir", configDir)
+	if err := cmd.Run(); err != nil {
+		// If git command fails, provide helpful error message
+		return fmt.Errorf("failed to configure git template directory - please run manually: git config --global init.templatedir %s (error: %w)", configDir, err)
+	}
+
 	return nil
 }

@@ -5,6 +5,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/greenstevester/fast-cc-git-hooks/internal/banner"
 	"github.com/greenstevester/fast-cc-git-hooks/internal/config"
+	"github.com/greenstevester/fast-cc-git-hooks/internal/fileutil"
 	"github.com/greenstevester/fast-cc-git-hooks/internal/hooks"
 	"github.com/greenstevester/fast-cc-git-hooks/internal/validator"
 	"github.com/greenstevester/fast-cc-git-hooks/pkg/jira"
@@ -46,30 +48,35 @@ var (
 	logger *slog.Logger
 )
 
-func main() {
-	// We need to check for verbose flag early to determine banner display
-	// But we'll do proper flag parsing later for command-specific flags
-	for _, arg := range os.Args[1:] {
+// checkVerboseFlag scans args for verbose flags without full parsing
+func checkVerboseFlag(args []string) bool {
+	for _, arg := range args {
 		if arg == "-v" || arg == "--verbose" {
-			verbose = true
-			break
+			return true
 		}
-		// Stop parsing if we hit a command name (not a flag)
+		// Stop at first non-flag argument (command name)
 		if !strings.HasPrefix(arg, "-") {
 			break
 		}
 	}
-	
-	// Print banner - verbose if flag is set
+	return false
+}
+
+func main() {
+	// Check for verbose flag early to determine banner display
+	verbose = checkVerboseFlag(os.Args[1:])
+
+	// Print banner based on verbose flag
 	if verbose {
 		banner.PrintWithVersionAndBuildTime(version, commit, buildTime)
 	} else {
 		banner.PrintSimple()
 	}
 
-	// Setup base logger.
-	setupLogger(false)
+	// Setup logger with verbose setting
+	setupLogger(verbose)
 
+	// Define commands
 	commands := map[string]*Command{
 		"setup":     setupCommand(),
 		"setup-ent": setupEnterpriseCommand(),
@@ -79,9 +86,9 @@ func main() {
 		"status":    statusCommand(),
 	}
 
-	// Parse global flags.
+	// Parse global flags
 	flag.BoolVar(&verbose, "v", false, "verbose output")
-	flag.BoolVar(&verbose, "verbose", false, "verbose output")  
+	flag.BoolVar(&verbose, "verbose", false, "verbose output")
 	flag.StringVar(&configFile, "config", "", "path to config file")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "🚀 fcgh - Fast Conventional Git Hooks\n\n")
@@ -99,16 +106,16 @@ func main() {
 		fmt.Fprintf(os.Stderr, "\n💡 Need help? Use '%s <command> -h' for more details\n", os.Args[0])
 	}
 
-	// Need at least command name...
+	// Need at least command name
 	if len(os.Args) < 2 {
 		flag.Usage()
 		os.Exit(1)
 	}
 
-	// Extract command...
+	// Extract command
 	cmdName := os.Args[1]
 
-	// Handle help for commands...
+	// Handle help commands
 	if cmdName == "-h" || cmdName == "--help" || cmdName == "help" {
 		flag.Usage()
 		os.Exit(0)
@@ -121,14 +128,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Parse command flags.
+	// Parse command flags
 	if err := cmd.Flags.Parse(os.Args[2:]); err != nil {
 		fmt.Fprintf(os.Stderr, "Error parsing flags: %v\n", err)
 		os.Exit(1)
 	}
-
-	// Update logger with verbose flag..
-	setupLogger(verbose)
 
 	// Create context with timeout...
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -191,28 +195,14 @@ func validateCommand() *Command {
 				if len(args) > 0 {
 					message = strings.Join(args, " ")
 				} else {
-					// Read from stdin with size limit (1MB max).
-					const maxInputSize = 1024 * 1024 // 1MB
-					buf := make([]byte, 0, 4096)
-					for {
-						n, err := os.Stdin.Read(buf[len(buf):cap(buf)])
-						buf = buf[:len(buf)+n]
-						if err != nil {
-							break
-						}
-						if len(buf) > maxInputSize {
-							return fmt.Errorf("input too large (max %d bytes)", maxInputSize)
-						}
-						if len(buf) == cap(buf) {
-							// Grow buffer, but respect size limit.
-							newCap := cap(buf) * 2
-							if newCap > maxInputSize {
-								newCap = maxInputSize
-							}
-							newBuf := make([]byte, len(buf), newCap)
-							copy(newBuf, buf)
-							buf = newBuf
-						}
+					// Read from stdin with size limit for commit messages
+					reader := io.LimitedReader{R: os.Stdin, N: fileutil.MaxCommitFileSize}
+					buf, err := io.ReadAll(&reader)
+					if err != nil {
+						return fmt.Errorf("reading from stdin: %w", err)
+					}
+					if reader.N == 0 {
+						return fmt.Errorf("input too large (max %d bytes)", fileutil.MaxCommitFileSize)
 					}
 					message = string(buf)
 				}
@@ -282,7 +272,6 @@ func initCommand() *Command {
 		},
 	}
 }
-
 
 func setupCommand() *Command {
 	fs := flag.NewFlagSet("setup", flag.ExitOnError)

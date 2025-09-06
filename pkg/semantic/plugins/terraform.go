@@ -710,12 +710,12 @@ func (t *TerraformPlugin) detectHotspotFiles(files []semantic.FileChange) map[st
 	for _, file := range files {
 		// Sanitize and validate file path to prevent command injection
 		cleanPath := filepath.Clean(file.Path)
-		if strings.Contains(cleanPath, "..") || strings.Contains(cleanPath, ";") || 
-		   strings.Contains(cleanPath, "|") || strings.Contains(cleanPath, "&") ||
-		   strings.HasPrefix(cleanPath, "-") || len(cleanPath) == 0 {
+		if strings.Contains(cleanPath, "..") || strings.Contains(cleanPath, ";") ||
+			strings.Contains(cleanPath, "|") || strings.Contains(cleanPath, "&") ||
+			strings.HasPrefix(cleanPath, "-") || len(cleanPath) == 0 {
 			continue // Skip potentially malicious or invalid paths
 		}
-		
+
 		// Use a safe, sanitized path for the git command
 		// #nosec G204 - path is sanitized above
 		cmd := exec.Command("git", "log", "-n", "5", "--name-only", "--pretty=", "--", cleanPath)
@@ -740,5 +740,3 @@ func (t *TerraformPlugin) detectHotspotFiles(files []semantic.FileChange) map[st
 
 	return hotspots
 }
-
-

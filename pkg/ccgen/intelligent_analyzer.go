@@ -18,10 +18,6 @@ type IntelligentChangeAnalysis struct {
 	Context     string
 }
 
-
-
-
-
 // determineIntelligentScope provides more granular scope detection
 func (g *Generator) determineIntelligentScope(filename string) string {
 	switch {
@@ -59,16 +55,6 @@ func (g *Generator) determineIntelligentScope(filename string) string {
 		return ""
 	}
 }
-
-
-
-
-
-
-
-
-
-
 
 // extractFileName extracts the base filename from a path
 func (g *Generator) extractFileName(filePath string) string {

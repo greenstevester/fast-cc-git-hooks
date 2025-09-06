@@ -7,15 +7,6 @@ import (
 	"unicode/utf8"
 )
 
-
-
-
-
-
-
-
-
-
 // getTypePriority returns priority for change type sorting
 func (g *Generator) getTypePriority(changeType string) int {
 	priorities := map[string]int{

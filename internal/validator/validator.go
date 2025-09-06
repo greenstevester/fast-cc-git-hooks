@@ -5,11 +5,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"regexp"
 	"strings"
 
 	"github.com/greenstevester/fast-cc-git-hooks/internal/config"
+	"github.com/greenstevester/fast-cc-git-hooks/internal/fileutil"
 	"github.com/greenstevester/fast-cc-git-hooks/pkg/conventionalcommit"
 )
 
@@ -136,8 +136,8 @@ func (v *Validator) Validate(ctx context.Context, message string) *ValidationRes
 
 // ValidateFile validates commit messages from a file.
 func (v *Validator) ValidateFile(ctx context.Context, path string) (*ValidationResult, error) {
-	// Read commit message from file.
-	content, err := readFile(path)
+	// Read commit message from file with validation.
+	content, err := fileutil.SafeReadCommitFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("reading commit file: %w", err)
 	}
@@ -264,15 +264,6 @@ func (*Validator) addValidationError(result *ValidationResult, field, message, v
 		Message: message,
 		Value:   value,
 	})
-}
-
-// readFile reads the contents of a file.
-func readFile(path string) (string, error) {
-	data, err := os.ReadFile(path) // #nosec G304 - path is provided by caller for commit file reading
-	if err != nil {
-		return "", err
-	}
-	return string(data), nil
 }
 
 // Quick validation helper for simple use cases.
